@@ -1,0 +1,23 @@
+{
+  "name": "erpqalam",
+  "version": "0.1.0",
+  "private": true,
+  "description": "School ERP monorepo",
+  "scripts": {
+    "predev": "kill-port 3000 3001 && node scripts/ensure-db.mjs",
+    "dev": "concurrently -n api,web -c blue,magenta \"npm run dev:api\" \"npm run dev:web\"",
+    "kill-ports": "kill-port 3000 3001",
+    "dev:api": "npm run start:dev --prefix apps/api",
+    "dev:web": "npm run dev --prefix apps/web",
+    "build": "npm run build --prefix apps/api && npm run build --prefix apps/web",
+    "install:all": "npm install --prefix apps/api && npm install --prefix apps/web",
+    "db:ensure": "node scripts/ensure-db.mjs",
+    "db:migrate": "npm run prisma:migrate --prefix apps/api",
+    "db:seed": "npm run prisma:seed --prefix apps/api",
+    "test:e2e": "npm run test:e2e --prefix apps/api"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "kill-port": "^2.0.1"
+  }
+}

@@ -1,6 +1,22 @@
-import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  Controller,
+  Post,
+  Body,
+  HttpCode,
+  HttpStatus,
+  Get,
+  Req,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+import { ConfigService } from '@nestjs/config';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { JwtPayload } from './interfaces/jwt-payload.interface';
 import {
   LoginDto,
   RefreshTokenDto,
@@ -12,11 +28,15 @@ import {
   AuthUserDto,
   MessageResponseDto,
 } from './dto/auth-response.dto';
+import { GoogleOAuthProfile } from './interfaces/google-profile.interface';
 
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly config: ConfigService,
+  ) {}
 
   @Post('register-school')
   @ApiOperation({ summary: 'Bootstrap a new school with its first manager' })
@@ -38,6 +58,65 @@ export class AuthController {
   @ApiResponse({ status: 200, type: AuthResponseDto })
   login(@Body() dto: LoginDto): Promise<AuthResponseDto> {
     return this.authService.login(dto);
+  }
+
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get current user profile with fresh permissions' })
+  @ApiResponse({ status: 200, type: AuthUserDto })
+  me(@CurrentUser() user: JwtPayload): Promise<AuthUserDto> {
+    return this.authService.getProfile(user.sub);
+  }
+
+  @Get('google')
+  @UseGuards(AuthGuard('google'))
+  @ApiOperation({ summary: 'Redirect to Google OAuth consent screen' })
+  googleAuth(): void {
+    // Passport redirects to Google.
+  }
+
+  @Get('google/callback')
+  @UseGuards(AuthGuard('google'))
+  @ApiOperation({ summary: 'Google OAuth callback — issues JWT tokens' })
+  async googleAuthCallback(
+    @Req() req: Request & { user: GoogleOAuthProfile },
+    @Res() res: Response,
+  ): Promise<void> {
+    const frontendUrl = this.config.get<string>(
+      'google.frontendUrl',
+      'http://localhost:3001',
+    );
+    const locale = this.getOAuthLocale(req) ?? 'en';
+    const loginPath = `/${locale}/login`;
+    const callbackPath = `/${locale}/auth/google/callback`;
+
+    try {
+      const authResponse = await this.authService.loginWithGoogle(req.user);
+      const params = new URLSearchParams({
+        accessToken: authResponse.tokens.accessToken,
+        refreshToken: authResponse.tokens.refreshToken,
+        user: Buffer.from(JSON.stringify(authResponse.user)).toString(
+          'base64url',
+        ),
+      });
+
+      res.redirect(`${frontendUrl}${callbackPath}?${params.toString()}`);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Google sign-in failed';
+      res.redirect(
+        `${frontendUrl}${loginPath}?error=${encodeURIComponent(message)}`,
+      );
+    }
+  }
+
+  private getOAuthLocale(req: Request): string | undefined {
+    const cookieHeader = req.headers.cookie;
+    if (!cookieHeader) return undefined;
+
+    const match = cookieHeader.match(/(?:^|;\s*)oauth_locale=([^;]+)/);
+    return match?.[1];
   }
 
   @Post('refresh')

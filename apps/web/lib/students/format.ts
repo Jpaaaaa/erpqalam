@@ -1,13 +1,30 @@
-import type { Student, StudentRegistrar } from '@/lib/types/student';
+import type { PendingStudent, Student, StaffMember } from '@/lib/types/student';
 
-export function formatStudentName(
-  student: Pick<Student, 'firstName' | 'secondName' | 'thirdName'>,
-) {
-  return [student.firstName, student.secondName, student.thirdName]
+type NameFields = Pick<
+  Student | PendingStudent,
+  'firstName' | 'secondName' | 'thirdName' | 'fourthName'
+>;
+
+export function formatStudentName(student: NameFields) {
+  return [
+    student.firstName,
+    student.secondName,
+    student.thirdName,
+    student.fourthName,
+  ]
     .filter(Boolean)
     .join(' ');
 }
 
-export function formatRegistrarName(registrar: StudentRegistrar) {
-  return `${registrar.firstName} ${registrar.lastName}`;
+export function formatPhoneNumbers(phones: string[]) {
+  return phones.filter(Boolean).join(' · ');
+}
+
+export function formatStaffName(staff: StaffMember) {
+  return `${staff.firstName} ${staff.lastName}`;
+}
+
+/** @deprecated Use formatStaffName */
+export function formatRegistrarName(staff: StaffMember) {
+  return formatStaffName(staff);
 }

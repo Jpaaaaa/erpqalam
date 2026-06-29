@@ -1,9 +1,24 @@
-export type StudentStatus = 'PENDING' | 'REGISTERED';
-
-export interface StudentRegistrar {
+export interface StaffMember {
   id: string;
   firstName: string;
   lastName: string;
+}
+
+export interface PendingStudent {
+  id: string;
+  firstName: string;
+  secondName: string;
+  thirdName?: string | null;
+  fourthName?: string | null;
+  section?: string | null;
+  phoneNumbers: string[];
+  guardianInfo?: string | null;
+  comeViaWho?: string | null;
+  schoolId: string;
+  submittedByUserId?: string | null;
+  submittedBy?: StaffMember | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Student {
@@ -11,16 +26,26 @@ export interface Student {
   firstName: string;
   secondName: string;
   thirdName?: string | null;
-  mobilePrimary?: string | null;
-  mobileSecondary?: string | null;
+  fourthName?: string | null;
+  section: string;
+  phoneNumbers: string[];
+  guardianInfo?: string | null;
   comeViaWho?: string | null;
-  status: StudentStatus;
   schoolId: string;
   registeredByUserId?: string | null;
-  registeredBy?: StudentRegistrar | null;
+  registeredBy?: StaffMember | null;
   registeredAt?: string | null;
+  pendingStudentId?: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface PaginatedPendingStudents {
+  data: PendingStudent[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
 }
 
 export interface PaginatedStudents {
@@ -31,17 +56,31 @@ export interface PaginatedStudents {
   totalPages: number;
 }
 
-export interface CreateStudentPendingPayload {
+export interface CreateStudentCheckInPayload {
   firstName: string;
   secondName: string;
   schoolCode: string;
+  comeViaWho?: string;
 }
 
-export interface CreateStudentPendingFullPayload {
+export interface CreatePendingStudentPayload {
   firstName: string;
   secondName: string;
-  thirdName?: string;
-  mobilePrimary: string;
-  mobileSecondary?: string;
+  thirdName: string;
+  fourthName: string;
+  section: string;
+  phoneNumbers: string[];
+  guardianInfo?: string;
   comeViaWho: string;
+}
+
+export interface UpdatePendingStudentPayload {
+  firstName?: string;
+  secondName?: string;
+  thirdName?: string;
+  fourthName?: string;
+  section?: string;
+  phoneNumbers?: string[];
+  guardianInfo?: string;
+  comeViaWho?: string;
 }

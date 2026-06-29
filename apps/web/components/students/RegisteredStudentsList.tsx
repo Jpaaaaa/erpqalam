@@ -4,11 +4,13 @@ import { useCallback, useEffect, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { ApiClientError, listStudents } from '@/lib/api/students';
 import {
-  formatRegistrarName,
+  formatPhoneNumbers,
+  formatStaffName,
   formatStudentName,
 } from '@/lib/students/format';
 import type { Student } from '@/lib/types/student';
 import { Alert } from '@/components/ui/Alert';
+import { DetailRow, MobileCard } from '@/components/ui/MobileCard';
 
 function formatDate(value: string, locale: string) {
   return new Date(value).toLocaleString(locale);
@@ -30,7 +32,7 @@ export function RegisteredStudentsList({ refreshKey = 0 }: RegisteredStudentsLis
     setLoading(true);
     setError('');
     try {
-      const result = await listStudents({ status: 'REGISTERED', limit: 100 });
+      const result = await listStudents({ limit: 100 });
       setStudents(result.data);
     } catch (err) {
       const message =
@@ -55,42 +57,105 @@ export function RegisteredStudentsList({ refreshKey = 0 }: RegisteredStudentsLis
       {error && <Alert variant="error">{error}</Alert>}
 
       {students.length === 0 ? (
-        <p className="text-sm text-slate-600">{t('noRegistered')}</p>
+        <p className="rounded-2xl bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">
+          {t('noRegistered')}
+        </p>
       ) : (
-        <ul className="divide-y divide-slate-200 rounded-lg border border-slate-200 bg-white">
-          {students.map((student) => (
-            <li key={student.id} className="space-y-1 px-4 py-3">
-              <p className="font-medium text-slate-900">
-                {formatStudentName(student)}
-              </p>
-              {student.mobilePrimary && (
-                <p className="text-xs text-slate-600">
-                  {t('mobilePrimary')}: {student.mobilePrimary}
-                  {student.mobileSecondary
-                    ? ` · ${t('mobileSecondary')}: ${student.mobileSecondary}`
-                    : ''}
-                </p>
-              )}
-              {student.comeViaWho && (
-                <p className="text-xs text-slate-600">
-                  {t('comeViaWho')}: {student.comeViaWho}
-                </p>
-              )}
-              <p className="text-xs text-slate-500">
-                {student.registeredBy
-                  ? t('registeredByLine', {
-                      name: formatRegistrarName(student.registeredBy),
-                    })
-                  : t('registeredAt', {
-                      date: formatDate(
-                        student.registeredAt ?? student.createdAt,
-                        locale,
-                      ),
-                    })}
-              </p>
-            </li>
-          ))}
-        </ul>
+        <>
+          <div className="space-y-3 md:hidden">
+            {students.map((student) => (
+              <MobileCard key={student.id}>
+                <div className="space-y-3">
+                  <p className="text-base font-semibold text-slate-900">
+                    {formatStudentName(student)}
+                  </p>
+                  <div className="grid gap-3">
+                    <DetailRow label={t('section')}>{student.section}</DetailRow>
+                    <DetailRow label={t('phoneNumbers')}>
+                      {formatPhoneNumbers(student.phoneNumbers)}
+                    </DetailRow>
+                    <DetailRow label={t('comeViaWho')}>
+                      {student.comeViaWho || t('noComeViaWho')}
+                    </DetailRow>
+                    <DetailRow label={t('guardianInfo')}>
+                      {student.guardianInfo || t('noGuardianInfo')}
+                    </DetailRow>
+                    <DetailRow label={t('registeredBy')}>
+                      {student.registeredBy
+                        ? t('registeredByLine', {
+                            name: formatStaffName(student.registeredBy),
+                          })
+                        : t('registeredAt', {
+                            date: formatDate(
+                              student.registeredAt ?? student.createdAt,
+                              locale,
+                            ),
+                          })}
+                    </DetailRow>
+                  </div>
+                </div>
+              </MobileCard>
+            ))}
+          </div>
+
+          <div className="hidden overflow-x-auto rounded-2xl bg-slate-50/50 shadow-sm md:block">
+            <table className="min-w-full text-sm">
+              <thead>
+                <tr className="border-b border-slate-100">
+                  <th className="px-4 py-3 text-start text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    {t('fullName')}
+                  </th>
+                  <th className="px-4 py-3 text-start text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    {t('section')}
+                  </th>
+                  <th className="px-4 py-3 text-start text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    {t('phoneNumbers')}
+                  </th>
+                  <th className="px-4 py-3 text-start text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    {t('comeViaWho')}
+                  </th>
+                  <th className="px-4 py-3 text-start text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    {t('guardianInfo')}
+                  </th>
+                  <th className="px-4 py-3 text-start text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    {t('registeredBy')}
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 bg-white">
+                {students.map((student) => (
+                  <tr key={student.id} className="align-top transition hover:bg-slate-50/80">
+                    <td className="px-4 py-3.5 font-medium text-slate-900">
+                      {formatStudentName(student)}
+                    </td>
+                    <td className="px-4 py-3.5 text-slate-600">{student.section}</td>
+                    <td className="px-4 py-3.5 text-slate-600">
+                      {formatPhoneNumbers(student.phoneNumbers)}
+                    </td>
+                    <td className="max-w-xs px-4 py-3.5 text-slate-600">
+                      {student.comeViaWho || t('noComeViaWho')}
+                    </td>
+                    <td className="max-w-xs px-4 py-3.5 text-slate-600">
+                      {student.guardianInfo || t('noGuardianInfo')}
+                    </td>
+                    <td className="px-4 py-3.5 text-slate-500">
+                      {student.registeredBy
+                        ? t('registeredByLine', {
+                            name: formatStaffName(student.registeredBy),
+                          })
+                        : t('registeredAt', {
+                            date: formatDate(
+                              student.registeredAt ?? student.createdAt,
+                              locale,
+                            ),
+                          })}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
     </div>
   );

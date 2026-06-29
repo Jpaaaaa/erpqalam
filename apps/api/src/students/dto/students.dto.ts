@@ -1,72 +1,8 @@
-import {
-  IsEnum,
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-} from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { StudentStatus } from '@generated/prisma/client';
-
-export class CreateStudentPendingDto {
-  @ApiProperty({ example: 'Ahmad' })
-  @IsString()
-  @IsNotEmpty()
-  firstName: string;
-
-  @ApiProperty({ example: 'Karim' })
-  @IsString()
-  @IsNotEmpty()
-  secondName: string;
-
-  @ApiProperty({
-    description: 'School code for intake kiosk',
-    example: 'QALAM001',
-  })
-  @IsString()
-  @IsNotEmpty()
-  schoolCode: string;
-}
-
-export class CreateStudentPendingFullDto {
-  @ApiProperty({ example: 'Ahmad' })
-  @IsString()
-  @IsNotEmpty()
-  firstName: string;
-
-  @ApiProperty({ example: 'Karim' })
-  @IsString()
-  @IsNotEmpty()
-  secondName: string;
-
-  @ApiPropertyOptional({ example: 'Hassan' })
-  @IsOptional()
-  @IsString()
-  @IsNotEmpty()
-  thirdName?: string;
-
-  @ApiProperty({ example: '+9647700000001' })
-  @IsString()
-  @IsNotEmpty()
-  mobilePrimary: string;
-
-  @ApiPropertyOptional({ example: '+9647700000002' })
-  @IsOptional()
-  @IsString()
-  mobileSecondary?: string;
-
-  @ApiProperty({ example: 'Friend referral' })
-  @IsString()
-  @IsNotEmpty()
-  comeViaWho: string;
-}
 
 export class ListStudentsQueryDto {
-  @ApiPropertyOptional({ enum: StudentStatus })
-  @IsOptional()
-  @IsEnum(StudentStatus)
-  status?: StudentStatus;
-
   @ApiPropertyOptional({ default: 1 })
   @IsOptional()
   @Type(() => Number)
@@ -103,16 +39,19 @@ export class StudentResponseDto {
   thirdName?: string | null;
 
   @ApiProperty({ required: false })
-  mobilePrimary?: string | null;
+  fourthName?: string | null;
+
+  @ApiProperty()
+  section: string;
+
+  @ApiProperty({ type: [String] })
+  phoneNumbers: string[];
 
   @ApiProperty({ required: false })
-  mobileSecondary?: string | null;
+  guardianInfo?: string | null;
 
   @ApiProperty({ required: false })
   comeViaWho?: string | null;
-
-  @ApiProperty({ enum: StudentStatus })
-  status: StudentStatus;
 
   @ApiProperty()
   schoolId: string;
@@ -125,6 +64,9 @@ export class StudentResponseDto {
 
   @ApiProperty({ required: false })
   registeredAt?: Date | null;
+
+  @ApiProperty({ required: false })
+  pendingStudentId?: string | null;
 
   @ApiProperty()
   createdAt: Date;

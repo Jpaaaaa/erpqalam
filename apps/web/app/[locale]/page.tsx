@@ -16,7 +16,7 @@ export default function HomePage() {
   }, [isAuthenticated, isLoading, router]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50">
+    <div className="flex min-h-screen items-center justify-center">
       <p className="text-sm text-slate-500">{t('redirecting')}</p>
     </div>
   );

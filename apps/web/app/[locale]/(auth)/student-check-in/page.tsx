@@ -15,10 +15,10 @@ export default async function StudentCheckInPage() {
 
   return (
     <div>
-      <h2 className="mb-2 text-xl font-semibold text-slate-900">
+      <h2 className="text-xl font-bold tracking-tight text-slate-900">
         {t('checkInTitle')}
       </h2>
-      <p className="mb-6 text-sm text-slate-500">{t('checkInDescription')}</p>
+      <p className="mb-6 mt-1 text-sm text-slate-500">{t('checkInDescription')}</p>
       <StudentCheckInForm />
     </div>
   );

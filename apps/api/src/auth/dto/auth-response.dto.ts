@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { UserRole, UserStatus } from '@generated/prisma/client';
+import { UserPermission, UserRole, UserStatus } from '@generated/prisma/client';
 
 export class AuthUserDto {
   @ApiProperty()
@@ -19,6 +19,9 @@ export class AuthUserDto {
 
   @ApiProperty({ enum: UserRole })
   role: UserRole;
+
+  @ApiProperty({ enum: UserPermission, isArray: true })
+  permissions: UserPermission[];
 
   @ApiProperty({ enum: UserStatus })
   status: UserStatus;

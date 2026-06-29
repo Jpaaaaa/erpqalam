@@ -8,6 +8,7 @@ import {
 import type {
   ApiError,
   AuthResponse,
+  AuthUser,
   LoginPayload,
   RegisterPayload,
   Session,
@@ -77,6 +78,7 @@ export async function apiRequest<T>(
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...options,
     headers,
+    cache: 'no-store',
   });
 
   if (response.status === 401 && retry) {
@@ -95,6 +97,10 @@ export async function apiRequest<T>(
   }
 
   return response.json() as Promise<T>;
+}
+
+export async function getCurrentUser(): Promise<AuthUser> {
+  return apiRequest<AuthUser>('/auth/me');
 }
 
 export async function login(payload: LoginPayload): Promise<Session> {

@@ -5,10 +5,36 @@
 :root {
   --background: #f8fafc;
   --foreground: #0f172a;
+  --bottom-nav-height: 5rem;
 }
 
 body {
   color: var(--foreground);
-  background: var(--background);
-  font-family: var(--font-inter), system-ui, sans-serif;
+  background: linear-gradient(180deg, #f8fbff 0%, #f0f4f8 100%);
+  min-height: 100dvh;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+}
+
+@layer utilities {
+  .text-brand-link {
+    @apply font-semibold text-teal-600 hover:text-teal-500;
+  }
+
+  .pb-bottom-nav {
+    padding-bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px));
+  }
+
+  .scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
 }

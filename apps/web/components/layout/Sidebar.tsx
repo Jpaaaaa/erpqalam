@@ -1,77 +1,63 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { Link, usePathname } from '@/i18n/navigation';
+import { Link } from '@/i18n/navigation';
 import type { AuthUser } from '@/lib/types/auth';
+import { useDashboardNavWithActive } from '@/lib/navigation/useDashboardNav';
+import { AppLogoIcon } from '@/components/layout/NavIcons';
 
 interface SidebarProps {
   user: AuthUser;
 }
 
-type NavLink = {
-  href: string;
-  label: string;
-  matchPrefix?: string;
-};
+function getInitials(firstName: string, lastName: string) {
+  return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+}
 
 export function Sidebar({ user }: SidebarProps) {
   const t = useTranslations('common');
-  const tDashboard = useTranslations('dashboard');
   const tRoles = useTranslations('roles');
-  const pathname = usePathname();
-
-  const managerLinks: NavLink[] = [
-    { href: '/dashboard', label: tDashboard('overview') },
-    { href: '/dashboard/users', label: tDashboard('users') },
-    {
-      href: '/dashboard/students/pending',
-      label: tDashboard('studentsRegister'),
-      matchPrefix: '/dashboard/students',
-    },
-  ];
-
-  const employeeLinks: NavLink[] = [
-    { href: '/dashboard', label: tDashboard('overview') },
-  ];
-
-  const links = user.role === 'MANAGER' ? managerLinks : employeeLinks;
+  const items = useDashboardNavWithActive(user);
 
   return (
-    <aside className="flex w-64 flex-col border-e border-slate-200 bg-white">
-      <div className="border-b border-slate-200 px-6 py-5">
-        <p className="text-lg font-semibold text-slate-900">{t('appName')}</p>
-        <p className="text-xs text-slate-500">{t('schoolManagement')}</p>
+    <aside className="hidden w-[4.75rem] shrink-0 flex-col items-center rounded-3xl bg-white py-5 shadow-card md:flex">
+      <div className="mb-6 flex h-11 w-11 items-center justify-center rounded-2xl bg-brand-gradient shadow-sm">
+        <AppLogoIcon className="h-6 w-6" />
       </div>
 
-      <nav className="flex-1 space-y-1 p-4">
-        {links.map((link) => {
-          const isActive = link.matchPrefix
-            ? pathname.startsWith(link.matchPrefix)
-            : pathname === link.href;
+      <nav className="flex flex-1 flex-col items-center gap-2">
+        {items.map((item) => {
+          const Icon = item.icon;
+
           return (
             <Link
-              key={link.href}
-              href={link.href}
-              className={`block rounded-lg px-3 py-2 text-sm font-medium transition ${
-                isActive
-                  ? 'bg-indigo-50 text-indigo-700'
-                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+              key={item.href}
+              href={item.href}
+              title={item.label}
+              aria-label={item.label}
+              className={`flex h-11 w-11 items-center justify-center rounded-2xl transition ${
+                item.isActive
+                  ? 'bg-orange-100 text-orange-500 shadow-sm'
+                  : 'text-slate-400 hover:bg-slate-50 hover:text-slate-600'
               }`}
             >
-              {link.label}
+              <Icon className="h-5 w-5" />
             </Link>
           );
         })}
       </nav>
 
-      <div className="border-t border-slate-200 p-4">
-        <p className="truncate text-sm font-medium text-slate-900">
-          {user.firstName} {user.lastName}
-        </p>
-        <p className="truncate text-xs text-slate-500">{user.email}</p>
-        <span className="mt-2 inline-block rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-700">
+      <div className="mt-4 flex flex-col items-center gap-2 border-t border-slate-100 pt-4">
+        <div
+          className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-teal-400 to-orange-300 text-xs font-bold text-white shadow-sm"
+          title={`${user.firstName} ${user.lastName}`}
+        >
+          {getInitials(user.firstName, user.lastName)}
+        </div>
+        <span className="max-w-[4rem] truncate text-center text-[10px] font-medium text-slate-500">
           {tRoles(user.role)}
         </span>
+        <span className="sr-only">{t('appName')}</span>
       </div>
     </aside>
   );

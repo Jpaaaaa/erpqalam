@@ -4,12 +4,13 @@ import {
   UnauthorizedException,
   ForbiddenException,
   Inject,
+  BadRequestException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { randomBytes } from 'crypto';
-import { UserRole, UserStatus } from '@generated/prisma/client';
+import { UserPermission, UserRole, UserStatus } from '@generated/prisma/client';
 import { PrismaService } from '../database/prisma.service';
 import {
   LoginDto,
@@ -22,8 +23,20 @@ import {
   REFRESH_TOKEN_STORE,
   RefreshTokenStore,
 } from './interfaces/refresh-token.store';
+import { GoogleOAuthProfile } from './interfaces/google-profile.interface';
 
 const BCRYPT_ROUNDS = 12;
+
+function resolvePermissions(
+  role: UserRole,
+  permissions?: UserPermission[] | null,
+): UserPermission[] {
+  if (role === UserRole.MANAGER) {
+    return [];
+  }
+
+  return permissions ?? [];
+}
 
 @Injectable()
 export class AuthService {
@@ -123,6 +136,10 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
+    if (!user.passwordHash) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
     const passwordValid = await bcrypt.compare(dto.password, user.passwordHash);
 
     if (!passwordValid) {
@@ -138,6 +155,76 @@ export class AuthService {
     }
 
     return this.buildAuthResponse(user);
+  }
+
+  async loginWithGoogle(profile: GoogleOAuthProfile): Promise<AuthResponseDto> {
+    let user = await this.prisma.user.findUnique({
+      where: { email: profile.email },
+    });
+
+    if (!user) {
+      user = await this.createGoogleUser(profile);
+    } else if (this.isGoogleAutoAdmin(profile.email)) {
+      user = await this.prisma.user.update({
+        where: { id: user.id },
+        data: {
+          role: UserRole.MANAGER,
+          status: UserStatus.ACTIVE,
+        },
+      });
+    }
+
+    if (user.status !== UserStatus.ACTIVE) {
+      throw new ForbiddenException(
+        user.status === UserStatus.PENDING
+          ? 'Account pending manager approval'
+          : 'Account is inactive',
+      );
+    }
+
+    return this.buildAuthResponse(user);
+  }
+
+  private isGoogleAutoAdmin(email: string): boolean {
+    const autoAdminEmails =
+      this.config.get<string[]>('google.autoAdminEmails') ?? [];
+    return autoAdminEmails.includes(email.toLowerCase());
+  }
+
+  private async createGoogleUser(profile: GoogleOAuthProfile) {
+    const schoolCode = this.config.get<string>(
+      'google.defaultSchoolCode',
+      'QALAM001',
+    );
+
+    const school = await this.prisma.school.findUnique({
+      where: { code: schoolCode },
+    });
+
+    if (!school) {
+      throw new BadRequestException(
+        'Google sign-in is not configured for new users',
+      );
+    }
+
+    const passwordHash = await bcrypt.hash(
+      randomBytes(32).toString('hex'),
+      BCRYPT_ROUNDS,
+    );
+
+    const isAutoAdmin = this.isGoogleAutoAdmin(profile.email);
+
+    return this.prisma.user.create({
+      data: {
+        email: profile.email,
+        passwordHash,
+        firstName: profile.firstName || 'Google',
+        lastName: profile.lastName || 'User',
+        role: isAutoAdmin ? UserRole.MANAGER : UserRole.EMPLOYEE,
+        status: isAutoAdmin ? UserStatus.ACTIVE : UserStatus.PENDING,
+        schoolId: school.id,
+      },
+    });
   }
 
   async refresh(refreshToken: string): Promise<AuthResponseDto> {
@@ -168,6 +255,18 @@ export class AuthService {
     await this.refreshTokenStore.revoke(refreshToken);
   }
 
+  async getProfile(userId: string): Promise<AuthUserDto> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    return this.toAuthUser(user);
+  }
+
   private async buildAuthResponse(user: {
     id: string;
     email: string;
@@ -175,6 +274,7 @@ export class AuthService {
     lastName: string;
     phone: string | null;
     role: UserRole;
+    permissions: UserPermission[];
     status: UserStatus;
     schoolId: string;
   }): Promise<AuthResponseDto> {
@@ -182,6 +282,7 @@ export class AuthService {
       sub: user.id,
       email: user.email,
       role: user.role,
+      permissions: resolvePermissions(user.role, user.permissions),
       schoolId: user.schoolId,
     };
 
@@ -204,6 +305,7 @@ export class AuthService {
     lastName: string;
     phone: string | null;
     role: UserRole;
+    permissions?: UserPermission[] | null;
     status: UserStatus;
     schoolId: string;
   }): AuthUserDto {
@@ -214,6 +316,7 @@ export class AuthService {
       lastName: user.lastName,
       phone: user.phone,
       role: user.role,
+      permissions: resolvePermissions(user.role, user.permissions),
       status: user.status,
       schoolId: user.schoolId,
     };

@@ -15,11 +15,11 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { UserRole } from '@generated/prisma/client';
+import { UserPermission } from '@generated/prisma/client';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
-import { Roles } from '../common/decorators/roles.decorator';
+import { Permissions } from '../common/decorators/permissions.decorator';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
-import { RolesGuard } from '../common/guards/roles.guard';
+import { PermissionsGuard } from '../common/guards/permissions.guard';
 import { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
 import { UsersService } from './users.service';
 import {
@@ -27,19 +27,20 @@ import {
   ListUsersQueryDto,
   PaginatedUsersResponseDto,
   UpdateUserDto,
+  ApproveUserDto,
   UserResponseDto,
 } from './dto/users.dto';
 
 @ApiTags('users')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard)
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
-  @Roles(UserRole.MANAGER)
-  @ApiOperation({ summary: 'Create a user (manager only)' })
+  @Permissions(UserPermission.USER_MANAGEMENT)
+  @ApiOperation({ summary: 'Create a user' })
   @ApiResponse({ status: 201, type: UserResponseDto })
   create(
     @Body() dto: CreateUserDto,
@@ -49,8 +50,8 @@ export class UsersController {
   }
 
   @Get()
-  @Roles(UserRole.MANAGER)
-  @ApiOperation({ summary: 'List users in school (manager only)' })
+  @Permissions(UserPermission.USER_MANAGEMENT)
+  @ApiOperation({ summary: 'List users in school' })
   @ApiResponse({ status: 200, type: PaginatedUsersResponseDto })
   findAll(
     @Query() query: ListUsersQueryDto,
@@ -81,19 +82,20 @@ export class UsersController {
   }
 
   @Patch(':id/approve')
-  @Roles(UserRole.MANAGER)
-  @ApiOperation({ summary: 'Approve pending employee (manager only)' })
+  @Permissions(UserPermission.USER_MANAGEMENT)
+  @ApiOperation({ summary: 'Approve pending employee' })
   @ApiResponse({ status: 200, type: UserResponseDto })
   approve(
     @Param('id') id: string,
+    @Body() dto: ApproveUserDto,
     @CurrentUser() user: JwtPayload,
   ): Promise<UserResponseDto> {
-    return this.usersService.approve(id, user);
+    return this.usersService.approve(id, dto, user);
   }
 
   @Delete(':id')
-  @Roles(UserRole.MANAGER)
-  @ApiOperation({ summary: 'Deactivate user (manager only)' })
+  @Permissions(UserPermission.USER_MANAGEMENT)
+  @ApiOperation({ summary: 'Deactivate user' })
   @ApiResponse({ status: 200, type: UserResponseDto })
   deactivate(
     @Param('id') id: string,

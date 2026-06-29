@@ -5,13 +5,15 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import { UserRole, UserStatus } from '@generated/prisma/client';
+import { UserPermission, UserRole, UserStatus } from '@generated/prisma/client';
 import { PrismaService } from '../database/prisma.service';
 import { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
+import { hasPermission } from '../common/permissions/user-permissions';
 import {
   CreateUserDto,
   ListUsersQueryDto,
   PaginatedUsersResponseDto,
+  ApproveUserDto,
   UpdateUserDto,
   UserResponseDto,
 } from './dto/users.dto';
@@ -25,11 +27,31 @@ const userSelect = {
   lastName: true,
   phone: true,
   role: true,
+  permissions: true,
   status: true,
   schoolId: true,
   createdAt: true,
   updatedAt: true,
 } as const;
+
+function resolvePermissions(
+  role: UserRole,
+  permissions?: UserPermission[] | null,
+): UserPermission[] {
+  if (role === UserRole.MANAGER) {
+    return [];
+  }
+
+  return permissions ?? [];
+}
+
+function canManageUsers(actor: JwtPayload): boolean {
+  return hasPermission(actor.role, actor.permissions, UserPermission.USER_MANAGEMENT);
+}
+
+function isActorManager(actor: JwtPayload): boolean {
+  return actor.role === UserRole.MANAGER;
+}
 
 @Injectable()
 export class UsersService {
@@ -39,12 +61,21 @@ export class UsersService {
     dto: CreateUserDto,
     actor: JwtPayload,
   ): Promise<UserResponseDto> {
-    if (actor.role !== UserRole.MANAGER) {
-      throw new ForbiddenException('Only managers can create users');
+    if (!canManageUsers(actor)) {
+      throw new ForbiddenException('You do not have permission to create users');
     }
 
-    if (dto.role === UserRole.MANAGER && actor.role !== UserRole.MANAGER) {
-      throw new ForbiddenException('Cannot create manager accounts');
+    if (dto.role === UserRole.MANAGER && !isActorManager(actor)) {
+      throw new ForbiddenException('Only managers can create manager accounts');
+    }
+
+    if (
+      dto.permissions?.includes(UserPermission.USER_MANAGEMENT) &&
+      !isActorManager(actor)
+    ) {
+      throw new ForbiddenException(
+        'Only managers can grant user management permission',
+      );
     }
 
     const existing = await this.prisma.user.findUnique({
@@ -65,6 +96,7 @@ export class UsersService {
         lastName: dto.lastName,
         phone: dto.phone,
         role: dto.role,
+        permissions: resolvePermissions(dto.role, dto.permissions),
         status: UserStatus.ACTIVE,
         schoolId: actor.schoolId,
       },
@@ -78,8 +110,8 @@ export class UsersService {
     actor: JwtPayload,
     query: ListUsersQueryDto,
   ): Promise<PaginatedUsersResponseDto> {
-    if (actor.role !== UserRole.MANAGER) {
-      throw new ForbiddenException('Only managers can list users');
+    if (!canManageUsers(actor)) {
+      throw new ForbiddenException('You do not have permission to list users');
     }
 
     const page = query.page ?? 1;
@@ -122,7 +154,7 @@ export class UsersService {
       throw new NotFoundException('User not found');
     }
 
-    if (actor.role !== UserRole.MANAGER && actor.sub !== id) {
+    if (!canManageUsers(actor) && actor.sub !== id) {
       throw new ForbiddenException('Cannot access this user');
     }
 
@@ -142,22 +174,49 @@ export class UsersService {
       throw new NotFoundException('User not found');
     }
 
-    const isManager = actor.role === UserRole.MANAGER;
+    const isManager = isActorManager(actor);
+    const canManage = canManageUsers(actor);
     const isSelf = actor.sub === id;
 
-    if (!isManager && !isSelf) {
+    if (!canManage && !isSelf) {
       throw new ForbiddenException('Cannot update this user');
     }
 
-    if (!isManager) {
-      if (dto.role !== undefined || dto.status !== undefined) {
-        throw new ForbiddenException('Cannot change role or status');
+    if (!canManage) {
+      if (dto.role !== undefined || dto.status !== undefined || dto.permissions !== undefined) {
+        throw new ForbiddenException('Cannot change role, status, or permissions');
       }
     }
 
-    if (isManager && dto.role === UserRole.MANAGER && user.role !== UserRole.MANAGER) {
-      // managers can promote - allowed
+    if (canManage && !isManager && user.role === UserRole.MANAGER) {
+      throw new ForbiddenException('Cannot update manager accounts');
     }
+
+    if (
+      canManage &&
+      !isManager &&
+      dto.role === UserRole.MANAGER
+    ) {
+      throw new ForbiddenException('Only managers can promote users to manager');
+    }
+
+    if (
+      canManage &&
+      !isManager &&
+      dto.permissions?.includes(UserPermission.USER_MANAGEMENT)
+    ) {
+      throw new ForbiddenException(
+        'Only managers can grant user management permission',
+      );
+    }
+
+    const nextRole = canManage && dto.role !== undefined ? dto.role : user.role;
+    const nextPermissions =
+      canManage && dto.permissions !== undefined
+        ? resolvePermissions(nextRole, dto.permissions)
+        : canManage && dto.role !== undefined
+          ? resolvePermissions(nextRole)
+          : undefined;
 
     const updated = await this.prisma.user.update({
       where: { id },
@@ -165,8 +224,11 @@ export class UsersService {
         ...(dto.firstName !== undefined && { firstName: dto.firstName }),
         ...(dto.lastName !== undefined && { lastName: dto.lastName }),
         ...(dto.phone !== undefined && { phone: dto.phone }),
-        ...(isManager && dto.role !== undefined && { role: dto.role }),
-        ...(isManager && dto.status !== undefined && { status: dto.status }),
+        ...(canManage && dto.role !== undefined && { role: dto.role }),
+        ...(nextPermissions !== undefined && {
+          permissions: { set: nextPermissions },
+        }),
+        ...(canManage && dto.status !== undefined && { status: dto.status }),
       },
       select: userSelect,
     });
@@ -174,9 +236,22 @@ export class UsersService {
     return updated;
   }
 
-  async approve(id: string, actor: JwtPayload): Promise<UserResponseDto> {
-    if (actor.role !== UserRole.MANAGER) {
-      throw new ForbiddenException('Only managers can approve users');
+  async approve(
+    id: string,
+    dto: ApproveUserDto,
+    actor: JwtPayload,
+  ): Promise<UserResponseDto> {
+    if (!canManageUsers(actor)) {
+      throw new ForbiddenException('You do not have permission to approve users');
+    }
+
+    if (
+      dto.permissions?.includes(UserPermission.USER_MANAGEMENT) &&
+      !isActorManager(actor)
+    ) {
+      throw new ForbiddenException(
+        'Only managers can grant user management permission',
+      );
     }
 
     const user = await this.prisma.user.findFirst({
@@ -191,16 +266,26 @@ export class UsersService {
       throw new ConflictException('User is not pending approval');
     }
 
+    const nextPermissions =
+      dto.permissions !== undefined
+        ? resolvePermissions(user.role, dto.permissions)
+        : undefined;
+
     return this.prisma.user.update({
       where: { id },
-      data: { status: UserStatus.ACTIVE },
+      data: {
+        status: UserStatus.ACTIVE,
+        ...(nextPermissions !== undefined && {
+          permissions: { set: nextPermissions },
+        }),
+      },
       select: userSelect,
     });
   }
 
   async deactivate(id: string, actor: JwtPayload): Promise<UserResponseDto> {
-    if (actor.role !== UserRole.MANAGER) {
-      throw new ForbiddenException('Only managers can deactivate users');
+    if (!canManageUsers(actor)) {
+      throw new ForbiddenException('You do not have permission to deactivate users');
     }
 
     if (actor.sub === id) {
@@ -213,6 +298,10 @@ export class UsersService {
 
     if (!user) {
       throw new NotFoundException('User not found');
+    }
+
+    if (!isActorManager(actor) && user.role === UserRole.MANAGER) {
+      throw new ForbiddenException('Cannot deactivate manager accounts');
     }
 
     return this.prisma.user.update({

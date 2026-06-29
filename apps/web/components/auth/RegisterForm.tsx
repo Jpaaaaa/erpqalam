@@ -8,6 +8,7 @@ import { ApiClientError } from '@/lib/api/client';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Alert } from '@/components/ui/Alert';
+import { ArrowNavForm } from '@/components/ui/ArrowNavForm';
 
 export function RegisterForm() {
   const t = useTranslations('auth');
@@ -55,7 +56,7 @@ export function RegisterForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
+    <ArrowNavForm onSubmit={handleSubmit} className="space-y-5">
       {error && <Alert variant="error">{error}</Alert>}
       {success && <Alert variant="success">{success}</Alert>}
 
@@ -125,10 +126,10 @@ export function RegisterForm() {
 
       <p className="text-center text-sm text-slate-600">
         {t('alreadyHaveAccount')}{' '}
-        <Link href="/login" className="font-medium text-indigo-600 hover:text-indigo-500">
+        <Link href="/login" className="font-semibold text-teal-600 hover:text-teal-500">
           {t('signIn')}
         </Link>
       </p>
-    </form>
+    </ArrowNavForm>
   );
 }

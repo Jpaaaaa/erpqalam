@@ -1,5 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 import { StudentRegisterTabs } from '@/components/students/StudentRegisterTabs';
+import { PageCard } from '@/components/ui/PageCard';
+import { PageHeader } from '@/components/ui/PageHeader';
 
 export default async function StudentsLayout({
   children,
@@ -9,16 +11,12 @@ export default async function StudentsLayout({
   const t = await getTranslations('students');
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
-      <div className="border-b border-slate-200 px-6 pt-6">
-        <h2 className="text-base font-semibold text-slate-900">
-          {t('moduleTitle')}
-        </h2>
-        <div className="mt-4">
-          <StudentRegisterTabs />
-        </div>
+    <PageCard padding="none">
+      <div className="border-b border-slate-100 px-4 pb-3 pt-4 sm:px-6 sm:pb-4 sm:pt-6">
+        <PageHeader title={t('moduleTitle')} className="mb-4" />
+        <StudentRegisterTabs />
       </div>
-      <div className="p-6">{children}</div>
-    </div>
+      <div className="p-4 sm:p-6">{children}</div>
+    </PageCard>
   );
 }

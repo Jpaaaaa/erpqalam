@@ -1,4 +1,5 @@
 import {
+  IsArray,
   IsEmail,
   IsEnum,
   IsNotEmpty,
@@ -8,7 +9,7 @@ import {
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { UserRole, UserStatus } from '@generated/prisma/client';
+import { UserPermission, UserRole, UserStatus } from '@generated/prisma/client';
 
 export class CreateUserDto {
   @ApiProperty({ example: 'employee@school.com' })
@@ -38,6 +39,12 @@ export class CreateUserDto {
   @ApiProperty({ enum: UserRole, example: UserRole.EMPLOYEE })
   @IsEnum(UserRole)
   role: UserRole;
+
+  @ApiPropertyOptional({ enum: UserPermission, isArray: true })
+  @IsOptional()
+  @IsArray()
+  @IsEnum(UserPermission, { each: true })
+  permissions?: UserPermission[];
 }
 
 export class UpdateUserDto {
@@ -63,10 +70,24 @@ export class UpdateUserDto {
   @IsEnum(UserRole)
   role?: UserRole;
 
+  @ApiPropertyOptional({ enum: UserPermission, isArray: true })
+  @IsOptional()
+  @IsArray()
+  @IsEnum(UserPermission, { each: true })
+  permissions?: UserPermission[];
+
   @ApiPropertyOptional({ enum: UserStatus })
   @IsOptional()
   @IsEnum(UserStatus)
   status?: UserStatus;
+}
+
+export class ApproveUserDto {
+  @ApiPropertyOptional({ enum: UserPermission, isArray: true })
+  @IsOptional()
+  @IsArray()
+  @IsEnum(UserPermission, { each: true })
+  permissions?: UserPermission[];
 }
 
 export class ListUsersQueryDto {
@@ -109,6 +130,9 @@ export class UserResponseDto {
 
   @ApiProperty({ enum: UserRole })
   role: UserRole;
+
+  @ApiProperty({ enum: UserPermission, isArray: true })
+  permissions: UserPermission[];
 
   @ApiProperty({ enum: UserStatus })
   status: UserStatus;

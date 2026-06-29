@@ -12,15 +12,15 @@ enum UserRole {
   EMPLOYEE
 }
 
+enum UserPermission {
+  USER_MANAGEMENT
+  STUDENT_REGISTRATION
+}
+
 enum UserStatus {
   ACTIVE
   INACTIVE
   PENDING
-}
-
-enum StudentStatus {
-  PENDING
-  REGISTERED
 }
 
 model School {
@@ -30,49 +30,77 @@ model School {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  users    User[]
-  students Student[]
+  users           User[]
+  students        Student[]
+  pendingStudents PendingStudent[]
 }
 
-model Student {
-  id                String        @id @default(cuid())
+/// Intake queue — staff or public check-in; approved rows move to Student.
+model PendingStudent {
+  id                String   @id @default(cuid())
   firstName         String
   secondName        String
   thirdName         String?
-  mobilePrimary     String?
-  mobileSecondary   String?
-  comeViaWho        String?
-  status            StudentStatus @default(PENDING)
+  fourthName        String?
+  section           String?
+  phoneNumbers      String[] @default([])
+  guardianInfo      String?
+  comeViaWho          String?
   schoolId          String
-  school            School        @relation(fields: [schoolId], references: [id])
-  registeredByUserId String?
-  registeredBy      User?         @relation(fields: [registeredByUserId], references: [id])
-  registeredAt      DateTime?
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
+  school            School   @relation(fields: [schoolId], references: [id])
+  submittedByUserId String?
+  submittedBy       User?    @relation("PendingStudentSubmissions", fields: [submittedByUserId], references: [id])
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
   @@index([schoolId])
-  @@index([status])
-  @@index([schoolId, status])
+  @@index([submittedByUserId])
+  @@index([schoolId, createdAt])
+}
+
+/// Enrolled students — created when a pending record is approved.
+model Student {
+  id                 String   @id @default(cuid())
+  firstName          String
+  secondName         String
+  thirdName          String?
+  fourthName         String?
+  section            String
+  phoneNumbers       String[] @default([])
+  guardianInfo       String?
+  comeViaWho         String?
+  schoolId           String
+  school             School   @relation(fields: [schoolId], references: [id])
+  registeredByUserId String?
+  registeredBy       User?    @relation(fields: [registeredByUserId], references: [id])
+  registeredAt       DateTime @default(now())
+  pendingStudentId   String?  @unique
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@index([schoolId])
   @@index([registeredByUserId])
+  @@index([schoolId, registeredAt])
 }
 
 model User {
-  id           String     @id @default(cuid())
-  email        String     @unique
+  id           String           @id @default(cuid())
+  email        String           @unique
   passwordHash String
   firstName    String
   lastName     String
   phone        String?
   role         UserRole
-  status       UserStatus @default(PENDING)
+  permissions  UserPermission[] @default([])
+  status       UserStatus       @default(PENDING)
   schoolId     String
-  school       School     @relation(fields: [schoolId], references: [id])
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  school       School           @relation(fields: [schoolId], references: [id])
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
 
   refreshTokens      RefreshToken[]
   registeredStudents Student[]
+  pendingSubmissions PendingStudent[] @relation("PendingStudentSubmissions")
 
   @@index([schoolId])
   @@index([role])

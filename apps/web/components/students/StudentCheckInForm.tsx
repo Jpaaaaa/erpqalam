@@ -2,10 +2,11 @@
 
 import { FormEvent, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { ApiClientError, submitStudentPending } from '@/lib/api/students';
+import { ApiClientError, submitStudentCheckIn } from '@/lib/api/students';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Alert } from '@/components/ui/Alert';
+import { ArrowNavForm } from '@/components/ui/ArrowNavForm';
 
 export function StudentCheckInForm() {
   const t = useTranslations('students');
@@ -13,6 +14,7 @@ export function StudentCheckInForm() {
   const [form, setForm] = useState({
     firstName: '',
     secondName: '',
+    comeViaWho: '',
     schoolCode: 'QALAM001',
   });
   const [error, setError] = useState('');
@@ -30,10 +32,11 @@ export function StudentCheckInForm() {
     setIsLoading(true);
 
     try {
-      await submitStudentPending({
+      await submitStudentCheckIn({
         firstName: form.firstName,
         secondName: form.secondName,
         schoolCode: form.schoolCode,
+        comeViaWho: form.comeViaWho || undefined,
       });
       setSuccess(t('checkInSuccess'));
       setForm((prev) => ({ ...prev, firstName: '', secondName: '' }));
@@ -47,7 +50,7 @@ export function StudentCheckInForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
+    <ArrowNavForm onSubmit={handleSubmit} className="space-y-5">
       {error && <Alert variant="error">{error}</Alert>}
       {success && <Alert variant="success">{success}</Alert>}
 
@@ -70,6 +73,14 @@ export function StudentCheckInForm() {
       </div>
 
       <Input
+        label={t('comeViaWho')}
+        name="comeViaWho"
+        value={form.comeViaWho}
+        onChange={(e) => updateField('comeViaWho', e.target.value)}
+        placeholder={t('comeViaWhoPlaceholder')}
+      />
+
+      <Input
         label={t('schoolCode')}
         name="schoolCode"
         required
@@ -86,6 +97,6 @@ export function StudentCheckInForm() {
       >
         {t('submitName')}
       </Button>
-    </form>
+    </ArrowNavForm>
   );
 }

@@ -1,4 +1,6 @@
 import { getTranslations } from 'next-intl/server';
+import { UsersPanel } from '@/components/users/UsersPanel';
+import { PageCard } from '@/components/ui/PageCard';
 
 export async function generateMetadata({
   params: { locale },
@@ -10,12 +12,9 @@ export async function generateMetadata({
 }
 
 export default async function UsersPage() {
-  const t = await getTranslations('dashboard');
-
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-      <h2 className="text-base font-semibold text-slate-900">{t('usersTitle')}</h2>
-      <p className="mt-2 text-sm text-slate-600">{t('usersDescription')}</p>
-    </div>
+    <PageCard>
+      <UsersPanel />
+    </PageCard>
   );
 }

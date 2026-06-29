@@ -1,3 +1,5 @@
+export type UserPermission = 'USER_MANAGEMENT' | 'STUDENT_REGISTRATION';
+
 export type UserRole = 'MANAGER' | 'EMPLOYEE';
 
 export type UserStatus = 'ACTIVE' | 'INACTIVE' | 'PENDING';
@@ -9,6 +11,7 @@ export interface AuthUser {
   lastName: string;
   phone?: string | null;
   role: UserRole;
+  permissions: UserPermission[];
   status: UserStatus;
   schoolId: string;
 }

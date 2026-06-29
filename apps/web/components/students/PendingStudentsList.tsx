@@ -2,11 +2,21 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { ApiClientError, listStudents, registerStudent } from '@/lib/api/students';
-import { formatStudentName } from '@/lib/students/format';
-import type { Student } from '@/lib/types/student';
+import {
+  ApiClientError,
+  approvePendingStudent,
+  listPendingStudents,
+} from '@/lib/api/students';
+import {
+  formatPhoneNumbers,
+  formatStaffName,
+  formatStudentName,
+} from '@/lib/students/format';
+import type { PendingStudent } from '@/lib/types/student';
+import { useAuth } from '@/lib/auth/context';
 import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Alert';
+import { DetailRow, MobileCard } from '@/components/ui/MobileCard';
 
 function formatDate(value: string, locale: string) {
   return new Date(value).toLocaleString(locale);
@@ -20,7 +30,8 @@ export function PendingStudentsList({ refreshKey = 0 }: PendingStudentsListProps
   const locale = useLocale();
   const t = useTranslations('students');
   const tCommon = useTranslations('common');
-  const [students, setStudents] = useState<Student[]>([]);
+  const { user } = useAuth();
+  const [students, setStudents] = useState<PendingStudent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [actionId, setActionId] = useState<string | null>(null);
@@ -29,7 +40,7 @@ export function PendingStudentsList({ refreshKey = 0 }: PendingStudentsListProps
     setLoading(true);
     setError('');
     try {
-      const result = await listStudents({ status: 'PENDING', limit: 100 });
+      const result = await listPendingStudents({ limit: 100 });
       setStudents(result.data);
     } catch (err) {
       const message =
@@ -44,11 +55,11 @@ export function PendingStudentsList({ refreshKey = 0 }: PendingStudentsListProps
     load();
   }, [load, refreshKey]);
 
-  async function handleRegister(id: string) {
+  async function handleApprove(id: string) {
     setActionId(id);
     setError('');
     try {
-      await registerStudent(id);
+      await approvePendingStudent(id);
       setStudents((prev) => prev.filter((s) => s.id !== id));
     } catch (err) {
       const message =
@@ -68,47 +79,170 @@ export function PendingStudentsList({ refreshKey = 0 }: PendingStudentsListProps
       {error && <Alert variant="error">{error}</Alert>}
 
       {students.length === 0 ? (
-        <p className="text-sm text-slate-600">{t('noPending')}</p>
+        <p className="rounded-2xl bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">
+          {t('noPending')}
+        </p>
       ) : (
-        <ul className="divide-y divide-slate-200 rounded-lg border border-slate-200 bg-white">
-          {students.map((student) => (
-            <li
-              key={student.id}
-              className="flex flex-wrap items-center justify-between gap-3 px-4 py-3"
-            >
-              <div className="min-w-0 flex-1">
-                <p className="font-medium text-slate-900">
-                  {formatStudentName(student)}
-                </p>
-                {student.mobilePrimary && (
-                  <p className="text-xs text-slate-600">
-                    {student.mobilePrimary}
-                    {student.mobileSecondary ? ` · ${student.mobileSecondary}` : ''}
-                  </p>
-                )}
-                {student.comeViaWho && (
-                  <p className="text-xs text-slate-600">
-                    {t('comeViaWho')}: {student.comeViaWho}
-                  </p>
-                )}
-                <p className="text-xs text-slate-500">
-                  {t('submittedAt', {
-                    date: formatDate(student.createdAt, locale),
-                  })}
-                </p>
-              </div>
-              <Button
-                type="button"
-                variant="secondary"
-                isLoading={actionId === student.id}
-                loadingLabel={tCommon('pleaseWait')}
-                onClick={() => handleRegister(student.id)}
-              >
-                {t('markRegistered')}
-              </Button>
-            </li>
-          ))}
-        </ul>
+        <>
+          {/* Mobile cards */}
+          <div className="space-y-3 md:hidden">
+            {students.map((student) => {
+              const canApprove =
+                Boolean(student.section?.trim()) && student.phoneNumbers.length > 0;
+
+              return (
+                <MobileCard key={student.id}>
+                  <div className="space-y-3">
+                    <div>
+                      <p className="text-base font-semibold text-slate-900">
+                        {formatStudentName(student)}
+                      </p>
+                      <p className="mt-1 text-xs text-slate-400">
+                        {t('submittedAt', {
+                          date: formatDate(student.createdAt, locale),
+                        })}
+                      </p>
+                    </div>
+                    <div className="grid gap-3">
+                      <DetailRow label={t('section')}>
+                        {student.section || (
+                          <span className="text-amber-600">{t('sectionMissing')}</span>
+                        )}
+                      </DetailRow>
+                      <DetailRow label={t('phoneNumbers')}>
+                        {student.phoneNumbers.length > 0 ? (
+                          formatPhoneNumbers(student.phoneNumbers)
+                        ) : (
+                          <span className="text-amber-600">{t('phonesMissing')}</span>
+                        )}
+                      </DetailRow>
+                      <DetailRow label={t('comeViaWho')}>
+                        {student.comeViaWho || t('noComeViaWho')}
+                      </DetailRow>
+                      <DetailRow label={t('guardianInfo')}>
+                        {student.guardianInfo || t('noGuardianInfo')}
+                      </DetailRow>
+                      <DetailRow label={t('submittedBy')}>
+                        {student.submittedBy
+                          ? formatStaffName(student.submittedBy)
+                          : t('checkInSubmission')}
+                      </DetailRow>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      className="w-full"
+                      disabled={!canApprove}
+                      isLoading={actionId === student.id}
+                      loadingLabel={tCommon('pleaseWait')}
+                      onClick={() => handleApprove(student.id)}
+                    >
+                      {t('markRegistered')}
+                    </Button>
+                  </div>
+                </MobileCard>
+              );
+            })}
+          </div>
+
+          {/* Desktop table */}
+          <div className="hidden overflow-x-auto rounded-2xl bg-slate-50/50 shadow-sm md:block">
+            <table className="min-w-full text-sm">
+              <thead>
+                <tr className="border-b border-slate-100">
+                  <th className="px-4 py-3 text-start text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    {t('fullName')}
+                  </th>
+                  <th className="px-4 py-3 text-start text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    {t('section')}
+                  </th>
+                  <th className="px-4 py-3 text-start text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    {t('phoneNumbers')}
+                  </th>
+                  <th className="px-4 py-3 text-start text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    {t('comeViaWho')}
+                  </th>
+                  <th className="px-4 py-3 text-start text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    {t('guardianInfo')}
+                  </th>
+                  <th className="px-4 py-3 text-start text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    {t('submittedBy')}
+                  </th>
+                  <th className="px-4 py-3 text-end text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    {t('actions')}
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 bg-white">
+                {students.map((student) => {
+                  const canApprove =
+                    Boolean(student.section?.trim()) && student.phoneNumbers.length > 0;
+
+                  return (
+                    <tr key={student.id} className="align-top transition hover:bg-slate-50/80">
+                      <td className="px-4 py-3.5">
+                        <p className="font-medium text-slate-900">
+                          {formatStudentName(student)}
+                        </p>
+                        <p className="mt-1 text-xs text-slate-400">
+                          {t('submittedAt', {
+                            date: formatDate(student.createdAt, locale),
+                          })}
+                        </p>
+                      </td>
+                      <td className="px-4 py-3.5 text-slate-600">
+                        {student.section || (
+                          <span className="text-amber-600">{t('sectionMissing')}</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3.5 text-slate-600">
+                        {student.phoneNumbers.length > 0 ? (
+                          formatPhoneNumbers(student.phoneNumbers)
+                        ) : (
+                          <span className="text-amber-600">{t('phonesMissing')}</span>
+                        )}
+                      </td>
+                      <td className="max-w-xs px-4 py-3.5 text-slate-600">
+                        {student.comeViaWho || t('noComeViaWho')}
+                      </td>
+                      <td className="max-w-xs px-4 py-3.5 text-slate-600">
+                        {student.guardianInfo || t('noGuardianInfo')}
+                      </td>
+                      <td className="px-4 py-3.5 text-slate-600">
+                        {student.submittedBy
+                          ? formatStaffName(student.submittedBy)
+                          : t('checkInSubmission')}
+                      </td>
+                      <td className="px-4 py-3.5">
+                        <div className="flex justify-end">
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            disabled={!canApprove}
+                            title={
+                              !canApprove
+                                ? t('approveIncompleteHint')
+                                : user
+                                  ? t('registerAsYou', {
+                                      name: formatStaffName(user),
+                                    })
+                                  : undefined
+                            }
+                            isLoading={actionId === student.id}
+                            loadingLabel={tCommon('pleaseWait')}
+                            onClick={() => handleApprove(student.id)}
+                          >
+                            {t('markRegistered')}
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
     </div>
   );

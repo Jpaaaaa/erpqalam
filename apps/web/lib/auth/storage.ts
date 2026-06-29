@@ -18,12 +18,19 @@ export function getRefreshToken(): string | null {
   return localStorage.getItem(REFRESH_TOKEN_KEY);
 }
 
+function normalizeUser(user: AuthUser): AuthUser {
+  return {
+    ...user,
+    permissions: user.permissions ?? [],
+  };
+}
+
 export function getStoredUser(): AuthUser | null {
   if (!isBrowser()) return null;
   const raw = localStorage.getItem(USER_KEY);
   if (!raw) return null;
   try {
-    return JSON.parse(raw) as AuthUser;
+    return normalizeUser(JSON.parse(raw) as AuthUser);
   } catch {
     return null;
   }
@@ -33,7 +40,7 @@ export function saveSession(session: Session): void {
   if (!isBrowser()) return;
   localStorage.setItem(ACCESS_TOKEN_KEY, session.tokens.accessToken);
   localStorage.setItem(REFRESH_TOKEN_KEY, session.tokens.refreshToken);
-  localStorage.setItem(USER_KEY, JSON.stringify(session.user));
+  localStorage.setItem(USER_KEY, JSON.stringify(normalizeUser(session.user)));
 }
 
 export function updateTokens(tokens: AuthTokens): void {

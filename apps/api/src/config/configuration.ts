@@ -16,4 +16,15 @@ export default () => ({
   auth: {
     refreshTokenStore: process.env.REFRESH_TOKEN_STORE ?? 'database',
   },
+  google: {
+    clientId: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    callbackUrl: process.env.GOOGLE_CALLBACK_URL,
+    frontendUrl: process.env.FRONTEND_URL ?? 'http://localhost:3001',
+    defaultSchoolCode: process.env.GOOGLE_OAUTH_DEFAULT_SCHOOL_CODE ?? 'QALAM001',
+    autoAdminEmails: (process.env.GOOGLE_OAUTH_AUTO_ADMIN_EMAILS ?? '')
+      .split(',')
+      .map((email) => email.trim().toLowerCase())
+      .filter(Boolean),
+  },
 });

@@ -4,7 +4,9 @@ import { useCallback, useEffect, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { ApiClientError, listStudents } from '@/lib/api/students';
 import {
+  formatCameViaValue,
   formatPhoneNumbers,
+  formatSectionValue,
   formatStaffName,
   formatStudentName,
 } from '@/lib/students/format';
@@ -70,12 +72,14 @@ export function RegisteredStudentsList({ refreshKey = 0 }: RegisteredStudentsLis
                     {formatStudentName(student)}
                   </p>
                   <div className="grid gap-3">
-                    <DetailRow label={t('section')}>{student.section}</DetailRow>
+                    <DetailRow label={t('section')}>
+                      {formatSectionValue(student.section, t)}
+                    </DetailRow>
                     <DetailRow label={t('phoneNumbers')}>
                       {formatPhoneNumbers(student.phoneNumbers)}
                     </DetailRow>
-                    <DetailRow label={t('comeViaWho')}>
-                      {student.comeViaWho || t('noComeViaWho')}
+                    <DetailRow label={t('cameViaWhat')}>
+                      {formatCameViaValue(student.comeViaWho, t)}
                     </DetailRow>
                     <DetailRow label={t('guardianInfo')}>
                       {student.guardianInfo || t('noGuardianInfo')}
@@ -112,7 +116,7 @@ export function RegisteredStudentsList({ refreshKey = 0 }: RegisteredStudentsLis
                     {t('phoneNumbers')}
                   </th>
                   <th className="px-4 py-3 text-start text-xs font-semibold uppercase tracking-wide text-slate-500">
-                    {t('comeViaWho')}
+                    {t('cameViaWhat')}
                   </th>
                   <th className="px-4 py-3 text-start text-xs font-semibold uppercase tracking-wide text-slate-500">
                     {t('guardianInfo')}
@@ -128,12 +132,14 @@ export function RegisteredStudentsList({ refreshKey = 0 }: RegisteredStudentsLis
                     <td className="px-4 py-3.5 font-medium text-slate-900">
                       {formatStudentName(student)}
                     </td>
-                    <td className="px-4 py-3.5 text-slate-600">{student.section}</td>
+                    <td className="px-4 py-3.5 text-slate-600">
+                      {formatSectionValue(student.section, t)}
+                    </td>
                     <td className="px-4 py-3.5 text-slate-600">
                       {formatPhoneNumbers(student.phoneNumbers)}
                     </td>
                     <td className="max-w-xs px-4 py-3.5 text-slate-600">
-                      {student.comeViaWho || t('noComeViaWho')}
+                      {formatCameViaValue(student.comeViaWho, t)}
                     </td>
                     <td className="max-w-xs px-4 py-3.5 text-slate-600">
                       {student.guardianInfo || t('noGuardianInfo')}

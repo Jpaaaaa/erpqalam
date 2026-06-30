@@ -24,6 +24,9 @@ export function formatStaffName(staff: StaffMember) {
   return `${staff.firstName} ${staff.lastName}`;
 }
 
+export { formatCameViaValue } from '@/lib/students/came-via';
+export { formatSectionValue } from '@/lib/students/sections';
+
 /** @deprecated Use formatStaffName */
 export function formatRegistrarName(staff: StaffMember) {
   return formatStaffName(staff);

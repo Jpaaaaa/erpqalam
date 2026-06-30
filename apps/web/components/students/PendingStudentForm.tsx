@@ -9,6 +9,13 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Alert } from '@/components/ui/Alert';
 import { ArrowNavForm } from '@/components/ui/ArrowNavForm';
+import { CameViaWhatField } from '@/components/students/CameViaWhatField';
+import { SectionField } from '@/components/students/SectionField';
+import {
+  buildCameViaValue,
+  type CameViaSource,
+} from '@/lib/students/came-via';
+import type { SectionOption } from '@/lib/students/sections';
 
 interface PendingStudentFormProps {
   onSubmitted?: () => void;
@@ -20,10 +27,11 @@ function emptyForm() {
     secondName: '',
     thirdName: '',
     fourthName: '',
-    section: '',
-    phoneNumbers: [''],
+    section: '' as SectionOption | '',
+    phoneNumbers: ['', ''],
     guardianInfo: '',
-    comeViaWho: '',
+    cameViaSource: '' as CameViaSource | '',
+    cameViaFriendDetail: '',
   };
 }
 
@@ -48,24 +56,35 @@ export function PendingStudentForm({ onSubmitted }: PendingStudentFormProps) {
     });
   }
 
-  function addPhone() {
-    setForm((prev) => ({ ...prev, phoneNumbers: [...prev.phoneNumbers, ''] }));
-  }
-
-  function removePhone(index: number) {
-    setForm((prev) => ({
-      ...prev,
-      phoneNumbers: prev.phoneNumbers.filter((_, i) => i !== index),
-    }));
-  }
-
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
     setError('');
     setSuccess('');
     setIsLoading(true);
 
-    const phoneNumbers = form.phoneNumbers.map((p) => p.trim()).filter(Boolean);
+    const phoneNumbers = form.phoneNumbers.map((p) => p.trim());
+    if (phoneNumbers.some((p) => !p)) {
+      setError(t('phoneNumbersRequired'));
+      setIsLoading(false);
+      return;
+    }
+
+    if (!form.section) {
+      setError(t('sectionRequired'));
+      setIsLoading(false);
+      return;
+    }
+
+    if (!form.cameViaSource) {
+      setError(t('cameViaRequired'));
+      setIsLoading(false);
+      return;
+    }
+
+    const comeViaWho = buildCameViaValue(
+      form.cameViaSource,
+      form.cameViaFriendDetail,
+    );
 
     try {
       await createPendingStudent({
@@ -76,7 +95,7 @@ export function PendingStudentForm({ onSubmitted }: PendingStudentFormProps) {
         section: form.section,
         phoneNumbers,
         guardianInfo: form.guardianInfo || undefined,
-        comeViaWho: form.comeViaWho,
+        comeViaWho,
       });
       setSuccess(t('pendingFormSuccess'));
       setForm(emptyForm());
@@ -139,55 +158,42 @@ export function PendingStudentForm({ onSubmitted }: PendingStudentFormProps) {
         </div>
       </fieldset>
 
-      <Input
-        label={t('section')}
-        name="section"
-        required
+      <SectionField
         value={form.section}
-        onChange={(e) => updateField('section', e.target.value)}
-        placeholder={t('sectionPlaceholder')}
+        onChange={(section) => updateField('section', section)}
+        required
       />
 
       <fieldset className="space-y-3">
         <legend className="text-sm font-semibold text-slate-800">
           {t('phoneNumbers')}
         </legend>
-        {form.phoneNumbers.map((phone, index) => (
-          <div key={index} className="flex gap-2">
-            <div className="min-w-0 flex-1">
-              <Input
-                label={t('phoneNumber', { number: index + 1 })}
-                name={`phone-${index}`}
-                type="tel"
-                required={index === 0}
-                value={phone}
-                onChange={(e) => updatePhone(index, e.target.value)}
-              />
-            </div>
-            {form.phoneNumbers.length > 1 && (
-              <Button
-                type="button"
-                variant="ghost"
-                className="mt-7 shrink-0"
-                onClick={() => removePhone(index)}
-              >
-                {t('removePhone')}
-              </Button>
-            )}
-          </div>
-        ))}
-        <Button type="button" variant="secondary" onClick={addPhone}>
-          {t('addPhone')}
-        </Button>
+        <div className="grid gap-5 sm:grid-cols-2">
+          <Input
+            label={t('mobilePrimary')}
+            name="phone-0"
+            type="tel"
+            required
+            value={form.phoneNumbers[0]}
+            onChange={(e) => updatePhone(0, e.target.value)}
+          />
+          <Input
+            label={t('mobileSecondary')}
+            name="phone-1"
+            type="tel"
+            required
+            value={form.phoneNumbers[1]}
+            onChange={(e) => updatePhone(1, e.target.value)}
+          />
+        </div>
       </fieldset>
 
-      <Input
-        label={t('comeViaWho')}
-        name="comeViaWho"
+      <CameViaWhatField
+        source={form.cameViaSource}
+        friendDetail={form.cameViaFriendDetail}
+        onSourceChange={(source) => updateField('cameViaSource', source)}
+        onFriendDetailChange={(detail) => updateField('cameViaFriendDetail', detail)}
         required
-        value={form.comeViaWho}
-        onChange={(e) => updateField('comeViaWho', e.target.value)}
-        placeholder={t('comeViaWhoPlaceholder')}
       />
 
       <div className="space-y-1.5">

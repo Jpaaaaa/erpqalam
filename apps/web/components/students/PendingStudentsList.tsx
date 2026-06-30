@@ -8,7 +8,9 @@ import {
   listPendingStudents,
 } from '@/lib/api/students';
 import {
+  formatCameViaValue,
   formatPhoneNumbers,
+  formatSectionValue,
   formatStaffName,
   formatStudentName,
 } from '@/lib/students/format';
@@ -88,7 +90,7 @@ export function PendingStudentsList({ refreshKey = 0 }: PendingStudentsListProps
           <div className="space-y-3 md:hidden">
             {students.map((student) => {
               const canApprove =
-                Boolean(student.section?.trim()) && student.phoneNumbers.length > 0;
+                Boolean(student.section?.trim()) && student.phoneNumbers.length === 2;
 
               return (
                 <MobileCard key={student.id}>
@@ -105,7 +107,9 @@ export function PendingStudentsList({ refreshKey = 0 }: PendingStudentsListProps
                     </div>
                     <div className="grid gap-3">
                       <DetailRow label={t('section')}>
-                        {student.section || (
+                        {student.section ? (
+                          formatSectionValue(student.section, t)
+                        ) : (
                           <span className="text-amber-600">{t('sectionMissing')}</span>
                         )}
                       </DetailRow>
@@ -116,8 +120,8 @@ export function PendingStudentsList({ refreshKey = 0 }: PendingStudentsListProps
                           <span className="text-amber-600">{t('phonesMissing')}</span>
                         )}
                       </DetailRow>
-                      <DetailRow label={t('comeViaWho')}>
-                        {student.comeViaWho || t('noComeViaWho')}
+                      <DetailRow label={t('cameViaWhat')}>
+                        {formatCameViaValue(student.comeViaWho, t)}
                       </DetailRow>
                       <DetailRow label={t('guardianInfo')}>
                         {student.guardianInfo || t('noGuardianInfo')}
@@ -160,7 +164,7 @@ export function PendingStudentsList({ refreshKey = 0 }: PendingStudentsListProps
                     {t('phoneNumbers')}
                   </th>
                   <th className="px-4 py-3 text-start text-xs font-semibold uppercase tracking-wide text-slate-500">
-                    {t('comeViaWho')}
+                    {t('cameViaWhat')}
                   </th>
                   <th className="px-4 py-3 text-start text-xs font-semibold uppercase tracking-wide text-slate-500">
                     {t('guardianInfo')}
@@ -176,7 +180,7 @@ export function PendingStudentsList({ refreshKey = 0 }: PendingStudentsListProps
               <tbody className="divide-y divide-slate-100 bg-white">
                 {students.map((student) => {
                   const canApprove =
-                    Boolean(student.section?.trim()) && student.phoneNumbers.length > 0;
+                    Boolean(student.section?.trim()) && student.phoneNumbers.length === 2;
 
                   return (
                     <tr key={student.id} className="align-top transition hover:bg-slate-50/80">
@@ -191,7 +195,9 @@ export function PendingStudentsList({ refreshKey = 0 }: PendingStudentsListProps
                         </p>
                       </td>
                       <td className="px-4 py-3.5 text-slate-600">
-                        {student.section || (
+                        {student.section ? (
+                          formatSectionValue(student.section, t)
+                        ) : (
                           <span className="text-amber-600">{t('sectionMissing')}</span>
                         )}
                       </td>
@@ -203,7 +209,7 @@ export function PendingStudentsList({ refreshKey = 0 }: PendingStudentsListProps
                         )}
                       </td>
                       <td className="max-w-xs px-4 py-3.5 text-slate-600">
-                        {student.comeViaWho || t('noComeViaWho')}
+                        {formatCameViaValue(student.comeViaWho, t)}
                       </td>
                       <td className="max-w-xs px-4 py-3.5 text-slate-600">
                         {student.guardianInfo || t('noGuardianInfo')}

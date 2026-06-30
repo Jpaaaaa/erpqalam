@@ -1,4 +1,5 @@
 import {
+  ArrayMaxSize,
   ArrayMinSize,
   IsArray,
   IsNotEmpty,
@@ -59,11 +60,12 @@ export class CreatePendingStudentDto {
 
   @ApiProperty({
     example: ['07701234567', '07501234567'],
-    description: 'One or more mobile numbers',
+    description: 'Exactly two mobile numbers',
     type: [String],
   })
   @IsArray()
-  @ArrayMinSize(1)
+  @ArrayMinSize(2)
+  @ArrayMaxSize(2)
   @IsString({ each: true })
   @IsNotEmpty({ each: true })
   phoneNumbers: string[];
@@ -119,7 +121,8 @@ export class UpdatePendingStudentDto {
   @ApiPropertyOptional({ type: [String] })
   @IsOptional()
   @IsArray()
-  @ArrayMinSize(1)
+  @ArrayMinSize(2)
+  @ArrayMaxSize(2)
   @IsString({ each: true })
   @IsNotEmpty({ each: true })
   phoneNumbers?: string[];

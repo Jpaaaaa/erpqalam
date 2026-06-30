@@ -16,6 +16,15 @@ import {
   PendingStudentResponseDto,
   UpdatePendingStudentDto,
 } from './dto/pending-students.dto';
+import {
+  UpdateStudentDetailsDto,
+  buildDetailsUpdateData,
+  toStudentDetailsFields,
+} from './dto/student-details.dto';
+import {
+  copyStudentDetailsFromPending,
+  syncPhoneNumbersFromDetails,
+} from './student-details.util';
 
 const staffSelect = {
   id: true,
@@ -52,6 +61,16 @@ function toPendingResponse(
     phoneNumbers: string[];
     guardianInfo: string | null;
     comeViaWho: string | null;
+    homeAddress: string | null;
+    birthPlace: string | null;
+    birthDate: Date | null;
+    nationalIdNumber: string | null;
+    residenceCardNumber: string | null;
+    foodRationCardNumber: string | null;
+    guardianName: string | null;
+    guardianMobile: string | null;
+    stage: string | null;
+    detailsCompletedAt: Date | null;
     schoolId: string;
     submittedByUserId: string | null;
     createdAt: Date;
@@ -73,6 +92,7 @@ function toPendingResponse(
     phoneNumbers: row.phoneNumbers,
     guardianInfo: row.guardianInfo,
     comeViaWho: row.comeViaWho,
+    ...toStudentDetailsFields(row),
     schoolId: row.schoolId,
     submittedByUserId: row.submittedByUserId,
     submittedBy: row.submittedBy ?? null,
@@ -149,16 +169,18 @@ export class PendingStudentsService {
     const skip = (page - 1) * limit;
     const where = { schoolId: actor.schoolId };
 
-    const [data, total] = await Promise.all([
-      this.prisma.pendingStudent.findMany({
-        where,
-        include: pendingInclude,
-        skip,
-        take: limit,
-        orderBy: { createdAt: 'desc' },
-      }),
-      this.prisma.pendingStudent.count({ where }),
-    ]);
+    const [data, total] = await this.prisma.withConnectionRetry(() =>
+      Promise.all([
+        this.prisma.pendingStudent.findMany({
+          where,
+          include: pendingInclude,
+          skip,
+          take: limit,
+          orderBy: { createdAt: 'desc' },
+        }),
+        this.prisma.pendingStudent.count({ where }),
+      ]),
+    );
 
     return {
       data: data.map(toPendingResponse),
@@ -210,6 +232,37 @@ export class PendingStudentsService {
     return toPendingResponse(row);
   }
 
+  async updateDetails(
+    id: string,
+    dto: UpdateStudentDetailsDto,
+    actor: JwtPayload,
+  ): Promise<PendingStudentResponseDto> {
+    if (!hasPermission(actor.role, actor.permissions, UserPermission.STUDENT_REGISTRATION)) {
+      throw new ForbiddenException('You do not have permission to update pending students');
+    }
+
+    const existing = await this.prisma.pendingStudent.findFirst({
+      where: { id, schoolId: actor.schoolId },
+    });
+
+    if (!existing) {
+      throw new NotFoundException('Pending student not found');
+    }
+
+    const phoneNumbers = syncPhoneNumbersFromDetails(existing.phoneNumbers, dto);
+
+    const row = await this.prisma.pendingStudent.update({
+      where: { id },
+      data: {
+        ...buildDetailsUpdateData(dto),
+        ...(phoneNumbers !== undefined && { phoneNumbers }),
+      },
+      include: pendingInclude,
+    });
+
+    return toPendingResponse(row);
+  }
+
   private assertReadyForApproval(pending: {
     section: string | null;
     phoneNumbers: string[];
@@ -251,6 +304,7 @@ export class PendingStudentsService {
           phoneNumbers: pending.phoneNumbers,
           guardianInfo: pending.guardianInfo,
           comeViaWho: pending.comeViaWho,
+          ...copyStudentDetailsFromPending(pending),
           schoolId: pending.schoolId,
           registeredByUserId: actor.sub,
           registeredAt: new Date(),

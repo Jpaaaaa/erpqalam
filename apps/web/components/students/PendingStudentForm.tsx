@@ -15,10 +15,11 @@ import {
   buildCameViaValue,
   type CameViaSource,
 } from '@/lib/students/came-via';
+import type { PendingStudent } from '@/lib/types/student';
 import type { SectionOption } from '@/lib/students/sections';
 
 interface PendingStudentFormProps {
-  onSubmitted?: () => void;
+  onSubmitted?: (record: PendingStudent) => void;
 }
 
 function emptyForm() {
@@ -87,7 +88,7 @@ export function PendingStudentForm({ onSubmitted }: PendingStudentFormProps) {
     );
 
     try {
-      await createPendingStudent({
+      const created = await createPendingStudent({
         firstName: form.firstName,
         secondName: form.secondName,
         thirdName: form.thirdName,
@@ -99,7 +100,7 @@ export function PendingStudentForm({ onSubmitted }: PendingStudentFormProps) {
       });
       setSuccess(t('pendingFormSuccess'));
       setForm(emptyForm());
-      onSubmitted?.();
+      onSubmitted?.(created);
     } catch (err) {
       const message =
         err instanceof ApiClientError ? err.message : t('pendingFormError');

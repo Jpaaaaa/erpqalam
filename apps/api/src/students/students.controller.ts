@@ -35,6 +35,7 @@ import {
   PendingStudentResponseDto,
   UpdatePendingStudentDto,
 } from './dto/pending-students.dto';
+import { UpdateStudentDetailsDto } from './dto/student-details.dto';
 
 @ApiTags('students')
 @Controller()
@@ -93,6 +94,20 @@ export class StudentsController {
     return this.pendingStudentsService.update(id, dto, user);
   }
 
+  @Patch('pending-students/:id/details')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions(UserPermission.STUDENT_REGISTRATION)
+  @ApiOperation({ summary: 'Save optional registration details for a pending student' })
+  @ApiResponse({ status: 200, type: PendingStudentResponseDto })
+  updatePendingDetails(
+    @Param('id') id: string,
+    @Body() dto: UpdateStudentDetailsDto,
+    @CurrentUser() user: JwtPayload,
+  ): Promise<PendingStudentResponseDto> {
+    return this.pendingStudentsService.updateDetails(id, dto, user);
+  }
+
   @Patch('pending-students/:id/approve')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, PermissionsGuard)
@@ -118,5 +133,19 @@ export class StudentsController {
     @CurrentUser() user: JwtPayload,
   ): Promise<PaginatedStudentsResponseDto> {
     return this.studentsService.findAll(user, query);
+  }
+
+  @Patch('students/:id/details')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions(UserPermission.STUDENT_REGISTRATION)
+  @ApiOperation({ summary: 'Save optional registration details for an enrolled student' })
+  @ApiResponse({ status: 200, type: StudentResponseDto })
+  async updateStudentDetails(
+    @Param('id') id: string,
+    @Body() dto: UpdateStudentDetailsDto,
+    @CurrentUser() user: JwtPayload,
+  ): Promise<StudentResponseDto> {
+    return this.studentsService.updateDetails(id, dto, user);
   }
 }

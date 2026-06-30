@@ -58,6 +58,8 @@ docker compose -f docker/docker-compose.dev.yml up postgres -d
 
 Or use Prisma Dev: `cd apps/api && npx prisma dev -d`
 
+`npm run dev` runs `predev`, which starts Prisma Dev if needed, **syncs `DATABASE_URL` in `apps/api/.env` from the live Prisma Dev port**, verifies the connection, and runs migrations + seed. If you see `Server has closed the connection`, run `npm run db:ensure` (or restart with `npm run dev`).
+
 ### 3. Database setup (first time)
 
 ```bash

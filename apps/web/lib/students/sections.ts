@@ -5,6 +5,9 @@ export const SECTION_OPTIONS = [
   'accounting',
 ] as const;
 
+/** Legacy placeholder from DB migration for students registered before section existed. */
+export const LEGACY_UNASSIGNED_SECTION = 'Unassigned';
+
 export type SectionOption = (typeof SECTION_OPTIONS)[number];
 
 export function isSectionOption(value: string): value is SectionOption {
@@ -19,6 +22,10 @@ export function formatSectionValue(
 ): string {
   if (!value?.trim()) {
     return '';
+  }
+
+  if (value === LEGACY_UNASSIGNED_SECTION) {
+    return t('sectionUnassigned');
   }
 
   if (isSectionOption(value)) {

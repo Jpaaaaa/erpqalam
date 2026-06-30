@@ -190,6 +190,36 @@ export class PendingStudentResponseDto {
   @ApiProperty({ required: false })
   comeViaWho?: string | null;
 
+  @ApiProperty({ required: false })
+  homeAddress?: string | null;
+
+  @ApiProperty({ required: false })
+  birthPlace?: string | null;
+
+  @ApiProperty({ required: false })
+  birthDate?: Date | null;
+
+  @ApiProperty({ required: false })
+  nationalIdNumber?: string | null;
+
+  @ApiProperty({ required: false })
+  residenceCardNumber?: string | null;
+
+  @ApiProperty({ required: false })
+  foodRationCardNumber?: string | null;
+
+  @ApiProperty({ required: false })
+  guardianName?: string | null;
+
+  @ApiProperty({ required: false })
+  guardianMobile?: string | null;
+
+  @ApiProperty({ required: false })
+  stage?: string | null;
+
+  @ApiProperty({ required: false })
+  detailsCompletedAt?: Date | null;
+
   @ApiProperty()
   schoolId: string;
 

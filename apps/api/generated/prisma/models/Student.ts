@@ -33,6 +33,16 @@ export type StudentMinAggregateOutputType = {
   section: string | null
   guardianInfo: string | null
   comeViaWho: string | null
+  homeAddress: string | null
+  birthPlace: string | null
+  birthDate: Date | null
+  nationalIdNumber: string | null
+  residenceCardNumber: string | null
+  foodRationCardNumber: string | null
+  guardianName: string | null
+  guardianMobile: string | null
+  stage: string | null
+  detailsCompletedAt: Date | null
   schoolId: string | null
   registeredByUserId: string | null
   registeredAt: Date | null
@@ -50,6 +60,16 @@ export type StudentMaxAggregateOutputType = {
   section: string | null
   guardianInfo: string | null
   comeViaWho: string | null
+  homeAddress: string | null
+  birthPlace: string | null
+  birthDate: Date | null
+  nationalIdNumber: string | null
+  residenceCardNumber: string | null
+  foodRationCardNumber: string | null
+  guardianName: string | null
+  guardianMobile: string | null
+  stage: string | null
+  detailsCompletedAt: Date | null
   schoolId: string | null
   registeredByUserId: string | null
   registeredAt: Date | null
@@ -68,6 +88,16 @@ export type StudentCountAggregateOutputType = {
   phoneNumbers: number
   guardianInfo: number
   comeViaWho: number
+  homeAddress: number
+  birthPlace: number
+  birthDate: number
+  nationalIdNumber: number
+  residenceCardNumber: number
+  foodRationCardNumber: number
+  guardianName: number
+  guardianMobile: number
+  stage: number
+  detailsCompletedAt: number
   schoolId: number
   registeredByUserId: number
   registeredAt: number
@@ -87,6 +117,16 @@ export type StudentMinAggregateInputType = {
   section?: true
   guardianInfo?: true
   comeViaWho?: true
+  homeAddress?: true
+  birthPlace?: true
+  birthDate?: true
+  nationalIdNumber?: true
+  residenceCardNumber?: true
+  foodRationCardNumber?: true
+  guardianName?: true
+  guardianMobile?: true
+  stage?: true
+  detailsCompletedAt?: true
   schoolId?: true
   registeredByUserId?: true
   registeredAt?: true
@@ -104,6 +144,16 @@ export type StudentMaxAggregateInputType = {
   section?: true
   guardianInfo?: true
   comeViaWho?: true
+  homeAddress?: true
+  birthPlace?: true
+  birthDate?: true
+  nationalIdNumber?: true
+  residenceCardNumber?: true
+  foodRationCardNumber?: true
+  guardianName?: true
+  guardianMobile?: true
+  stage?: true
+  detailsCompletedAt?: true
   schoolId?: true
   registeredByUserId?: true
   registeredAt?: true
@@ -122,6 +172,16 @@ export type StudentCountAggregateInputType = {
   phoneNumbers?: true
   guardianInfo?: true
   comeViaWho?: true
+  homeAddress?: true
+  birthPlace?: true
+  birthDate?: true
+  nationalIdNumber?: true
+  residenceCardNumber?: true
+  foodRationCardNumber?: true
+  guardianName?: true
+  guardianMobile?: true
+  stage?: true
+  detailsCompletedAt?: true
   schoolId?: true
   registeredByUserId?: true
   registeredAt?: true
@@ -213,6 +273,16 @@ export type StudentGroupByOutputType = {
   phoneNumbers: string[]
   guardianInfo: string | null
   comeViaWho: string | null
+  homeAddress: string | null
+  birthPlace: string | null
+  birthDate: Date | null
+  nationalIdNumber: string | null
+  residenceCardNumber: string | null
+  foodRationCardNumber: string | null
+  guardianName: string | null
+  guardianMobile: string | null
+  stage: string | null
+  detailsCompletedAt: Date | null
   schoolId: string
   registeredByUserId: string | null
   registeredAt: Date
@@ -252,6 +322,16 @@ export type StudentWhereInput = {
   phoneNumbers?: Prisma.StringNullableListFilter<"Student">
   guardianInfo?: Prisma.StringNullableFilter<"Student"> | string | null
   comeViaWho?: Prisma.StringNullableFilter<"Student"> | string | null
+  homeAddress?: Prisma.StringNullableFilter<"Student"> | string | null
+  birthPlace?: Prisma.StringNullableFilter<"Student"> | string | null
+  birthDate?: Prisma.DateTimeNullableFilter<"Student"> | Date | string | null
+  nationalIdNumber?: Prisma.StringNullableFilter<"Student"> | string | null
+  residenceCardNumber?: Prisma.StringNullableFilter<"Student"> | string | null
+  foodRationCardNumber?: Prisma.StringNullableFilter<"Student"> | string | null
+  guardianName?: Prisma.StringNullableFilter<"Student"> | string | null
+  guardianMobile?: Prisma.StringNullableFilter<"Student"> | string | null
+  stage?: Prisma.StringNullableFilter<"Student"> | string | null
+  detailsCompletedAt?: Prisma.DateTimeNullableFilter<"Student"> | Date | string | null
   schoolId?: Prisma.StringFilter<"Student"> | string
   registeredByUserId?: Prisma.StringNullableFilter<"Student"> | string | null
   registeredAt?: Prisma.DateTimeFilter<"Student"> | Date | string
@@ -272,6 +352,16 @@ export type StudentOrderByWithRelationInput = {
   phoneNumbers?: Prisma.SortOrder
   guardianInfo?: Prisma.SortOrderInput | Prisma.SortOrder
   comeViaWho?: Prisma.SortOrderInput | Prisma.SortOrder
+  homeAddress?: Prisma.SortOrderInput | Prisma.SortOrder
+  birthPlace?: Prisma.SortOrderInput | Prisma.SortOrder
+  birthDate?: Prisma.SortOrderInput | Prisma.SortOrder
+  nationalIdNumber?: Prisma.SortOrderInput | Prisma.SortOrder
+  residenceCardNumber?: Prisma.SortOrderInput | Prisma.SortOrder
+  foodRationCardNumber?: Prisma.SortOrderInput | Prisma.SortOrder
+  guardianName?: Prisma.SortOrderInput | Prisma.SortOrder
+  guardianMobile?: Prisma.SortOrderInput | Prisma.SortOrder
+  stage?: Prisma.SortOrderInput | Prisma.SortOrder
+  detailsCompletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   schoolId?: Prisma.SortOrder
   registeredByUserId?: Prisma.SortOrderInput | Prisma.SortOrder
   registeredAt?: Prisma.SortOrder
@@ -296,6 +386,16 @@ export type StudentWhereUniqueInput = Prisma.AtLeast<{
   phoneNumbers?: Prisma.StringNullableListFilter<"Student">
   guardianInfo?: Prisma.StringNullableFilter<"Student"> | string | null
   comeViaWho?: Prisma.StringNullableFilter<"Student"> | string | null
+  homeAddress?: Prisma.StringNullableFilter<"Student"> | string | null
+  birthPlace?: Prisma.StringNullableFilter<"Student"> | string | null
+  birthDate?: Prisma.DateTimeNullableFilter<"Student"> | Date | string | null
+  nationalIdNumber?: Prisma.StringNullableFilter<"Student"> | string | null
+  residenceCardNumber?: Prisma.StringNullableFilter<"Student"> | string | null
+  foodRationCardNumber?: Prisma.StringNullableFilter<"Student"> | string | null
+  guardianName?: Prisma.StringNullableFilter<"Student"> | string | null
+  guardianMobile?: Prisma.StringNullableFilter<"Student"> | string | null
+  stage?: Prisma.StringNullableFilter<"Student"> | string | null
+  detailsCompletedAt?: Prisma.DateTimeNullableFilter<"Student"> | Date | string | null
   schoolId?: Prisma.StringFilter<"Student"> | string
   registeredByUserId?: Prisma.StringNullableFilter<"Student"> | string | null
   registeredAt?: Prisma.DateTimeFilter<"Student"> | Date | string
@@ -315,6 +415,16 @@ export type StudentOrderByWithAggregationInput = {
   phoneNumbers?: Prisma.SortOrder
   guardianInfo?: Prisma.SortOrderInput | Prisma.SortOrder
   comeViaWho?: Prisma.SortOrderInput | Prisma.SortOrder
+  homeAddress?: Prisma.SortOrderInput | Prisma.SortOrder
+  birthPlace?: Prisma.SortOrderInput | Prisma.SortOrder
+  birthDate?: Prisma.SortOrderInput | Prisma.SortOrder
+  nationalIdNumber?: Prisma.SortOrderInput | Prisma.SortOrder
+  residenceCardNumber?: Prisma.SortOrderInput | Prisma.SortOrder
+  foodRationCardNumber?: Prisma.SortOrderInput | Prisma.SortOrder
+  guardianName?: Prisma.SortOrderInput | Prisma.SortOrder
+  guardianMobile?: Prisma.SortOrderInput | Prisma.SortOrder
+  stage?: Prisma.SortOrderInput | Prisma.SortOrder
+  detailsCompletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   schoolId?: Prisma.SortOrder
   registeredByUserId?: Prisma.SortOrderInput | Prisma.SortOrder
   registeredAt?: Prisma.SortOrder
@@ -339,6 +449,16 @@ export type StudentScalarWhereWithAggregatesInput = {
   phoneNumbers?: Prisma.StringNullableListFilter<"Student">
   guardianInfo?: Prisma.StringNullableWithAggregatesFilter<"Student"> | string | null
   comeViaWho?: Prisma.StringNullableWithAggregatesFilter<"Student"> | string | null
+  homeAddress?: Prisma.StringNullableWithAggregatesFilter<"Student"> | string | null
+  birthPlace?: Prisma.StringNullableWithAggregatesFilter<"Student"> | string | null
+  birthDate?: Prisma.DateTimeNullableWithAggregatesFilter<"Student"> | Date | string | null
+  nationalIdNumber?: Prisma.StringNullableWithAggregatesFilter<"Student"> | string | null
+  residenceCardNumber?: Prisma.StringNullableWithAggregatesFilter<"Student"> | string | null
+  foodRationCardNumber?: Prisma.StringNullableWithAggregatesFilter<"Student"> | string | null
+  guardianName?: Prisma.StringNullableWithAggregatesFilter<"Student"> | string | null
+  guardianMobile?: Prisma.StringNullableWithAggregatesFilter<"Student"> | string | null
+  stage?: Prisma.StringNullableWithAggregatesFilter<"Student"> | string | null
+  detailsCompletedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Student"> | Date | string | null
   schoolId?: Prisma.StringWithAggregatesFilter<"Student"> | string
   registeredByUserId?: Prisma.StringNullableWithAggregatesFilter<"Student"> | string | null
   registeredAt?: Prisma.DateTimeWithAggregatesFilter<"Student"> | Date | string
@@ -357,6 +477,16 @@ export type StudentCreateInput = {
   phoneNumbers?: Prisma.StudentCreatephoneNumbersInput | string[]
   guardianInfo?: string | null
   comeViaWho?: string | null
+  homeAddress?: string | null
+  birthPlace?: string | null
+  birthDate?: Date | string | null
+  nationalIdNumber?: string | null
+  residenceCardNumber?: string | null
+  foodRationCardNumber?: string | null
+  guardianName?: string | null
+  guardianMobile?: string | null
+  stage?: string | null
+  detailsCompletedAt?: Date | string | null
   registeredAt?: Date | string
   pendingStudentId?: string | null
   createdAt?: Date | string
@@ -375,6 +505,16 @@ export type StudentUncheckedCreateInput = {
   phoneNumbers?: Prisma.StudentCreatephoneNumbersInput | string[]
   guardianInfo?: string | null
   comeViaWho?: string | null
+  homeAddress?: string | null
+  birthPlace?: string | null
+  birthDate?: Date | string | null
+  nationalIdNumber?: string | null
+  residenceCardNumber?: string | null
+  foodRationCardNumber?: string | null
+  guardianName?: string | null
+  guardianMobile?: string | null
+  stage?: string | null
+  detailsCompletedAt?: Date | string | null
   schoolId: string
   registeredByUserId?: string | null
   registeredAt?: Date | string
@@ -393,6 +533,16 @@ export type StudentUpdateInput = {
   phoneNumbers?: Prisma.StudentUpdatephoneNumbersInput | string[]
   guardianInfo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   comeViaWho?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  homeAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  birthPlace?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  birthDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  nationalIdNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  residenceCardNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  foodRationCardNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  guardianName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  guardianMobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  detailsCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   registeredAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   pendingStudentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -411,6 +561,16 @@ export type StudentUncheckedUpdateInput = {
   phoneNumbers?: Prisma.StudentUpdatephoneNumbersInput | string[]
   guardianInfo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   comeViaWho?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  homeAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  birthPlace?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  birthDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  nationalIdNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  residenceCardNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  foodRationCardNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  guardianName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  guardianMobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  detailsCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   schoolId?: Prisma.StringFieldUpdateOperationsInput | string
   registeredByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   registeredAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -429,6 +589,16 @@ export type StudentCreateManyInput = {
   phoneNumbers?: Prisma.StudentCreatephoneNumbersInput | string[]
   guardianInfo?: string | null
   comeViaWho?: string | null
+  homeAddress?: string | null
+  birthPlace?: string | null
+  birthDate?: Date | string | null
+  nationalIdNumber?: string | null
+  residenceCardNumber?: string | null
+  foodRationCardNumber?: string | null
+  guardianName?: string | null
+  guardianMobile?: string | null
+  stage?: string | null
+  detailsCompletedAt?: Date | string | null
   schoolId: string
   registeredByUserId?: string | null
   registeredAt?: Date | string
@@ -447,6 +617,16 @@ export type StudentUpdateManyMutationInput = {
   phoneNumbers?: Prisma.StudentUpdatephoneNumbersInput | string[]
   guardianInfo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   comeViaWho?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  homeAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  birthPlace?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  birthDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  nationalIdNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  residenceCardNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  foodRationCardNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  guardianName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  guardianMobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  detailsCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   registeredAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   pendingStudentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -463,6 +643,16 @@ export type StudentUncheckedUpdateManyInput = {
   phoneNumbers?: Prisma.StudentUpdatephoneNumbersInput | string[]
   guardianInfo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   comeViaWho?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  homeAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  birthPlace?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  birthDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  nationalIdNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  residenceCardNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  foodRationCardNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  guardianName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  guardianMobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  detailsCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   schoolId?: Prisma.StringFieldUpdateOperationsInput | string
   registeredByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   registeredAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -491,6 +681,16 @@ export type StudentCountOrderByAggregateInput = {
   phoneNumbers?: Prisma.SortOrder
   guardianInfo?: Prisma.SortOrder
   comeViaWho?: Prisma.SortOrder
+  homeAddress?: Prisma.SortOrder
+  birthPlace?: Prisma.SortOrder
+  birthDate?: Prisma.SortOrder
+  nationalIdNumber?: Prisma.SortOrder
+  residenceCardNumber?: Prisma.SortOrder
+  foodRationCardNumber?: Prisma.SortOrder
+  guardianName?: Prisma.SortOrder
+  guardianMobile?: Prisma.SortOrder
+  stage?: Prisma.SortOrder
+  detailsCompletedAt?: Prisma.SortOrder
   schoolId?: Prisma.SortOrder
   registeredByUserId?: Prisma.SortOrder
   registeredAt?: Prisma.SortOrder
@@ -508,6 +708,16 @@ export type StudentMaxOrderByAggregateInput = {
   section?: Prisma.SortOrder
   guardianInfo?: Prisma.SortOrder
   comeViaWho?: Prisma.SortOrder
+  homeAddress?: Prisma.SortOrder
+  birthPlace?: Prisma.SortOrder
+  birthDate?: Prisma.SortOrder
+  nationalIdNumber?: Prisma.SortOrder
+  residenceCardNumber?: Prisma.SortOrder
+  foodRationCardNumber?: Prisma.SortOrder
+  guardianName?: Prisma.SortOrder
+  guardianMobile?: Prisma.SortOrder
+  stage?: Prisma.SortOrder
+  detailsCompletedAt?: Prisma.SortOrder
   schoolId?: Prisma.SortOrder
   registeredByUserId?: Prisma.SortOrder
   registeredAt?: Prisma.SortOrder
@@ -525,6 +735,16 @@ export type StudentMinOrderByAggregateInput = {
   section?: Prisma.SortOrder
   guardianInfo?: Prisma.SortOrder
   comeViaWho?: Prisma.SortOrder
+  homeAddress?: Prisma.SortOrder
+  birthPlace?: Prisma.SortOrder
+  birthDate?: Prisma.SortOrder
+  nationalIdNumber?: Prisma.SortOrder
+  residenceCardNumber?: Prisma.SortOrder
+  foodRationCardNumber?: Prisma.SortOrder
+  guardianName?: Prisma.SortOrder
+  guardianMobile?: Prisma.SortOrder
+  stage?: Prisma.SortOrder
+  detailsCompletedAt?: Prisma.SortOrder
   schoolId?: Prisma.SortOrder
   registeredByUserId?: Prisma.SortOrder
   registeredAt?: Prisma.SortOrder
@@ -636,6 +856,16 @@ export type StudentCreateWithoutSchoolInput = {
   phoneNumbers?: Prisma.StudentCreatephoneNumbersInput | string[]
   guardianInfo?: string | null
   comeViaWho?: string | null
+  homeAddress?: string | null
+  birthPlace?: string | null
+  birthDate?: Date | string | null
+  nationalIdNumber?: string | null
+  residenceCardNumber?: string | null
+  foodRationCardNumber?: string | null
+  guardianName?: string | null
+  guardianMobile?: string | null
+  stage?: string | null
+  detailsCompletedAt?: Date | string | null
   registeredAt?: Date | string
   pendingStudentId?: string | null
   createdAt?: Date | string
@@ -653,6 +883,16 @@ export type StudentUncheckedCreateWithoutSchoolInput = {
   phoneNumbers?: Prisma.StudentCreatephoneNumbersInput | string[]
   guardianInfo?: string | null
   comeViaWho?: string | null
+  homeAddress?: string | null
+  birthPlace?: string | null
+  birthDate?: Date | string | null
+  nationalIdNumber?: string | null
+  residenceCardNumber?: string | null
+  foodRationCardNumber?: string | null
+  guardianName?: string | null
+  guardianMobile?: string | null
+  stage?: string | null
+  detailsCompletedAt?: Date | string | null
   registeredByUserId?: string | null
   registeredAt?: Date | string
   pendingStudentId?: string | null
@@ -699,6 +939,16 @@ export type StudentScalarWhereInput = {
   phoneNumbers?: Prisma.StringNullableListFilter<"Student">
   guardianInfo?: Prisma.StringNullableFilter<"Student"> | string | null
   comeViaWho?: Prisma.StringNullableFilter<"Student"> | string | null
+  homeAddress?: Prisma.StringNullableFilter<"Student"> | string | null
+  birthPlace?: Prisma.StringNullableFilter<"Student"> | string | null
+  birthDate?: Prisma.DateTimeNullableFilter<"Student"> | Date | string | null
+  nationalIdNumber?: Prisma.StringNullableFilter<"Student"> | string | null
+  residenceCardNumber?: Prisma.StringNullableFilter<"Student"> | string | null
+  foodRationCardNumber?: Prisma.StringNullableFilter<"Student"> | string | null
+  guardianName?: Prisma.StringNullableFilter<"Student"> | string | null
+  guardianMobile?: Prisma.StringNullableFilter<"Student"> | string | null
+  stage?: Prisma.StringNullableFilter<"Student"> | string | null
+  detailsCompletedAt?: Prisma.DateTimeNullableFilter<"Student"> | Date | string | null
   schoolId?: Prisma.StringFilter<"Student"> | string
   registeredByUserId?: Prisma.StringNullableFilter<"Student"> | string | null
   registeredAt?: Prisma.DateTimeFilter<"Student"> | Date | string
@@ -717,6 +967,16 @@ export type StudentCreateWithoutRegisteredByInput = {
   phoneNumbers?: Prisma.StudentCreatephoneNumbersInput | string[]
   guardianInfo?: string | null
   comeViaWho?: string | null
+  homeAddress?: string | null
+  birthPlace?: string | null
+  birthDate?: Date | string | null
+  nationalIdNumber?: string | null
+  residenceCardNumber?: string | null
+  foodRationCardNumber?: string | null
+  guardianName?: string | null
+  guardianMobile?: string | null
+  stage?: string | null
+  detailsCompletedAt?: Date | string | null
   registeredAt?: Date | string
   pendingStudentId?: string | null
   createdAt?: Date | string
@@ -734,6 +994,16 @@ export type StudentUncheckedCreateWithoutRegisteredByInput = {
   phoneNumbers?: Prisma.StudentCreatephoneNumbersInput | string[]
   guardianInfo?: string | null
   comeViaWho?: string | null
+  homeAddress?: string | null
+  birthPlace?: string | null
+  birthDate?: Date | string | null
+  nationalIdNumber?: string | null
+  residenceCardNumber?: string | null
+  foodRationCardNumber?: string | null
+  guardianName?: string | null
+  guardianMobile?: string | null
+  stage?: string | null
+  detailsCompletedAt?: Date | string | null
   schoolId: string
   registeredAt?: Date | string
   pendingStudentId?: string | null
@@ -777,6 +1047,16 @@ export type StudentCreateManySchoolInput = {
   phoneNumbers?: Prisma.StudentCreatephoneNumbersInput | string[]
   guardianInfo?: string | null
   comeViaWho?: string | null
+  homeAddress?: string | null
+  birthPlace?: string | null
+  birthDate?: Date | string | null
+  nationalIdNumber?: string | null
+  residenceCardNumber?: string | null
+  foodRationCardNumber?: string | null
+  guardianName?: string | null
+  guardianMobile?: string | null
+  stage?: string | null
+  detailsCompletedAt?: Date | string | null
   registeredByUserId?: string | null
   registeredAt?: Date | string
   pendingStudentId?: string | null
@@ -794,6 +1074,16 @@ export type StudentUpdateWithoutSchoolInput = {
   phoneNumbers?: Prisma.StudentUpdatephoneNumbersInput | string[]
   guardianInfo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   comeViaWho?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  homeAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  birthPlace?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  birthDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  nationalIdNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  residenceCardNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  foodRationCardNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  guardianName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  guardianMobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  detailsCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   registeredAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   pendingStudentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -811,6 +1101,16 @@ export type StudentUncheckedUpdateWithoutSchoolInput = {
   phoneNumbers?: Prisma.StudentUpdatephoneNumbersInput | string[]
   guardianInfo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   comeViaWho?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  homeAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  birthPlace?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  birthDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  nationalIdNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  residenceCardNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  foodRationCardNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  guardianName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  guardianMobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  detailsCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   registeredByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   registeredAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   pendingStudentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -828,6 +1128,16 @@ export type StudentUncheckedUpdateManyWithoutSchoolInput = {
   phoneNumbers?: Prisma.StudentUpdatephoneNumbersInput | string[]
   guardianInfo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   comeViaWho?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  homeAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  birthPlace?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  birthDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  nationalIdNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  residenceCardNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  foodRationCardNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  guardianName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  guardianMobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  detailsCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   registeredByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   registeredAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   pendingStudentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -845,6 +1155,16 @@ export type StudentCreateManyRegisteredByInput = {
   phoneNumbers?: Prisma.StudentCreatephoneNumbersInput | string[]
   guardianInfo?: string | null
   comeViaWho?: string | null
+  homeAddress?: string | null
+  birthPlace?: string | null
+  birthDate?: Date | string | null
+  nationalIdNumber?: string | null
+  residenceCardNumber?: string | null
+  foodRationCardNumber?: string | null
+  guardianName?: string | null
+  guardianMobile?: string | null
+  stage?: string | null
+  detailsCompletedAt?: Date | string | null
   schoolId: string
   registeredAt?: Date | string
   pendingStudentId?: string | null
@@ -862,6 +1182,16 @@ export type StudentUpdateWithoutRegisteredByInput = {
   phoneNumbers?: Prisma.StudentUpdatephoneNumbersInput | string[]
   guardianInfo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   comeViaWho?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  homeAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  birthPlace?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  birthDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  nationalIdNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  residenceCardNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  foodRationCardNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  guardianName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  guardianMobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  detailsCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   registeredAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   pendingStudentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -879,6 +1209,16 @@ export type StudentUncheckedUpdateWithoutRegisteredByInput = {
   phoneNumbers?: Prisma.StudentUpdatephoneNumbersInput | string[]
   guardianInfo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   comeViaWho?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  homeAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  birthPlace?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  birthDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  nationalIdNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  residenceCardNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  foodRationCardNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  guardianName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  guardianMobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  detailsCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   schoolId?: Prisma.StringFieldUpdateOperationsInput | string
   registeredAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   pendingStudentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -896,6 +1236,16 @@ export type StudentUncheckedUpdateManyWithoutRegisteredByInput = {
   phoneNumbers?: Prisma.StudentUpdatephoneNumbersInput | string[]
   guardianInfo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   comeViaWho?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  homeAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  birthPlace?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  birthDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  nationalIdNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  residenceCardNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  foodRationCardNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  guardianName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  guardianMobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  detailsCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   schoolId?: Prisma.StringFieldUpdateOperationsInput | string
   registeredAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   pendingStudentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -915,6 +1265,16 @@ export type StudentSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   phoneNumbers?: boolean
   guardianInfo?: boolean
   comeViaWho?: boolean
+  homeAddress?: boolean
+  birthPlace?: boolean
+  birthDate?: boolean
+  nationalIdNumber?: boolean
+  residenceCardNumber?: boolean
+  foodRationCardNumber?: boolean
+  guardianName?: boolean
+  guardianMobile?: boolean
+  stage?: boolean
+  detailsCompletedAt?: boolean
   schoolId?: boolean
   registeredByUserId?: boolean
   registeredAt?: boolean
@@ -935,6 +1295,16 @@ export type StudentSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   phoneNumbers?: boolean
   guardianInfo?: boolean
   comeViaWho?: boolean
+  homeAddress?: boolean
+  birthPlace?: boolean
+  birthDate?: boolean
+  nationalIdNumber?: boolean
+  residenceCardNumber?: boolean
+  foodRationCardNumber?: boolean
+  guardianName?: boolean
+  guardianMobile?: boolean
+  stage?: boolean
+  detailsCompletedAt?: boolean
   schoolId?: boolean
   registeredByUserId?: boolean
   registeredAt?: boolean
@@ -955,6 +1325,16 @@ export type StudentSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   phoneNumbers?: boolean
   guardianInfo?: boolean
   comeViaWho?: boolean
+  homeAddress?: boolean
+  birthPlace?: boolean
+  birthDate?: boolean
+  nationalIdNumber?: boolean
+  residenceCardNumber?: boolean
+  foodRationCardNumber?: boolean
+  guardianName?: boolean
+  guardianMobile?: boolean
+  stage?: boolean
+  detailsCompletedAt?: boolean
   schoolId?: boolean
   registeredByUserId?: boolean
   registeredAt?: boolean
@@ -975,6 +1355,16 @@ export type StudentSelectScalar = {
   phoneNumbers?: boolean
   guardianInfo?: boolean
   comeViaWho?: boolean
+  homeAddress?: boolean
+  birthPlace?: boolean
+  birthDate?: boolean
+  nationalIdNumber?: boolean
+  residenceCardNumber?: boolean
+  foodRationCardNumber?: boolean
+  guardianName?: boolean
+  guardianMobile?: boolean
+  stage?: boolean
+  detailsCompletedAt?: boolean
   schoolId?: boolean
   registeredByUserId?: boolean
   registeredAt?: boolean
@@ -983,7 +1373,7 @@ export type StudentSelectScalar = {
   updatedAt?: boolean
 }
 
-export type StudentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "firstName" | "secondName" | "thirdName" | "fourthName" | "section" | "phoneNumbers" | "guardianInfo" | "comeViaWho" | "schoolId" | "registeredByUserId" | "registeredAt" | "pendingStudentId" | "createdAt" | "updatedAt", ExtArgs["result"]["student"]>
+export type StudentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "firstName" | "secondName" | "thirdName" | "fourthName" | "section" | "phoneNumbers" | "guardianInfo" | "comeViaWho" | "homeAddress" | "birthPlace" | "birthDate" | "nationalIdNumber" | "residenceCardNumber" | "foodRationCardNumber" | "guardianName" | "guardianMobile" | "stage" | "detailsCompletedAt" | "schoolId" | "registeredByUserId" | "registeredAt" | "pendingStudentId" | "createdAt" | "updatedAt", ExtArgs["result"]["student"]>
 export type StudentInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   school?: boolean | Prisma.SchoolDefaultArgs<ExtArgs>
   registeredBy?: boolean | Prisma.Student$registeredByArgs<ExtArgs>
@@ -1013,6 +1403,16 @@ export type $StudentPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     phoneNumbers: string[]
     guardianInfo: string | null
     comeViaWho: string | null
+    homeAddress: string | null
+    birthPlace: string | null
+    birthDate: Date | null
+    nationalIdNumber: string | null
+    residenceCardNumber: string | null
+    foodRationCardNumber: string | null
+    guardianName: string | null
+    guardianMobile: string | null
+    stage: string | null
+    detailsCompletedAt: Date | null
     schoolId: string
     registeredByUserId: string | null
     registeredAt: Date
@@ -1453,6 +1853,16 @@ export interface StudentFieldRefs {
   readonly phoneNumbers: Prisma.FieldRef<"Student", 'String[]'>
   readonly guardianInfo: Prisma.FieldRef<"Student", 'String'>
   readonly comeViaWho: Prisma.FieldRef<"Student", 'String'>
+  readonly homeAddress: Prisma.FieldRef<"Student", 'String'>
+  readonly birthPlace: Prisma.FieldRef<"Student", 'String'>
+  readonly birthDate: Prisma.FieldRef<"Student", 'DateTime'>
+  readonly nationalIdNumber: Prisma.FieldRef<"Student", 'String'>
+  readonly residenceCardNumber: Prisma.FieldRef<"Student", 'String'>
+  readonly foodRationCardNumber: Prisma.FieldRef<"Student", 'String'>
+  readonly guardianName: Prisma.FieldRef<"Student", 'String'>
+  readonly guardianMobile: Prisma.FieldRef<"Student", 'String'>
+  readonly stage: Prisma.FieldRef<"Student", 'String'>
+  readonly detailsCompletedAt: Prisma.FieldRef<"Student", 'DateTime'>
   readonly schoolId: Prisma.FieldRef<"Student", 'String'>
   readonly registeredByUserId: Prisma.FieldRef<"Student", 'String'>
   readonly registeredAt: Prisma.FieldRef<"Student", 'DateTime'>

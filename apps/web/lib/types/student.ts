@@ -1,10 +1,12 @@
+import type { StudentDetailsFields } from '@/lib/types/student-details';
+
 export interface StaffMember {
   id: string;
   firstName: string;
   lastName: string;
 }
 
-export interface PendingStudent {
+export interface PendingStudent extends StudentDetailsFields {
   id: string;
   firstName: string;
   secondName: string;
@@ -21,7 +23,7 @@ export interface PendingStudent {
   updatedAt: string;
 }
 
-export interface Student {
+export interface Student extends StudentDetailsFields {
   id: string;
   firstName: string;
   secondName: string;

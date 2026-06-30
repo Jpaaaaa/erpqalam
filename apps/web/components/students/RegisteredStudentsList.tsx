@@ -4,6 +4,12 @@ import { useCallback, useEffect, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { ApiClientError, listStudents } from '@/lib/api/students';
 import {
+  emptyRegisteredStudentFilters,
+  filtersToQueryParams,
+  hasActiveFilters,
+  type RegisteredStudentFilters,
+} from '@/lib/students/registered-filters';
+import {
   formatCameViaValue,
   formatPhoneNumbers,
   formatSectionValue,
@@ -12,7 +18,13 @@ import {
 } from '@/lib/students/format';
 import type { Student } from '@/lib/types/student';
 import { Alert } from '@/components/ui/Alert';
+import { Button } from '@/components/ui/Button';
 import { DetailRow, MobileCard } from '@/components/ui/MobileCard';
+import { StudentDetailsModal } from '@/components/students/StudentDetailsModal';
+import {
+  RegisteredStudentsAdvancedFilters,
+  RegisteredStudentsFilterToggle,
+} from '@/components/students/RegisteredStudentsAdvancedFilters';
 
 function formatDate(value: string, locale: string) {
   return new Date(value).toLocaleString(locale);
@@ -27,15 +39,25 @@ export function RegisteredStudentsList({ refreshKey = 0 }: RegisteredStudentsLis
   const t = useTranslations('students');
   const tCommon = useTranslations('common');
   const [students, setStudents] = useState<Student[]>([]);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [detailsTarget, setDetailsTarget] = useState<Student | null>(null);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [draftFilters, setDraftFilters] = useState<RegisteredStudentFilters>(
+    emptyRegisteredStudentFilters(),
+  );
+  const [appliedFilters, setAppliedFilters] = useState<RegisteredStudentFilters>(
+    emptyRegisteredStudentFilters(),
+  );
 
   const load = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
-      const result = await listStudents({ limit: 100 });
+      const result = await listStudents({ limit: 100, ...appliedFilters });
       setStudents(result.data);
+      setTotal(result.total);
     } catch (err) {
       const message =
         err instanceof ApiClientError ? err.message : t('loadRegisteredError');
@@ -43,24 +65,69 @@ export function RegisteredStudentsList({ refreshKey = 0 }: RegisteredStudentsLis
     } finally {
       setLoading(false);
     }
-  }, [t]);
+  }, [appliedFilters, t]);
 
   useEffect(() => {
     load();
   }, [load, refreshKey]);
 
-  if (loading) {
-    return <p className="text-sm text-slate-500">{tCommon('loading')}</p>;
+  const activeFilterCount = Object.keys(filtersToQueryParams(appliedFilters)).length;
+
+  function handleApplyFilters() {
+    setAppliedFilters({ ...draftFilters });
+  }
+
+  function handleClearFilters() {
+    const empty = emptyRegisteredStudentFilters();
+    setDraftFilters(empty);
+    setAppliedFilters(empty);
   }
 
   return (
     <div className="space-y-4">
-      <h3 className="text-sm font-semibold text-slate-900">{t('registeredListTitle')}</h3>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h3 className="text-sm font-semibold text-slate-900">{t('registeredListTitle')}</h3>
+          {!loading && (
+            <p className="mt-0.5 text-xs text-slate-500">
+              {hasActiveFilters(appliedFilters)
+                ? t('filters.resultsCountFiltered', { count: total })
+                : t('filters.resultsCount', { count: total })}
+            </p>
+          )}
+        </div>
+        <RegisteredStudentsFilterToggle
+          open={filtersOpen}
+          activeCount={activeFilterCount}
+          onToggle={() => setFiltersOpen((open) => !open)}
+        />
+      </div>
+
+      <RegisteredStudentsAdvancedFilters
+        open={filtersOpen}
+        filters={draftFilters}
+        onChange={setDraftFilters}
+        onApply={handleApplyFilters}
+        onClear={handleClearFilters}
+      />
+
       {error && <Alert variant="error">{error}</Alert>}
 
-      {students.length === 0 ? (
+      {detailsTarget && (
+        <StudentDetailsModal
+          open
+          mode="registered"
+          record={detailsTarget}
+          onClose={() => setDetailsTarget(null)}
+          onSaved={load}
+        />
+      )}
+
+      {loading ? (
+        <p className="text-sm text-slate-500">{tCommon('loading')}</p>
+      ) : students.length === 0 ? (
         <p className="rounded-2xl bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">
-          {t('noRegistered')}
+          {hasActiveFilters(appliedFilters) ? t('filters.noResults') : t('noRegistered')}
         </p>
       ) : (
         <>
@@ -97,6 +164,19 @@ export function RegisteredStudentsList({ refreshKey = 0 }: RegisteredStudentsLis
                           })}
                     </DetailRow>
                   </div>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    className="w-full"
+                    onClick={() => setDetailsTarget(student)}
+                  >
+                    {t('detailsButton')}
+                    {!student.detailsCompletedAt && (
+                      <span className="ms-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">
+                        {t('detailsIncompleteBadge')}
+                      </span>
+                    )}
+                  </Button>
                 </div>
               </MobileCard>
             ))}
@@ -123,6 +203,9 @@ export function RegisteredStudentsList({ refreshKey = 0 }: RegisteredStudentsLis
                   </th>
                   <th className="px-4 py-3 text-start text-xs font-semibold uppercase tracking-wide text-slate-500">
                     {t('registeredBy')}
+                  </th>
+                  <th className="px-4 py-3 text-start text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    {t('actions')}
                   </th>
                 </tr>
               </thead>
@@ -155,6 +238,20 @@ export function RegisteredStudentsList({ refreshKey = 0 }: RegisteredStudentsLis
                               locale,
                             ),
                           })}
+                    </td>
+                    <td className="px-4 py-3.5">
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={() => setDetailsTarget(student)}
+                      >
+                        {t('detailsButton')}
+                        {!student.detailsCompletedAt && (
+                          <span className="ms-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">
+                            {t('detailsIncompleteBadge')}
+                          </span>
+                        )}
+                      </Button>
                     </td>
                   </tr>
                 ))}

@@ -12,6 +12,7 @@
     "build": "npm run build --prefix apps/api && npm run build --prefix apps/web",
     "install:all": "npm install --prefix apps/api && npm install --prefix apps/web",
     "db:ensure": "node scripts/ensure-db.mjs",
+    "db:sync-url": "node scripts/sync-prisma-dev-url.mjs",
     "db:migrate": "npm run prisma:migrate --prefix apps/api",
     "db:seed": "npm run prisma:seed --prefix apps/api",
     "test:e2e": "npm run test:e2e --prefix apps/api"

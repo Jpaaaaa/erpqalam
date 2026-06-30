@@ -17,7 +17,9 @@ export class HealthController {
     let postgres: 'up' | 'down' = 'down';
 
     try {
-      await this.prisma.$queryRaw`SELECT 1`;
+      await this.prisma.withConnectionRetry(() =>
+        this.prisma.$queryRaw`SELECT 1`,
+      );
       postgres = 'up';
     } catch {
       postgres = 'down';

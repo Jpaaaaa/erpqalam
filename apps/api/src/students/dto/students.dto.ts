@@ -1,4 +1,4 @@
-import { IsOptional, IsString } from 'class-validator';
+import { IsIn, IsOptional, IsString } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 
@@ -12,6 +12,36 @@ export class ListStudentsQueryDto {
   @IsOptional()
   @Type(() => Number)
   limit?: number = 20;
+
+  @ApiPropertyOptional({ description: 'Search by student or guardian name' })
+  @IsOptional()
+  @IsString()
+  q?: string;
+
+  @ApiPropertyOptional({ description: 'Filter by section key (e.g. computer)' })
+  @IsOptional()
+  @IsString()
+  section?: string;
+
+  @ApiPropertyOptional({ enum: ['complete', 'incomplete'] })
+  @IsOptional()
+  @IsIn(['complete', 'incomplete'])
+  detailsStatus?: 'complete' | 'incomplete';
+
+  @ApiPropertyOptional({ description: 'Filter by referral source key' })
+  @IsOptional()
+  @IsString()
+  cameVia?: string;
+
+  @ApiPropertyOptional({ description: 'Filter by phone number (partial match)' })
+  @IsOptional()
+  @IsString()
+  phone?: string;
+
+  @ApiPropertyOptional({ description: 'Filter by academic stage (partial match)' })
+  @IsOptional()
+  @IsString()
+  stage?: string;
 }
 
 export class StudentRegistrarDto {
@@ -52,6 +82,36 @@ export class StudentResponseDto {
 
   @ApiProperty({ required: false })
   comeViaWho?: string | null;
+
+  @ApiProperty({ required: false })
+  homeAddress?: string | null;
+
+  @ApiProperty({ required: false })
+  birthPlace?: string | null;
+
+  @ApiProperty({ required: false })
+  birthDate?: Date | null;
+
+  @ApiProperty({ required: false })
+  nationalIdNumber?: string | null;
+
+  @ApiProperty({ required: false })
+  residenceCardNumber?: string | null;
+
+  @ApiProperty({ required: false })
+  foodRationCardNumber?: string | null;
+
+  @ApiProperty({ required: false })
+  guardianName?: string | null;
+
+  @ApiProperty({ required: false })
+  guardianMobile?: string | null;
+
+  @ApiProperty({ required: false })
+  stage?: string | null;
+
+  @ApiProperty({ required: false })
+  detailsCompletedAt?: Date | null;
 
   @ApiProperty()
   schoolId: string;

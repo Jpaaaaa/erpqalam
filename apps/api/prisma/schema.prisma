@@ -46,6 +46,16 @@ model PendingStudent {
   phoneNumbers      String[] @default([])
   guardianInfo      String?
   comeViaWho          String?
+  homeAddress         String?
+  birthPlace          String?
+  birthDate           DateTime?
+  nationalIdNumber    String?
+  residenceCardNumber String?
+  foodRationCardNumber String?
+  guardianName        String?
+  guardianMobile      String?
+  stage               String?
+  detailsCompletedAt  DateTime?
   schoolId          String
   school            School   @relation(fields: [schoolId], references: [id])
   submittedByUserId String?
@@ -69,6 +79,16 @@ model Student {
   phoneNumbers       String[] @default([])
   guardianInfo       String?
   comeViaWho         String?
+  homeAddress        String?
+  birthPlace         String?
+  birthDate          DateTime?
+  nationalIdNumber   String?
+  residenceCardNumber String?
+  foodRationCardNumber String?
+  guardianName       String?
+  guardianMobile     String?
+  stage              String?
+  detailsCompletedAt DateTime?
   schoolId           String
   school             School   @relation(fields: [schoolId], references: [id])
   registeredByUserId String?

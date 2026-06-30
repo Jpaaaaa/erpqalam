@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { UserPermission } from '@generated/prisma/client';
 import { PrismaService } from '../database/prisma.service';
 import { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
@@ -8,6 +8,13 @@ import {
   PaginatedStudentsResponseDto,
   StudentResponseDto,
 } from './dto/students.dto';
+import {
+  UpdateStudentDetailsDto,
+  buildDetailsUpdateData,
+  toStudentDetailsFields,
+} from './dto/student-details.dto';
+import { syncPhoneNumbersFromDetails } from './student-details.util';
+import { buildStudentListWhere } from './student-list-filters.util';
 
 const registeredBySelect = {
   id: true,
@@ -32,6 +39,16 @@ function toStudentResponse(
     phoneNumbers: string[];
     guardianInfo: string | null;
     comeViaWho: string | null;
+    homeAddress: string | null;
+    birthPlace: string | null;
+    birthDate: Date | null;
+    nationalIdNumber: string | null;
+    residenceCardNumber: string | null;
+    foodRationCardNumber: string | null;
+    guardianName: string | null;
+    guardianMobile: string | null;
+    stage: string | null;
+    detailsCompletedAt: Date | null;
     schoolId: string;
     registeredByUserId: string | null;
     registeredAt: Date | null;
@@ -55,6 +72,7 @@ function toStudentResponse(
     phoneNumbers: student.phoneNumbers,
     guardianInfo: student.guardianInfo,
     comeViaWho: student.comeViaWho,
+    ...toStudentDetailsFields(student),
     schoolId: student.schoolId,
     registeredByUserId: student.registeredByUserId,
     registeredBy: student.registeredBy ?? null,
@@ -80,18 +98,20 @@ export class StudentsService {
     const page = query.page ?? 1;
     const limit = Math.min(query.limit ?? 20, 100);
     const skip = (page - 1) * limit;
-    const where = { schoolId: actor.schoolId };
+    const where = buildStudentListWhere(actor.schoolId, query);
 
-    const [data, total] = await Promise.all([
-      this.prisma.student.findMany({
-        where,
-        include: studentInclude,
-        skip,
-        take: limit,
-        orderBy: { registeredAt: 'desc' },
-      }),
-      this.prisma.student.count({ where }),
-    ]);
+    const [data, total] = await this.prisma.withConnectionRetry(() =>
+      Promise.all([
+        this.prisma.student.findMany({
+          where,
+          include: studentInclude,
+          skip,
+          take: limit,
+          orderBy: { registeredAt: 'desc' },
+        }),
+        this.prisma.student.count({ where }),
+      ]),
+    );
 
     return {
       data: data.map(toStudentResponse),
@@ -100,6 +120,37 @@ export class StudentsService {
       limit,
       totalPages: Math.ceil(total / limit) || 1,
     };
+  }
+
+  async updateDetails(
+    id: string,
+    dto: UpdateStudentDetailsDto,
+    actor: JwtPayload,
+  ): Promise<StudentResponseDto> {
+    if (!hasPermission(actor.role, actor.permissions, UserPermission.STUDENT_REGISTRATION)) {
+      throw new ForbiddenException('You do not have permission to update students');
+    }
+
+    const existing = await this.prisma.student.findFirst({
+      where: { id, schoolId: actor.schoolId },
+    });
+
+    if (!existing) {
+      throw new NotFoundException('Student not found');
+    }
+
+    const phoneNumbers = syncPhoneNumbersFromDetails(existing.phoneNumbers, dto);
+
+    const student = await this.prisma.student.update({
+      where: { id },
+      data: {
+        ...buildDetailsUpdateData(dto),
+        ...(phoneNumbers !== undefined && { phoneNumbers }),
+      },
+      include: studentInclude,
+    });
+
+    return toStudentResponse(student);
   }
 }
 

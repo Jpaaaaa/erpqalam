@@ -8,6 +8,7 @@ import type {
   Student,
   UpdatePendingStudentPayload,
 } from '@/lib/types/student';
+import type { UpdateStudentDetailsPayload } from '@/lib/types/student-details';
 import type { ApiError } from '@/lib/types/auth';
 
 export { ApiClientError };
@@ -75,15 +76,54 @@ export async function approvePendingStudent(id: string): Promise<Student> {
   });
 }
 
-export async function listStudents(params?: {
-  page?: number;
-  limit?: number;
-}): Promise<PaginatedStudents> {
+import type { RegisteredStudentFilters } from '@/lib/students/registered-filters';
+import { filtersToQueryParams } from '@/lib/students/registered-filters';
+
+export async function listStudents(
+  params?: {
+    page?: number;
+    limit?: number;
+  } & Partial<RegisteredStudentFilters>,
+): Promise<PaginatedStudents> {
   const search = new URLSearchParams();
   if (params?.page) search.set('page', String(params.page));
   if (params?.limit) search.set('limit', String(params.limit));
+
+  const filterParams = filtersToQueryParams({
+    q: params?.q ?? '',
+    section: params?.section ?? '',
+    detailsStatus: params?.detailsStatus ?? '',
+    cameVia: params?.cameVia ?? '',
+    phone: params?.phone ?? '',
+    stage: params?.stage ?? '',
+  });
+
+  for (const [key, value] of Object.entries(filterParams)) {
+    search.set(key, value);
+  }
+
   const query = search.toString();
   return apiRequest<PaginatedStudents>(`/students${query ? `?${query}` : ''}`);
+}
+
+export async function updatePendingStudentDetails(
+  id: string,
+  payload: UpdateStudentDetailsPayload,
+): Promise<PendingStudent> {
+  return apiRequest<PendingStudent>(`/pending-students/${id}/details`, {
+    method: 'PATCH',
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function updateStudentDetails(
+  id: string,
+  payload: UpdateStudentDetailsPayload,
+): Promise<Student> {
+  return apiRequest<Student>(`/students/${id}/details`, {
+    method: 'PATCH',
+    body: JSON.stringify(payload),
+  });
 }
 
 /** @deprecated Use approvePendingStudent */

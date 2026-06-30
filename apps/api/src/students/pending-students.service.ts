@@ -29,8 +29,16 @@ const pendingInclude = {
   },
 } as const;
 
+const REQUIRED_PHONE_COUNT = 2;
+
 function normalizePhones(phones: string[]): string[] {
-  return phones.map((phone) => phone.trim()).filter(Boolean);
+  const normalized = phones.map((phone) => phone.trim()).filter(Boolean);
+  if (normalized.length !== REQUIRED_PHONE_COUNT) {
+    throw new BadRequestException(
+      `Exactly ${REQUIRED_PHONE_COUNT} phone numbers are required`,
+    );
+  }
+  return normalized;
 }
 
 function toPendingResponse(
@@ -210,8 +218,10 @@ export class PendingStudentsService {
       throw new BadRequestException('Section is required before approval');
     }
 
-    if (!pending.phoneNumbers.length) {
-      throw new BadRequestException('At least one phone number is required before approval');
+    if (pending.phoneNumbers.length !== REQUIRED_PHONE_COUNT) {
+      throw new BadRequestException(
+        `Exactly ${REQUIRED_PHONE_COUNT} phone numbers are required before approval`,
+      );
     }
   }
 

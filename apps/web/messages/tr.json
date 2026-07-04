@@ -165,6 +165,9 @@
       "previewError": "Unable to load document preview.",
       "documentNumber": "Document number",
       "download": "Download PDF",
+      "print": "Print",
+      "printInNewTab": "Open to print",
+      "printBlocked": "Unable to open the print window. Please allow pop-ups for this site.",
       "close": "Close",
       "cancel": "Cancel",
       "generateError": "Unable to generate document. Please try again."

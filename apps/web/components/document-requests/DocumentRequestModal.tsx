@@ -5,9 +5,9 @@ import { useTranslations } from 'next-intl';
 import {
   ApiClientError,
   generateDocumentRequest,
+  openDocumentRequestPdfInNewTab,
 } from '@/lib/api/document-requests';
 import type { CreateDocumentRequestTarget } from '@/lib/types/document-request';
-import { DocumentRequestPreviewModal } from '@/components/document-requests/DocumentRequestPreviewModal';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -31,18 +31,10 @@ export function DocumentRequestModal({
   const [previousSchoolName, setPreviousSchoolName] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [previewBlob, setPreviewBlob] = useState<Blob | null>(null);
-  const [documentNumber, setDocumentNumber] = useState('');
-
-  function resetPreview() {
-    setPreviewBlob(null);
-    setDocumentNumber('');
-  }
 
   function handleClose() {
     setPreviousSchoolName('');
     setError('');
-    resetPreview();
     onClose();
   }
 
@@ -60,10 +52,9 @@ export function DocumentRequestModal({
         pendingStudentId: target.pendingStudentId,
       });
 
-      resetPreview();
-      setPreviewBlob(result.blob);
-      setDocumentNumber(result.documentNumber);
+      openDocumentRequestPdfInNewTab(result.blob, result.documentNumber);
       onGenerated?.();
+      handleClose();
     } catch (err) {
       const message =
         err instanceof ApiClientError ? err.message : t('generateError');
@@ -77,59 +68,48 @@ export function DocumentRequestModal({
     return null;
   }
 
-  const isPreview = previewBlob !== null;
-
   return (
-    <>
-      <Modal
-        open={open && !isPreview}
-        onClose={handleClose}
-        title={t('title')}
-        footer={
-          <>
-            <Button type="button" variant="secondary" onClick={handleClose}>
-              {t('cancel')}
-            </Button>
-            <Button
-              type="submit"
-              form="document-request-form"
-              isLoading={isLoading}
-              loadingLabel={tCommon('pleaseWait')}
-            >
-              {t('generate')}
-            </Button>
-          </>
-        }
-      >
-        <form id="document-request-form" onSubmit={handleSubmit} className="space-y-4">
-          {error && <Alert variant="error">{error}</Alert>}
+    <Modal
+      open={open}
+      onClose={handleClose}
+      title={t('title')}
+      footer={
+        <>
+          <Button type="button" variant="secondary" onClick={handleClose}>
+            {t('cancel')}
+          </Button>
+          <Button
+            type="submit"
+            form="document-request-form"
+            isLoading={isLoading}
+            loadingLabel={tCommon('pleaseWait')}
+          >
+            {t('generate')}
+          </Button>
+        </>
+      }
+    >
+      <form id="document-request-form" onSubmit={handleSubmit} className="space-y-4">
+        {error && <Alert variant="error">{error}</Alert>}
 
-          <div className="rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-700">
-            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
-              {t('studentName')}
-            </p>
-            <p className="mt-1 font-medium text-slate-900">{target.studentName}</p>
-          </div>
+        <div className="rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-700">
+          <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+            {t('studentName')}
+          </p>
+          <p className="mt-1 font-medium text-slate-900">{target.studentName}</p>
+        </div>
 
-          <Input
-            label={t('previousSchoolName')}
-            name="previousSchoolName"
-            required
-            value={previousSchoolName}
-            onChange={(e) => setPreviousSchoolName(e.target.value)}
-            placeholder={t('previousSchoolNamePlaceholder')}
-          />
+        <Input
+          label={t('previousSchoolName')}
+          name="previousSchoolName"
+          required
+          value={previousSchoolName}
+          onChange={(e) => setPreviousSchoolName(e.target.value)}
+          placeholder={t('previousSchoolNamePlaceholder')}
+        />
 
-          <p className="text-xs text-slate-500">{t('hint')}</p>
-        </form>
-      </Modal>
-
-      <DocumentRequestPreviewModal
-        open={open && isPreview}
-        previewBlob={previewBlob}
-        documentNumber={documentNumber}
-        onClose={handleClose}
-      />
-    </>
+        <p className="text-xs text-slate-500">{t('hint')}</p>
+      </form>
+    </Modal>
   );
 }

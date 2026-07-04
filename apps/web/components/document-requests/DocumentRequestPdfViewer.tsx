@@ -5,9 +5,13 @@ import { useTranslations } from 'next-intl';
 
 interface DocumentRequestPdfViewerProps {
   blob: Blob;
+  className?: string;
 }
 
-export function DocumentRequestPdfViewer({ blob }: DocumentRequestPdfViewerProps) {
+export function DocumentRequestPdfViewer({
+  blob,
+  className = '',
+}: DocumentRequestPdfViewerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const pagesRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(true);
@@ -38,48 +42,41 @@ export function DocumentRequestPdfViewer({ blob }: DocumentRequestPdfViewerProps
         if (cancelled) return;
 
         await new Promise<void>((resolve) => {
-          requestAnimationFrame(() => resolve());
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => resolve());
+          });
         });
 
         if (cancelled) return;
 
         const availableWidth = container.clientWidth;
-        const availableHeight = container.clientHeight;
-
-        let totalBaseHeight = 0;
-        let maxBaseWidth = 0;
-        const pageEntries = [];
+        let availableHeight = container.clientHeight;
+        if (availableHeight <= 0) {
+          availableHeight = availableWidth * (297 / 210);
+        }
 
         for (let pageNum = 1; pageNum <= pdf.numPages; pageNum += 1) {
           const page = await pdf.getPage(pageNum);
           if (cancelled) return;
 
           const baseViewport = page.getViewport({ scale: 1 });
-          pageEntries.push({ page, baseViewport });
-          totalBaseHeight += baseViewport.height;
-          maxBaseWidth = Math.max(maxBaseWidth, baseViewport.width);
-        }
-
-        const pageGap = pdf.numPages > 1 ? 8 * (pdf.numPages - 1) : 0;
-        const scale = Math.min(
-          availableWidth / maxBaseWidth,
-          (availableHeight - pageGap) / totalBaseHeight,
-        );
-
-        for (const { page } of pageEntries) {
-          if (cancelled) return;
-
+          const scale = Math.min(
+            availableWidth / baseViewport.width,
+            availableHeight / baseViewport.height,
+          );
           const viewport = page.getViewport({ scale });
+
           const canvas = document.createElement('canvas');
           const context = canvas.getContext('2d');
           if (!context) continue;
 
           canvas.width = viewport.width;
           canvas.height = viewport.height;
-          canvas.className = 'block h-full w-full';
+          canvas.className = 'block h-auto max-h-full w-auto max-w-full';
 
           const wrapper = document.createElement('div');
-          wrapper.className = 'flex h-full w-full items-center justify-center';
+          wrapper.className =
+            'flex h-full w-full items-center justify-center overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm';
           wrapper.appendChild(canvas);
           pages.appendChild(wrapper);
 
@@ -111,21 +108,17 @@ export function DocumentRequestPdfViewer({ blob }: DocumentRequestPdfViewerProps
   }, [blob, t]);
 
   return (
-    <div
-      ref={containerRef}
-      className="relative mx-auto aspect-[210/297] w-full max-w-[440px] overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm"
-    >
+    <div ref={containerRef} className={`relative h-full min-h-0 w-full ${className}`}>
       {loading && (
-        <div className="absolute inset-0 z-10 flex items-center justify-center bg-white">
+        <div className="absolute inset-0 z-10 flex items-center justify-center rounded-md border border-slate-200 bg-white">
           <p className="text-sm text-slate-500">{tCommon('loading')}</p>
         </div>
       )}
-      {error && (
-        <p className="absolute inset-x-2 top-2 z-10 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">
-          {error}
-        </p>
+      {error ? (
+        <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>
+      ) : (
+        <div ref={pagesRef} className="flex h-full min-h-0 flex-col gap-2" />
       )}
-      <div ref={pagesRef} className="h-full w-full" />
     </div>
   );
 }

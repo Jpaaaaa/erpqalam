@@ -154,3 +154,24 @@ export function downloadDocumentRequestPdf(blob: Blob, documentNumber: string) {
   anchor.remove();
   URL.revokeObjectURL(url);
 }
+
+export function openDocumentRequestPdfInNewTab(blob: Blob, documentNumber: string) {
+  const url = URL.createObjectURL(blob);
+  const opened = window.open(url, '_blank');
+
+  if (opened) {
+    opened.opener = null;
+    window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    return true;
+  }
+
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.target = '_blank';
+  anchor.rel = 'noopener noreferrer';
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+  return true;
+}

@@ -1,6 +1,6 @@
 /**
  * Reads the TCP DATABASE_URL from `prisma dev ls` and writes it to apps/api/.env.
- * Prisma Dev uses dynamic ports; a stale URL causes "Server has closed the connection".
+ * Only used when USE_PRISMA_DEV=1 or DATABASE_URL already points at Prisma Dev.
  */
 
 import { execSync } from 'node:child_process';

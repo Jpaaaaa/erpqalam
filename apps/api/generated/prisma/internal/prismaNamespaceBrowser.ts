@@ -54,6 +54,8 @@ export const ModelName = {
   School: 'School',
   PendingStudent: 'PendingStudent',
   Student: 'Student',
+  DocumentRequestSettings: 'DocumentRequestSettings',
+  DocumentRequestLetter: 'DocumentRequestLetter',
   User: 'User',
   RefreshToken: 'RefreshToken'
 } as const
@@ -143,6 +145,33 @@ export const StudentScalarFieldEnum = {
 } as const
 
 export type StudentScalarFieldEnum = (typeof StudentScalarFieldEnum)[keyof typeof StudentScalarFieldEnum]
+
+
+export const DocumentRequestSettingsScalarFieldEnum = {
+  id: 'id',
+  schoolId: 'schoolId',
+  prefix: 'prefix',
+  nextNumber: 'nextNumber',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DocumentRequestSettingsScalarFieldEnum = (typeof DocumentRequestSettingsScalarFieldEnum)[keyof typeof DocumentRequestSettingsScalarFieldEnum]
+
+
+export const DocumentRequestLetterScalarFieldEnum = {
+  id: 'id',
+  schoolId: 'schoolId',
+  documentNumber: 'documentNumber',
+  documentDate: 'documentDate',
+  studentFullName: 'studentFullName',
+  previousSchoolName: 'previousSchoolName',
+  pendingStudentId: 'pendingStudentId',
+  studentId: 'studentId',
+  generatedByUserId: 'generatedByUserId',
+  createdAt: 'createdAt'
+} as const
+
+export type DocumentRequestLetterScalarFieldEnum = (typeof DocumentRequestLetterScalarFieldEnum)[keyof typeof DocumentRequestLetterScalarFieldEnum]
 
 
 export const UserScalarFieldEnum = {

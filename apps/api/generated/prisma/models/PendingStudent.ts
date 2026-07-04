@@ -324,6 +324,7 @@ export type PendingStudentWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"PendingStudent"> | Date | string
   school?: Prisma.XOR<Prisma.SchoolScalarRelationFilter, Prisma.SchoolWhereInput>
   submittedBy?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
+  documentRequestLetters?: Prisma.DocumentRequestLetterListRelationFilter
 }
 
 export type PendingStudentOrderByWithRelationInput = {
@@ -352,6 +353,7 @@ export type PendingStudentOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder
   school?: Prisma.SchoolOrderByWithRelationInput
   submittedBy?: Prisma.UserOrderByWithRelationInput
+  documentRequestLetters?: Prisma.DocumentRequestLetterOrderByRelationAggregateInput
 }
 
 export type PendingStudentWhereUniqueInput = Prisma.AtLeast<{
@@ -383,6 +385,7 @@ export type PendingStudentWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"PendingStudent"> | Date | string
   school?: Prisma.XOR<Prisma.SchoolScalarRelationFilter, Prisma.SchoolWhereInput>
   submittedBy?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
+  documentRequestLetters?: Prisma.DocumentRequestLetterListRelationFilter
 }, "id">
 
 export type PendingStudentOrderByWithAggregationInput = {
@@ -467,6 +470,7 @@ export type PendingStudentCreateInput = {
   updatedAt?: Date | string
   school: Prisma.SchoolCreateNestedOneWithoutPendingStudentsInput
   submittedBy?: Prisma.UserCreateNestedOneWithoutPendingSubmissionsInput
+  documentRequestLetters?: Prisma.DocumentRequestLetterCreateNestedManyWithoutPendingStudentInput
 }
 
 export type PendingStudentUncheckedCreateInput = {
@@ -493,6 +497,7 @@ export type PendingStudentUncheckedCreateInput = {
   submittedByUserId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  documentRequestLetters?: Prisma.DocumentRequestLetterUncheckedCreateNestedManyWithoutPendingStudentInput
 }
 
 export type PendingStudentUpdateInput = {
@@ -519,6 +524,7 @@ export type PendingStudentUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   school?: Prisma.SchoolUpdateOneRequiredWithoutPendingStudentsNestedInput
   submittedBy?: Prisma.UserUpdateOneWithoutPendingSubmissionsNestedInput
+  documentRequestLetters?: Prisma.DocumentRequestLetterUpdateManyWithoutPendingStudentNestedInput
 }
 
 export type PendingStudentUncheckedUpdateInput = {
@@ -545,6 +551,7 @@ export type PendingStudentUncheckedUpdateInput = {
   submittedByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  documentRequestLetters?: Prisma.DocumentRequestLetterUncheckedUpdateManyWithoutPendingStudentNestedInput
 }
 
 export type PendingStudentCreateManyInput = {
@@ -717,6 +724,11 @@ export type PendingStudentMinOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder
 }
 
+export type PendingStudentNullableScalarRelationFilter = {
+  is?: Prisma.PendingStudentWhereInput | null
+  isNot?: Prisma.PendingStudentWhereInput | null
+}
+
 export type PendingStudentCreateNestedManyWithoutSchoolInput = {
   create?: Prisma.XOR<Prisma.PendingStudentCreateWithoutSchoolInput, Prisma.PendingStudentUncheckedCreateWithoutSchoolInput> | Prisma.PendingStudentCreateWithoutSchoolInput[] | Prisma.PendingStudentUncheckedCreateWithoutSchoolInput[]
   connectOrCreate?: Prisma.PendingStudentCreateOrConnectWithoutSchoolInput | Prisma.PendingStudentCreateOrConnectWithoutSchoolInput[]
@@ -774,6 +786,22 @@ export type PendingStudentUpdatephoneNumbersInput = {
 
 export type NullableDateTimeFieldUpdateOperationsInput = {
   set?: Date | string | null
+}
+
+export type PendingStudentCreateNestedOneWithoutDocumentRequestLettersInput = {
+  create?: Prisma.XOR<Prisma.PendingStudentCreateWithoutDocumentRequestLettersInput, Prisma.PendingStudentUncheckedCreateWithoutDocumentRequestLettersInput>
+  connectOrCreate?: Prisma.PendingStudentCreateOrConnectWithoutDocumentRequestLettersInput
+  connect?: Prisma.PendingStudentWhereUniqueInput
+}
+
+export type PendingStudentUpdateOneWithoutDocumentRequestLettersNestedInput = {
+  create?: Prisma.XOR<Prisma.PendingStudentCreateWithoutDocumentRequestLettersInput, Prisma.PendingStudentUncheckedCreateWithoutDocumentRequestLettersInput>
+  connectOrCreate?: Prisma.PendingStudentCreateOrConnectWithoutDocumentRequestLettersInput
+  upsert?: Prisma.PendingStudentUpsertWithoutDocumentRequestLettersInput
+  disconnect?: Prisma.PendingStudentWhereInput | boolean
+  delete?: Prisma.PendingStudentWhereInput | boolean
+  connect?: Prisma.PendingStudentWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.PendingStudentUpdateToOneWithWhereWithoutDocumentRequestLettersInput, Prisma.PendingStudentUpdateWithoutDocumentRequestLettersInput>, Prisma.PendingStudentUncheckedUpdateWithoutDocumentRequestLettersInput>
 }
 
 export type PendingStudentCreateNestedManyWithoutSubmittedByInput = {
@@ -841,6 +869,7 @@ export type PendingStudentCreateWithoutSchoolInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   submittedBy?: Prisma.UserCreateNestedOneWithoutPendingSubmissionsInput
+  documentRequestLetters?: Prisma.DocumentRequestLetterCreateNestedManyWithoutPendingStudentInput
 }
 
 export type PendingStudentUncheckedCreateWithoutSchoolInput = {
@@ -866,6 +895,7 @@ export type PendingStudentUncheckedCreateWithoutSchoolInput = {
   submittedByUserId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  documentRequestLetters?: Prisma.DocumentRequestLetterUncheckedCreateNestedManyWithoutPendingStudentInput
 }
 
 export type PendingStudentCreateOrConnectWithoutSchoolInput = {
@@ -923,6 +953,126 @@ export type PendingStudentScalarWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"PendingStudent"> | Date | string
 }
 
+export type PendingStudentCreateWithoutDocumentRequestLettersInput = {
+  id?: string
+  firstName: string
+  secondName: string
+  thirdName?: string | null
+  fourthName?: string | null
+  section?: string | null
+  phoneNumbers?: Prisma.PendingStudentCreatephoneNumbersInput | string[]
+  guardianInfo?: string | null
+  comeViaWho?: string | null
+  homeAddress?: string | null
+  birthPlace?: string | null
+  birthDate?: Date | string | null
+  nationalIdNumber?: string | null
+  residenceCardNumber?: string | null
+  foodRationCardNumber?: string | null
+  guardianName?: string | null
+  guardianMobile?: string | null
+  stage?: string | null
+  detailsCompletedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  school: Prisma.SchoolCreateNestedOneWithoutPendingStudentsInput
+  submittedBy?: Prisma.UserCreateNestedOneWithoutPendingSubmissionsInput
+}
+
+export type PendingStudentUncheckedCreateWithoutDocumentRequestLettersInput = {
+  id?: string
+  firstName: string
+  secondName: string
+  thirdName?: string | null
+  fourthName?: string | null
+  section?: string | null
+  phoneNumbers?: Prisma.PendingStudentCreatephoneNumbersInput | string[]
+  guardianInfo?: string | null
+  comeViaWho?: string | null
+  homeAddress?: string | null
+  birthPlace?: string | null
+  birthDate?: Date | string | null
+  nationalIdNumber?: string | null
+  residenceCardNumber?: string | null
+  foodRationCardNumber?: string | null
+  guardianName?: string | null
+  guardianMobile?: string | null
+  stage?: string | null
+  detailsCompletedAt?: Date | string | null
+  schoolId: string
+  submittedByUserId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type PendingStudentCreateOrConnectWithoutDocumentRequestLettersInput = {
+  where: Prisma.PendingStudentWhereUniqueInput
+  create: Prisma.XOR<Prisma.PendingStudentCreateWithoutDocumentRequestLettersInput, Prisma.PendingStudentUncheckedCreateWithoutDocumentRequestLettersInput>
+}
+
+export type PendingStudentUpsertWithoutDocumentRequestLettersInput = {
+  update: Prisma.XOR<Prisma.PendingStudentUpdateWithoutDocumentRequestLettersInput, Prisma.PendingStudentUncheckedUpdateWithoutDocumentRequestLettersInput>
+  create: Prisma.XOR<Prisma.PendingStudentCreateWithoutDocumentRequestLettersInput, Prisma.PendingStudentUncheckedCreateWithoutDocumentRequestLettersInput>
+  where?: Prisma.PendingStudentWhereInput
+}
+
+export type PendingStudentUpdateToOneWithWhereWithoutDocumentRequestLettersInput = {
+  where?: Prisma.PendingStudentWhereInput
+  data: Prisma.XOR<Prisma.PendingStudentUpdateWithoutDocumentRequestLettersInput, Prisma.PendingStudentUncheckedUpdateWithoutDocumentRequestLettersInput>
+}
+
+export type PendingStudentUpdateWithoutDocumentRequestLettersInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  secondName?: Prisma.StringFieldUpdateOperationsInput | string
+  thirdName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fourthName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  section?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phoneNumbers?: Prisma.PendingStudentUpdatephoneNumbersInput | string[]
+  guardianInfo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  comeViaWho?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  homeAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  birthPlace?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  birthDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  nationalIdNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  residenceCardNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  foodRationCardNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  guardianName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  guardianMobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  detailsCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  school?: Prisma.SchoolUpdateOneRequiredWithoutPendingStudentsNestedInput
+  submittedBy?: Prisma.UserUpdateOneWithoutPendingSubmissionsNestedInput
+}
+
+export type PendingStudentUncheckedUpdateWithoutDocumentRequestLettersInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  secondName?: Prisma.StringFieldUpdateOperationsInput | string
+  thirdName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fourthName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  section?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phoneNumbers?: Prisma.PendingStudentUpdatephoneNumbersInput | string[]
+  guardianInfo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  comeViaWho?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  homeAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  birthPlace?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  birthDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  nationalIdNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  residenceCardNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  foodRationCardNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  guardianName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  guardianMobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  detailsCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  schoolId?: Prisma.StringFieldUpdateOperationsInput | string
+  submittedByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
 export type PendingStudentCreateWithoutSubmittedByInput = {
   id?: string
   firstName: string
@@ -946,6 +1096,7 @@ export type PendingStudentCreateWithoutSubmittedByInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   school: Prisma.SchoolCreateNestedOneWithoutPendingStudentsInput
+  documentRequestLetters?: Prisma.DocumentRequestLetterCreateNestedManyWithoutPendingStudentInput
 }
 
 export type PendingStudentUncheckedCreateWithoutSubmittedByInput = {
@@ -971,6 +1122,7 @@ export type PendingStudentUncheckedCreateWithoutSubmittedByInput = {
   schoolId: string
   createdAt?: Date | string
   updatedAt?: Date | string
+  documentRequestLetters?: Prisma.DocumentRequestLetterUncheckedCreateNestedManyWithoutPendingStudentInput
 }
 
 export type PendingStudentCreateOrConnectWithoutSubmittedByInput = {
@@ -1047,6 +1199,7 @@ export type PendingStudentUpdateWithoutSchoolInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   submittedBy?: Prisma.UserUpdateOneWithoutPendingSubmissionsNestedInput
+  documentRequestLetters?: Prisma.DocumentRequestLetterUpdateManyWithoutPendingStudentNestedInput
 }
 
 export type PendingStudentUncheckedUpdateWithoutSchoolInput = {
@@ -1072,6 +1225,7 @@ export type PendingStudentUncheckedUpdateWithoutSchoolInput = {
   submittedByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  documentRequestLetters?: Prisma.DocumentRequestLetterUncheckedUpdateManyWithoutPendingStudentNestedInput
 }
 
 export type PendingStudentUncheckedUpdateManyWithoutSchoolInput = {
@@ -1147,6 +1301,7 @@ export type PendingStudentUpdateWithoutSubmittedByInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   school?: Prisma.SchoolUpdateOneRequiredWithoutPendingStudentsNestedInput
+  documentRequestLetters?: Prisma.DocumentRequestLetterUpdateManyWithoutPendingStudentNestedInput
 }
 
 export type PendingStudentUncheckedUpdateWithoutSubmittedByInput = {
@@ -1172,6 +1327,7 @@ export type PendingStudentUncheckedUpdateWithoutSubmittedByInput = {
   schoolId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  documentRequestLetters?: Prisma.DocumentRequestLetterUncheckedUpdateManyWithoutPendingStudentNestedInput
 }
 
 export type PendingStudentUncheckedUpdateManyWithoutSubmittedByInput = {
@@ -1200,6 +1356,35 @@ export type PendingStudentUncheckedUpdateManyWithoutSubmittedByInput = {
 }
 
 
+/**
+ * Count Type PendingStudentCountOutputType
+ */
+
+export type PendingStudentCountOutputType = {
+  documentRequestLetters: number
+}
+
+export type PendingStudentCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  documentRequestLetters?: boolean | PendingStudentCountOutputTypeCountDocumentRequestLettersArgs
+}
+
+/**
+ * PendingStudentCountOutputType without action
+ */
+export type PendingStudentCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the PendingStudentCountOutputType
+   */
+  select?: Prisma.PendingStudentCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * PendingStudentCountOutputType without action
+ */
+export type PendingStudentCountOutputTypeCountDocumentRequestLettersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.DocumentRequestLetterWhereInput
+}
+
 
 export type PendingStudentSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1227,6 +1412,8 @@ export type PendingStudentSelect<ExtArgs extends runtime.Types.Extensions.Intern
   updatedAt?: boolean
   school?: boolean | Prisma.SchoolDefaultArgs<ExtArgs>
   submittedBy?: boolean | Prisma.PendingStudent$submittedByArgs<ExtArgs>
+  documentRequestLetters?: boolean | Prisma.PendingStudent$documentRequestLettersArgs<ExtArgs>
+  _count?: boolean | Prisma.PendingStudentCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["pendingStudent"]>
 
 export type PendingStudentSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1315,6 +1502,8 @@ export type PendingStudentOmit<ExtArgs extends runtime.Types.Extensions.Internal
 export type PendingStudentInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   school?: boolean | Prisma.SchoolDefaultArgs<ExtArgs>
   submittedBy?: boolean | Prisma.PendingStudent$submittedByArgs<ExtArgs>
+  documentRequestLetters?: boolean | Prisma.PendingStudent$documentRequestLettersArgs<ExtArgs>
+  _count?: boolean | Prisma.PendingStudentCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type PendingStudentIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   school?: boolean | Prisma.SchoolDefaultArgs<ExtArgs>
@@ -1330,6 +1519,7 @@ export type $PendingStudentPayload<ExtArgs extends runtime.Types.Extensions.Inte
   objects: {
     school: Prisma.$SchoolPayload<ExtArgs>
     submittedBy: Prisma.$UserPayload<ExtArgs> | null
+    documentRequestLetters: Prisma.$DocumentRequestLetterPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1751,6 +1941,7 @@ export interface Prisma__PendingStudentClient<T, Null = never, ExtArgs extends r
   readonly [Symbol.toStringTag]: "PrismaPromise"
   school<T extends Prisma.SchoolDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SchoolDefaultArgs<ExtArgs>>): Prisma.Prisma__SchoolClient<runtime.Types.Result.GetResult<Prisma.$SchoolPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   submittedBy<T extends Prisma.PendingStudent$submittedByArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PendingStudent$submittedByArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  documentRequestLetters<T extends Prisma.PendingStudent$documentRequestLettersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PendingStudent$documentRequestLettersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DocumentRequestLetterPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2220,6 +2411,30 @@ export type PendingStudent$submittedByArgs<ExtArgs extends runtime.Types.Extensi
    */
   include?: Prisma.UserInclude<ExtArgs> | null
   where?: Prisma.UserWhereInput
+}
+
+/**
+ * PendingStudent.documentRequestLetters
+ */
+export type PendingStudent$documentRequestLettersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the DocumentRequestLetter
+   */
+  select?: Prisma.DocumentRequestLetterSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the DocumentRequestLetter
+   */
+  omit?: Prisma.DocumentRequestLetterOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.DocumentRequestLetterInclude<ExtArgs> | null
+  where?: Prisma.DocumentRequestLetterWhereInput
+  orderBy?: Prisma.DocumentRequestLetterOrderByWithRelationInput | Prisma.DocumentRequestLetterOrderByWithRelationInput[]
+  cursor?: Prisma.DocumentRequestLetterWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.DocumentRequestLetterScalarFieldEnum | Prisma.DocumentRequestLetterScalarFieldEnum[]
 }
 
 /**

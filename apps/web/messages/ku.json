@@ -53,6 +53,7 @@
     "usersTitle": "بەڕێوەبردنی بەکارهێنەران",
     "usersDescription": "بەڕێوەبردنی ستافی قوتابخانە، پەسەندکردنی تۆمارکردن، و کۆنتڕۆڵکردنی دەستگەیشتن.",
     "studentsRegister": "ناو نوسین",
+    "documentRequests": "داواکاری بەڵگە",
     "pendingStudents": "خوێندکارانی چاوەڕوان",
     "registeredStudents": "خوێندکارانی تۆمارکراو",
     "needsReview": "پێویستی بە پێداچوونەوە",
@@ -235,6 +236,54 @@
       "studentMobile": "ژ.موبایلی قوتابی",
       "guardianName": "ناوی باخێوکار",
       "guardianMobile": "ژ.موبایلی باخێوکار"
+    },
+    "documentRequest": {
+      "title": "دروستکردنی داواکاری بەڵگە",
+      "generateButton": "دروستکردنی داواکاری بەڵگە",
+      "studentName": "ناوی قوتابی",
+      "previousSchoolName": "قوتابخانەی پێشوو (بۆ)",
+      "previousSchoolNamePlaceholder": "ئەو قوتابخانەیە کە قوتابی لێ گواستراوەتەوە",
+      "hint": "بەرواری ئەمڕۆ و ژمارەی بەڵگە بە شێوەی خۆکار پڕ دەکرێن.",
+      "generate": "دروستکردنی PDF",
+      "previewButton": "پێشبینینی PDF",
+      "previewTitle": "پێشبینینی بەڵگە",
+      "previewNotFound": "هێشتا هیچ بەڵگەیەک بۆ ئەم قوتابیە دروست نەکراوە.",
+      "previewError": "نەتوانرا پێشبینینی بەڵگە بار بکرێت.",
+      "documentNumber": "ژمارەی بەڵگە",
+      "download": "داگرتنی PDF",
+      "close": "داخستن",
+      "cancel": "هەڵوەشاندنەوە",
+      "generateError": "نەتوانرا بەڵگە دروست بکرێت. تکایە دووبارە هەوڵ بدەرەوە."
+    }
+  },
+  "documentRequests": {
+    "title": "نامەکانی داواکاری بەڵگە",
+    "description": "دروستکردن و بەدواداچوونی نامەکانی داواکاری بەڵگە بۆ قوتابیان.",
+    "historyTab": "مێژوو",
+    "settingsTab": "ڕێکخستنی ژمارە",
+    "accessDenied": "مۆڵەتت نییە بۆ دەستگەیشتن بە داواکاری بەڵگە.",
+    "managerOnly": "تەنها بەڕێوەبەر دەتوانێت ڕێکخستنی ژمارەی بەڵگە بگۆڕێت.",
+    "settingsHint": "پێشگر و ژمارەی دەستپێک لە",
+    "settingsLink": "ڕێکخستنەکان",
+    "settings": {
+      "description": "پێشگر و ژمارەی داهاتوو دیاری بکە.",
+      "prefix": "پێشگر",
+      "nextNumber": "ژمارەی داهاتوو",
+      "preview": "ژمارەی بەڵگەی داهاتوو: {number}",
+      "save": "پاشەکەوتکردنی ڕێکخستن",
+      "loadError": "نەتوانرا ڕێکخستن بار بکرێت.",
+      "saveError": "نەتوانرا ڕێکخستن پاشەکەوت بکرێت.",
+      "saveSuccess": "ڕێکخستن پاشەکەوت کرا.",
+      "invalidNumber": "ژمارەی داهاتوو دەبێت لانیکەم 1 بێت."
+    },
+    "history": {
+      "empty": "هێشتا هیچ نامەیەک دروست نەکراوە.",
+      "loadError": "نەتوانرا مێژوو بار بکرێت.",
+      "documentNumber": "ژمارەی بەڵگە",
+      "date": "بەروار",
+      "studentName": "قوتابی",
+      "previousSchool": "قوتابخانەی پێشوو",
+      "generatedBy": "دروستکراوە لەلایەن"
     }
   },
   "roles": {
@@ -251,6 +300,8 @@
     "studentCheckInTitle": "تۆمارکردنی قوتابی | ERP Qalam",
     "studentsPendingTitle": "قوتابی چاوەڕوان | ERP Qalam",
     "studentsRegisteredTitle": "قوتابی تۆمارکراو | ERP Qalam",
-    "studentsRegisterTitle": "ناو نوسین | ERP Qalam"
+    "studentsRegisterTitle": "ناو نوسین | ERP Qalam",
+    "documentRequestsTitle": "داواکاری بەڵگە | ERP Qalam",
+    "documentRequestsSettingsTitle": "ڕێکخستنی بەڵگە | ERP Qalam"
   }
 }

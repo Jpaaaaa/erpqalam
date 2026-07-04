@@ -8,9 +8,30 @@ interface ModalProps {
   title: string;
   children: ReactNode;
   footer?: ReactNode;
+  size?: 'md' | 'lg' | 'xl' | 'a4';
+  overlayClassName?: string;
+  panelClassName?: string;
+  contentClassName?: string;
 }
 
-export function Modal({ open, onClose, title, children, footer }: ModalProps) {
+const sizeClasses = {
+  md: 'max-w-2xl',
+  lg: 'max-w-4xl',
+  xl: 'max-w-6xl',
+  a4: 'w-[min(480px,92vw)] max-w-none',
+};
+
+export function Modal({
+  open,
+  onClose,
+  title,
+  children,
+  footer,
+  size = 'md',
+  overlayClassName = 'z-50',
+  panelClassName = '',
+  contentClassName = '',
+}: ModalProps) {
   useEffect(() => {
     if (!open) return;
 
@@ -34,7 +55,7 @@ export function Modal({ open, onClose, title, children, footer }: ModalProps) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center p-0 sm:items-center sm:p-4">
+    <div className={`fixed inset-0 flex items-end justify-center p-0 sm:items-center sm:p-4 ${overlayClassName}`}>
       <button
         type="button"
         aria-label="Close"
@@ -45,14 +66,16 @@ export function Modal({ open, onClose, title, children, footer }: ModalProps) {
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
-        className="relative flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-t-2xl bg-white shadow-xl sm:rounded-2xl"
+        className={`relative flex max-h-[92vh] w-full ${sizeClasses[size]} flex-col overflow-hidden rounded-t-2xl bg-white shadow-xl sm:rounded-2xl ${panelClassName}`}
       >
         <div className="border-b border-slate-100 px-5 py-4">
           <h2 id="modal-title" className="text-base font-semibold text-slate-900">
             {title}
           </h2>
         </div>
-        <div className="flex-1 overflow-y-auto px-5 py-4">{children}</div>
+        <div className={`flex-1 overflow-y-auto px-5 py-4 ${contentClassName}`}>
+          {children}
+        </div>
         {footer && (
           <div className="flex flex-col-reverse gap-2 border-t border-slate-100 px-5 py-4 sm:flex-row sm:justify-end">
             {footer}

@@ -11,6 +11,7 @@ import {
   HomeIcon,
   StudentsIcon,
   UsersIcon,
+  DocumentIcon,
   type NavIconComponent,
 } from '@/components/layout/NavIcons';
 
@@ -42,6 +43,12 @@ export function useDashboardNav(user: AuthUser): DashboardNavItem[] {
       label: tDashboard('studentsRegister'),
       icon: StudentsIcon,
       matchPrefix: '/dashboard/students',
+    });
+    items.push({
+      href: '/dashboard/document-requests',
+      label: tDashboard('documentRequests'),
+      icon: DocumentIcon,
+      matchPrefix: '/dashboard/document-requests',
     });
   }
 

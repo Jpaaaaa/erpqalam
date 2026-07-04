@@ -53,6 +53,7 @@
     "usersTitle": "إدارة المستخدمين",
     "usersDescription": "إدارة طاقم المدرسة، الموافقة على التسجيلات، والتحكم في الوصول.",
     "studentsRegister": "تسجيل الطلاب",
+    "documentRequests": "طلبات الوثائق",
     "pendingStudents": "طلاب قيد الانتظار",
     "registeredStudents": "طلاب مسجلون",
     "needsReview": "يحتاج مراجعة",
@@ -235,6 +236,54 @@
       "studentMobile": "رقم موبايل الطالب",
       "guardianName": "اسم ولي الطالب",
       "guardianMobile": "رقم موبايل ولي الطالب"
+    },
+    "documentRequest": {
+      "title": "إنشاء طلب الوثيقة",
+      "generateButton": "إنشاء طلب الوثيقة",
+      "studentName": "اسم الطالب",
+      "previousSchoolName": "المدرسة السابقة (إلى)",
+      "previousSchoolNamePlaceholder": "المدرسة التي انتقل منها الطالب",
+      "hint": "يتم تعبئة تاريخ اليوم ورقم الوثيقة تلقائياً.",
+      "generate": "إنشاء PDF",
+      "previewButton": "معاينة PDF",
+      "previewTitle": "معاينة الوثيقة",
+      "previewNotFound": "لم يتم إنشاء أي وثيقة لهذا الطالب بعد.",
+      "previewError": "تعذر تحميل معاينة الوثيقة.",
+      "documentNumber": "رقم الوثيقة",
+      "download": "تحميل PDF",
+      "close": "إغلاق",
+      "cancel": "إلغاء",
+      "generateError": "تعذر إنشاء الوثيقة. يرجى المحاولة مرة أخرى."
+    }
+  },
+  "documentRequests": {
+    "title": "طلبات الوثائق",
+    "description": "إنشاء وتتبع خطابات طلب الوثيقة للطلاب.",
+    "historyTab": "السجل",
+    "settingsTab": "إعدادات الترقيم",
+    "accessDenied": "ليس لديك صلاحية للوصول إلى طلبات الوثائق.",
+    "managerOnly": "المدير فقط يمكنه تغيير إعدادات ترقيم الوثائق.",
+    "settingsHint": "يمكنك ضبط بادئة رقم الوثيقة ونقطة البداية من",
+    "settingsLink": "الإعدادات",
+    "settings": {
+      "description": "حدد حرف البادئة والرقم التالي. مثال: بادئة ب مع الرقم 5 ينتج ب5.",
+      "prefix": "البادئة",
+      "nextNumber": "الرقم التالي",
+      "preview": "رقم الوثيقة التالي: {number}",
+      "save": "حفظ الإعدادات",
+      "loadError": "تعذر تحميل الإعدادات.",
+      "saveError": "تعذر حفظ الإعدادات.",
+      "saveSuccess": "تم حفظ الإعدادات.",
+      "invalidNumber": "يجب أن يكون الرقم التالي 1 على الأقل."
+    },
+    "history": {
+      "empty": "لم يتم إنشاء أي طلبات وثائق بعد.",
+      "loadError": "تعذر تحميل سجل الوثائق.",
+      "documentNumber": "رقم الوثيقة",
+      "date": "التاريخ",
+      "studentName": "الطالب",
+      "previousSchool": "المدرسة السابقة",
+      "generatedBy": "أنشأها"
     }
   },
   "roles": {
@@ -251,6 +300,8 @@
     "studentCheckInTitle": "تسجيل حضور الطالب | ERP Qalam",
     "studentsPendingTitle": "طلاب معلقون | ERP Qalam",
     "studentsRegisteredTitle": "طلاب مسجلون | ERP Qalam",
-    "studentsRegisterTitle": "تسجيل الطلاب | ERP Qalam"
+    "studentsRegisterTitle": "تسجيل الطلاب | ERP Qalam",
+    "documentRequestsTitle": "طلبات الوثائق | ERP Qalam",
+    "documentRequestsSettingsTitle": "إعدادات الوثائق | ERP Qalam"
   }
 }

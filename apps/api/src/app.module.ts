@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { StudentsModule } from './students/students.module';
 import { HealthModule } from './health/health.module';
+import { DocumentRequestsModule } from './document-requests/document-requests.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { HealthModule } from './health/health.module';
     AuthModule,
     UsersModule,
     StudentsModule,
+    DocumentRequestsModule,
     HealthModule,
   ],
 })

@@ -387,6 +387,8 @@ export const ModelName = {
   School: 'School',
   PendingStudent: 'PendingStudent',
   Student: 'Student',
+  DocumentRequestSettings: 'DocumentRequestSettings',
+  DocumentRequestLetter: 'DocumentRequestLetter',
   User: 'User',
   RefreshToken: 'RefreshToken'
 } as const
@@ -404,7 +406,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "school" | "pendingStudent" | "student" | "user" | "refreshToken"
+    modelProps: "school" | "pendingStudent" | "student" | "documentRequestSettings" | "documentRequestLetter" | "user" | "refreshToken"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -627,6 +629,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.StudentCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.StudentCountAggregateOutputType> | number
+        }
+      }
+    }
+    DocumentRequestSettings: {
+      payload: Prisma.$DocumentRequestSettingsPayload<ExtArgs>
+      fields: Prisma.DocumentRequestSettingsFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.DocumentRequestSettingsFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentRequestSettingsPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.DocumentRequestSettingsFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentRequestSettingsPayload>
+        }
+        findFirst: {
+          args: Prisma.DocumentRequestSettingsFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentRequestSettingsPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.DocumentRequestSettingsFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentRequestSettingsPayload>
+        }
+        findMany: {
+          args: Prisma.DocumentRequestSettingsFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentRequestSettingsPayload>[]
+        }
+        create: {
+          args: Prisma.DocumentRequestSettingsCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentRequestSettingsPayload>
+        }
+        createMany: {
+          args: Prisma.DocumentRequestSettingsCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.DocumentRequestSettingsCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentRequestSettingsPayload>[]
+        }
+        delete: {
+          args: Prisma.DocumentRequestSettingsDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentRequestSettingsPayload>
+        }
+        update: {
+          args: Prisma.DocumentRequestSettingsUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentRequestSettingsPayload>
+        }
+        deleteMany: {
+          args: Prisma.DocumentRequestSettingsDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.DocumentRequestSettingsUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.DocumentRequestSettingsUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentRequestSettingsPayload>[]
+        }
+        upsert: {
+          args: Prisma.DocumentRequestSettingsUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentRequestSettingsPayload>
+        }
+        aggregate: {
+          args: Prisma.DocumentRequestSettingsAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDocumentRequestSettings>
+        }
+        groupBy: {
+          args: Prisma.DocumentRequestSettingsGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DocumentRequestSettingsGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.DocumentRequestSettingsCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DocumentRequestSettingsCountAggregateOutputType> | number
+        }
+      }
+    }
+    DocumentRequestLetter: {
+      payload: Prisma.$DocumentRequestLetterPayload<ExtArgs>
+      fields: Prisma.DocumentRequestLetterFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.DocumentRequestLetterFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentRequestLetterPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.DocumentRequestLetterFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentRequestLetterPayload>
+        }
+        findFirst: {
+          args: Prisma.DocumentRequestLetterFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentRequestLetterPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.DocumentRequestLetterFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentRequestLetterPayload>
+        }
+        findMany: {
+          args: Prisma.DocumentRequestLetterFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentRequestLetterPayload>[]
+        }
+        create: {
+          args: Prisma.DocumentRequestLetterCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentRequestLetterPayload>
+        }
+        createMany: {
+          args: Prisma.DocumentRequestLetterCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.DocumentRequestLetterCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentRequestLetterPayload>[]
+        }
+        delete: {
+          args: Prisma.DocumentRequestLetterDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentRequestLetterPayload>
+        }
+        update: {
+          args: Prisma.DocumentRequestLetterUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentRequestLetterPayload>
+        }
+        deleteMany: {
+          args: Prisma.DocumentRequestLetterDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.DocumentRequestLetterUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.DocumentRequestLetterUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentRequestLetterPayload>[]
+        }
+        upsert: {
+          args: Prisma.DocumentRequestLetterUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentRequestLetterPayload>
+        }
+        aggregate: {
+          args: Prisma.DocumentRequestLetterAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDocumentRequestLetter>
+        }
+        groupBy: {
+          args: Prisma.DocumentRequestLetterGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DocumentRequestLetterGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.DocumentRequestLetterCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DocumentRequestLetterCountAggregateOutputType> | number
         }
       }
     }
@@ -888,6 +1038,33 @@ export const StudentScalarFieldEnum = {
 export type StudentScalarFieldEnum = (typeof StudentScalarFieldEnum)[keyof typeof StudentScalarFieldEnum]
 
 
+export const DocumentRequestSettingsScalarFieldEnum = {
+  id: 'id',
+  schoolId: 'schoolId',
+  prefix: 'prefix',
+  nextNumber: 'nextNumber',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DocumentRequestSettingsScalarFieldEnum = (typeof DocumentRequestSettingsScalarFieldEnum)[keyof typeof DocumentRequestSettingsScalarFieldEnum]
+
+
+export const DocumentRequestLetterScalarFieldEnum = {
+  id: 'id',
+  schoolId: 'schoolId',
+  documentNumber: 'documentNumber',
+  documentDate: 'documentDate',
+  studentFullName: 'studentFullName',
+  previousSchoolName: 'previousSchoolName',
+  pendingStudentId: 'pendingStudentId',
+  studentId: 'studentId',
+  generatedByUserId: 'generatedByUserId',
+  createdAt: 'createdAt'
+} as const
+
+export type DocumentRequestLetterScalarFieldEnum = (typeof DocumentRequestLetterScalarFieldEnum)[keyof typeof DocumentRequestLetterScalarFieldEnum]
+
+
 export const UserScalarFieldEnum = {
   id: 'id',
   email: 'email',
@@ -976,6 +1153,20 @@ export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaM
 
 
 /**
+ * Reference to a field of type 'Int'
+ */
+export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
+    
+
+
+/**
+ * Reference to a field of type 'Int[]'
+ */
+export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
+    
+
+
+/**
  * Reference to a field of type 'UserRole'
  */
 export type EnumUserRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'UserRole'>
@@ -1018,16 +1209,16 @@ export type ListEnumUserStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$P
 
 
 /**
- * Reference to a field of type 'Int'
+ * Reference to a field of type 'Float'
  */
-export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
+export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
     
 
 
 /**
- * Reference to a field of type 'Int[]'
+ * Reference to a field of type 'Float[]'
  */
-export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
+export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
     
 
 /**
@@ -1143,6 +1334,8 @@ export type GlobalOmitConfig = {
   school?: Prisma.SchoolOmit
   pendingStudent?: Prisma.PendingStudentOmit
   student?: Prisma.StudentOmit
+  documentRequestSettings?: Prisma.DocumentRequestSettingsOmit
+  documentRequestLetter?: Prisma.DocumentRequestLetterOmit
   user?: Prisma.UserOmit
   refreshToken?: Prisma.RefreshTokenOmit
 }

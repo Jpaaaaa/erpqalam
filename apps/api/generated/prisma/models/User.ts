@@ -238,6 +238,7 @@ export type UserWhereInput = {
   refreshTokens?: Prisma.RefreshTokenListRelationFilter
   registeredStudents?: Prisma.StudentListRelationFilter
   pendingSubmissions?: Prisma.PendingStudentListRelationFilter
+  documentRequestLetters?: Prisma.DocumentRequestLetterListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -257,6 +258,7 @@ export type UserOrderByWithRelationInput = {
   refreshTokens?: Prisma.RefreshTokenOrderByRelationAggregateInput
   registeredStudents?: Prisma.StudentOrderByRelationAggregateInput
   pendingSubmissions?: Prisma.PendingStudentOrderByRelationAggregateInput
+  documentRequestLetters?: Prisma.DocumentRequestLetterOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -279,6 +281,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   refreshTokens?: Prisma.RefreshTokenListRelationFilter
   registeredStudents?: Prisma.StudentListRelationFilter
   pendingSubmissions?: Prisma.PendingStudentListRelationFilter
+  documentRequestLetters?: Prisma.DocumentRequestLetterListRelationFilter
 }, "id" | "email">
 
 export type UserOrderByWithAggregationInput = {
@@ -333,6 +336,7 @@ export type UserCreateInput = {
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
   registeredStudents?: Prisma.StudentCreateNestedManyWithoutRegisteredByInput
   pendingSubmissions?: Prisma.PendingStudentCreateNestedManyWithoutSubmittedByInput
+  documentRequestLetters?: Prisma.DocumentRequestLetterCreateNestedManyWithoutGeneratedByInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -351,6 +355,7 @@ export type UserUncheckedCreateInput = {
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
   registeredStudents?: Prisma.StudentUncheckedCreateNestedManyWithoutRegisteredByInput
   pendingSubmissions?: Prisma.PendingStudentUncheckedCreateNestedManyWithoutSubmittedByInput
+  documentRequestLetters?: Prisma.DocumentRequestLetterUncheckedCreateNestedManyWithoutGeneratedByInput
 }
 
 export type UserUpdateInput = {
@@ -369,6 +374,7 @@ export type UserUpdateInput = {
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
   registeredStudents?: Prisma.StudentUpdateManyWithoutRegisteredByNestedInput
   pendingSubmissions?: Prisma.PendingStudentUpdateManyWithoutSubmittedByNestedInput
+  documentRequestLetters?: Prisma.DocumentRequestLetterUpdateManyWithoutGeneratedByNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -387,6 +393,7 @@ export type UserUncheckedUpdateInput = {
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
   registeredStudents?: Prisma.StudentUncheckedUpdateManyWithoutRegisteredByNestedInput
   pendingSubmissions?: Prisma.PendingStudentUncheckedUpdateManyWithoutSubmittedByNestedInput
+  documentRequestLetters?: Prisma.DocumentRequestLetterUncheckedUpdateManyWithoutGeneratedByNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -448,6 +455,11 @@ export type UserNullableScalarRelationFilter = {
   isNot?: Prisma.UserWhereInput | null
 }
 
+export type UserScalarRelationFilter = {
+  is?: Prisma.UserWhereInput
+  isNot?: Prisma.UserWhereInput
+}
+
 export type EnumUserPermissionNullableListFilter<$PrismaModel = never> = {
   equals?: $Enums.UserPermission[] | Prisma.ListEnumUserPermissionFieldRefInput<$PrismaModel> | null
   has?: $Enums.UserPermission | Prisma.EnumUserPermissionFieldRefInput<$PrismaModel> | null
@@ -497,11 +509,6 @@ export type UserMinOrderByAggregateInput = {
   schoolId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
-}
-
-export type UserScalarRelationFilter = {
-  is?: Prisma.UserWhereInput
-  isNot?: Prisma.UserWhereInput
 }
 
 export type UserCreateNestedManyWithoutSchoolInput = {
@@ -578,6 +585,20 @@ export type UserUpdateOneWithoutRegisteredStudentsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutRegisteredStudentsInput, Prisma.UserUpdateWithoutRegisteredStudentsInput>, Prisma.UserUncheckedUpdateWithoutRegisteredStudentsInput>
 }
 
+export type UserCreateNestedOneWithoutDocumentRequestLettersInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutDocumentRequestLettersInput, Prisma.UserUncheckedCreateWithoutDocumentRequestLettersInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutDocumentRequestLettersInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutDocumentRequestLettersNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutDocumentRequestLettersInput, Prisma.UserUncheckedCreateWithoutDocumentRequestLettersInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutDocumentRequestLettersInput
+  upsert?: Prisma.UserUpsertWithoutDocumentRequestLettersInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutDocumentRequestLettersInput, Prisma.UserUpdateWithoutDocumentRequestLettersInput>, Prisma.UserUncheckedUpdateWithoutDocumentRequestLettersInput>
+}
+
 export type UserCreatepermissionsInput = {
   set: $Enums.UserPermission[]
 }
@@ -624,6 +645,7 @@ export type UserCreateWithoutSchoolInput = {
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
   registeredStudents?: Prisma.StudentCreateNestedManyWithoutRegisteredByInput
   pendingSubmissions?: Prisma.PendingStudentCreateNestedManyWithoutSubmittedByInput
+  documentRequestLetters?: Prisma.DocumentRequestLetterCreateNestedManyWithoutGeneratedByInput
 }
 
 export type UserUncheckedCreateWithoutSchoolInput = {
@@ -641,6 +663,7 @@ export type UserUncheckedCreateWithoutSchoolInput = {
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
   registeredStudents?: Prisma.StudentUncheckedCreateNestedManyWithoutRegisteredByInput
   pendingSubmissions?: Prisma.PendingStudentUncheckedCreateNestedManyWithoutSubmittedByInput
+  documentRequestLetters?: Prisma.DocumentRequestLetterUncheckedCreateNestedManyWithoutGeneratedByInput
 }
 
 export type UserCreateOrConnectWithoutSchoolInput = {
@@ -702,6 +725,7 @@ export type UserCreateWithoutPendingSubmissionsInput = {
   school: Prisma.SchoolCreateNestedOneWithoutUsersInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
   registeredStudents?: Prisma.StudentCreateNestedManyWithoutRegisteredByInput
+  documentRequestLetters?: Prisma.DocumentRequestLetterCreateNestedManyWithoutGeneratedByInput
 }
 
 export type UserUncheckedCreateWithoutPendingSubmissionsInput = {
@@ -719,6 +743,7 @@ export type UserUncheckedCreateWithoutPendingSubmissionsInput = {
   updatedAt?: Date | string
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
   registeredStudents?: Prisma.StudentUncheckedCreateNestedManyWithoutRegisteredByInput
+  documentRequestLetters?: Prisma.DocumentRequestLetterUncheckedCreateNestedManyWithoutGeneratedByInput
 }
 
 export type UserCreateOrConnectWithoutPendingSubmissionsInput = {
@@ -752,6 +777,7 @@ export type UserUpdateWithoutPendingSubmissionsInput = {
   school?: Prisma.SchoolUpdateOneRequiredWithoutUsersNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
   registeredStudents?: Prisma.StudentUpdateManyWithoutRegisteredByNestedInput
+  documentRequestLetters?: Prisma.DocumentRequestLetterUpdateManyWithoutGeneratedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutPendingSubmissionsInput = {
@@ -769,6 +795,7 @@ export type UserUncheckedUpdateWithoutPendingSubmissionsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
   registeredStudents?: Prisma.StudentUncheckedUpdateManyWithoutRegisteredByNestedInput
+  documentRequestLetters?: Prisma.DocumentRequestLetterUncheckedUpdateManyWithoutGeneratedByNestedInput
 }
 
 export type UserCreateWithoutRegisteredStudentsInput = {
@@ -786,6 +813,7 @@ export type UserCreateWithoutRegisteredStudentsInput = {
   school: Prisma.SchoolCreateNestedOneWithoutUsersInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
   pendingSubmissions?: Prisma.PendingStudentCreateNestedManyWithoutSubmittedByInput
+  documentRequestLetters?: Prisma.DocumentRequestLetterCreateNestedManyWithoutGeneratedByInput
 }
 
 export type UserUncheckedCreateWithoutRegisteredStudentsInput = {
@@ -803,6 +831,7 @@ export type UserUncheckedCreateWithoutRegisteredStudentsInput = {
   updatedAt?: Date | string
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
   pendingSubmissions?: Prisma.PendingStudentUncheckedCreateNestedManyWithoutSubmittedByInput
+  documentRequestLetters?: Prisma.DocumentRequestLetterUncheckedCreateNestedManyWithoutGeneratedByInput
 }
 
 export type UserCreateOrConnectWithoutRegisteredStudentsInput = {
@@ -836,6 +865,7 @@ export type UserUpdateWithoutRegisteredStudentsInput = {
   school?: Prisma.SchoolUpdateOneRequiredWithoutUsersNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
   pendingSubmissions?: Prisma.PendingStudentUpdateManyWithoutSubmittedByNestedInput
+  documentRequestLetters?: Prisma.DocumentRequestLetterUpdateManyWithoutGeneratedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutRegisteredStudentsInput = {
@@ -852,6 +882,95 @@ export type UserUncheckedUpdateWithoutRegisteredStudentsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
+  pendingSubmissions?: Prisma.PendingStudentUncheckedUpdateManyWithoutSubmittedByNestedInput
+  documentRequestLetters?: Prisma.DocumentRequestLetterUncheckedUpdateManyWithoutGeneratedByNestedInput
+}
+
+export type UserCreateWithoutDocumentRequestLettersInput = {
+  id?: string
+  email: string
+  passwordHash: string
+  firstName: string
+  lastName: string
+  phone?: string | null
+  role: $Enums.UserRole
+  permissions?: Prisma.UserCreatepermissionsInput | $Enums.UserPermission[]
+  status?: $Enums.UserStatus
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  school: Prisma.SchoolCreateNestedOneWithoutUsersInput
+  refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
+  registeredStudents?: Prisma.StudentCreateNestedManyWithoutRegisteredByInput
+  pendingSubmissions?: Prisma.PendingStudentCreateNestedManyWithoutSubmittedByInput
+}
+
+export type UserUncheckedCreateWithoutDocumentRequestLettersInput = {
+  id?: string
+  email: string
+  passwordHash: string
+  firstName: string
+  lastName: string
+  phone?: string | null
+  role: $Enums.UserRole
+  permissions?: Prisma.UserCreatepermissionsInput | $Enums.UserPermission[]
+  status?: $Enums.UserStatus
+  schoolId: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
+  registeredStudents?: Prisma.StudentUncheckedCreateNestedManyWithoutRegisteredByInput
+  pendingSubmissions?: Prisma.PendingStudentUncheckedCreateNestedManyWithoutSubmittedByInput
+}
+
+export type UserCreateOrConnectWithoutDocumentRequestLettersInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutDocumentRequestLettersInput, Prisma.UserUncheckedCreateWithoutDocumentRequestLettersInput>
+}
+
+export type UserUpsertWithoutDocumentRequestLettersInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutDocumentRequestLettersInput, Prisma.UserUncheckedUpdateWithoutDocumentRequestLettersInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutDocumentRequestLettersInput, Prisma.UserUncheckedCreateWithoutDocumentRequestLettersInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutDocumentRequestLettersInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutDocumentRequestLettersInput, Prisma.UserUncheckedUpdateWithoutDocumentRequestLettersInput>
+}
+
+export type UserUpdateWithoutDocumentRequestLettersInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  permissions?: Prisma.UserUpdatepermissionsInput | $Enums.UserPermission[]
+  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  school?: Prisma.SchoolUpdateOneRequiredWithoutUsersNestedInput
+  refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
+  registeredStudents?: Prisma.StudentUpdateManyWithoutRegisteredByNestedInput
+  pendingSubmissions?: Prisma.PendingStudentUpdateManyWithoutSubmittedByNestedInput
+}
+
+export type UserUncheckedUpdateWithoutDocumentRequestLettersInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  permissions?: Prisma.UserUpdatepermissionsInput | $Enums.UserPermission[]
+  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+  schoolId?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
+  registeredStudents?: Prisma.StudentUncheckedUpdateManyWithoutRegisteredByNestedInput
   pendingSubmissions?: Prisma.PendingStudentUncheckedUpdateManyWithoutSubmittedByNestedInput
 }
 
@@ -870,6 +989,7 @@ export type UserCreateWithoutRefreshTokensInput = {
   school: Prisma.SchoolCreateNestedOneWithoutUsersInput
   registeredStudents?: Prisma.StudentCreateNestedManyWithoutRegisteredByInput
   pendingSubmissions?: Prisma.PendingStudentCreateNestedManyWithoutSubmittedByInput
+  documentRequestLetters?: Prisma.DocumentRequestLetterCreateNestedManyWithoutGeneratedByInput
 }
 
 export type UserUncheckedCreateWithoutRefreshTokensInput = {
@@ -887,6 +1007,7 @@ export type UserUncheckedCreateWithoutRefreshTokensInput = {
   updatedAt?: Date | string
   registeredStudents?: Prisma.StudentUncheckedCreateNestedManyWithoutRegisteredByInput
   pendingSubmissions?: Prisma.PendingStudentUncheckedCreateNestedManyWithoutSubmittedByInput
+  documentRequestLetters?: Prisma.DocumentRequestLetterUncheckedCreateNestedManyWithoutGeneratedByInput
 }
 
 export type UserCreateOrConnectWithoutRefreshTokensInput = {
@@ -920,6 +1041,7 @@ export type UserUpdateWithoutRefreshTokensInput = {
   school?: Prisma.SchoolUpdateOneRequiredWithoutUsersNestedInput
   registeredStudents?: Prisma.StudentUpdateManyWithoutRegisteredByNestedInput
   pendingSubmissions?: Prisma.PendingStudentUpdateManyWithoutSubmittedByNestedInput
+  documentRequestLetters?: Prisma.DocumentRequestLetterUpdateManyWithoutGeneratedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutRefreshTokensInput = {
@@ -937,6 +1059,7 @@ export type UserUncheckedUpdateWithoutRefreshTokensInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   registeredStudents?: Prisma.StudentUncheckedUpdateManyWithoutRegisteredByNestedInput
   pendingSubmissions?: Prisma.PendingStudentUncheckedUpdateManyWithoutSubmittedByNestedInput
+  documentRequestLetters?: Prisma.DocumentRequestLetterUncheckedUpdateManyWithoutGeneratedByNestedInput
 }
 
 export type UserCreateManySchoolInput = {
@@ -968,6 +1091,7 @@ export type UserUpdateWithoutSchoolInput = {
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
   registeredStudents?: Prisma.StudentUpdateManyWithoutRegisteredByNestedInput
   pendingSubmissions?: Prisma.PendingStudentUpdateManyWithoutSubmittedByNestedInput
+  documentRequestLetters?: Prisma.DocumentRequestLetterUpdateManyWithoutGeneratedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSchoolInput = {
@@ -985,6 +1109,7 @@ export type UserUncheckedUpdateWithoutSchoolInput = {
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
   registeredStudents?: Prisma.StudentUncheckedUpdateManyWithoutRegisteredByNestedInput
   pendingSubmissions?: Prisma.PendingStudentUncheckedUpdateManyWithoutSubmittedByNestedInput
+  documentRequestLetters?: Prisma.DocumentRequestLetterUncheckedUpdateManyWithoutGeneratedByNestedInput
 }
 
 export type UserUncheckedUpdateManyWithoutSchoolInput = {
@@ -1010,12 +1135,14 @@ export type UserCountOutputType = {
   refreshTokens: number
   registeredStudents: number
   pendingSubmissions: number
+  documentRequestLetters: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   refreshTokens?: boolean | UserCountOutputTypeCountRefreshTokensArgs
   registeredStudents?: boolean | UserCountOutputTypeCountRegisteredStudentsArgs
   pendingSubmissions?: boolean | UserCountOutputTypeCountPendingSubmissionsArgs
+  documentRequestLetters?: boolean | UserCountOutputTypeCountDocumentRequestLettersArgs
 }
 
 /**
@@ -1049,6 +1176,13 @@ export type UserCountOutputTypeCountPendingSubmissionsArgs<ExtArgs extends runti
   where?: Prisma.PendingStudentWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountDocumentRequestLettersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.DocumentRequestLetterWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1067,6 +1201,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   refreshTokens?: boolean | Prisma.User$refreshTokensArgs<ExtArgs>
   registeredStudents?: boolean | Prisma.User$registeredStudentsArgs<ExtArgs>
   pendingSubmissions?: boolean | Prisma.User$pendingSubmissionsArgs<ExtArgs>
+  documentRequestLetters?: boolean | Prisma.User$documentRequestLettersArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -1123,6 +1258,7 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   refreshTokens?: boolean | Prisma.User$refreshTokensArgs<ExtArgs>
   registeredStudents?: boolean | Prisma.User$registeredStudentsArgs<ExtArgs>
   pendingSubmissions?: boolean | Prisma.User$pendingSubmissionsArgs<ExtArgs>
+  documentRequestLetters?: boolean | Prisma.User$documentRequestLettersArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1139,6 +1275,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     refreshTokens: Prisma.$RefreshTokenPayload<ExtArgs>[]
     registeredStudents: Prisma.$StudentPayload<ExtArgs>[]
     pendingSubmissions: Prisma.$PendingStudentPayload<ExtArgs>[]
+    documentRequestLetters: Prisma.$DocumentRequestLetterPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1551,6 +1688,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   refreshTokens<T extends Prisma.User$refreshTokensArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$refreshTokensArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RefreshTokenPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   registeredStudents<T extends Prisma.User$registeredStudentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$registeredStudentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$StudentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   pendingSubmissions<T extends Prisma.User$pendingSubmissionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$pendingSubmissionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PendingStudentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  documentRequestLetters<T extends Prisma.User$documentRequestLettersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$documentRequestLettersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DocumentRequestLetterPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2062,6 +2200,30 @@ export type User$pendingSubmissionsArgs<ExtArgs extends runtime.Types.Extensions
   take?: number
   skip?: number
   distinct?: Prisma.PendingStudentScalarFieldEnum | Prisma.PendingStudentScalarFieldEnum[]
+}
+
+/**
+ * User.documentRequestLetters
+ */
+export type User$documentRequestLettersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the DocumentRequestLetter
+   */
+  select?: Prisma.DocumentRequestLetterSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the DocumentRequestLetter
+   */
+  omit?: Prisma.DocumentRequestLetterOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.DocumentRequestLetterInclude<ExtArgs> | null
+  where?: Prisma.DocumentRequestLetterWhereInput
+  orderBy?: Prisma.DocumentRequestLetterOrderByWithRelationInput | Prisma.DocumentRequestLetterOrderByWithRelationInput[]
+  cursor?: Prisma.DocumentRequestLetterWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.DocumentRequestLetterScalarFieldEnum | Prisma.DocumentRequestLetterScalarFieldEnum[]
 }
 
 /**

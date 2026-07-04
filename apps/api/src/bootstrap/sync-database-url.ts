@@ -2,12 +2,25 @@ import { execSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 
+const PRISMA_DEV_URL_PATTERN =
+  /postgres:\/\/postgres:postgres@localhost:\d+\/template1\?sslmode=disable/;
+
 /**
- * Sync DATABASE_URL from the running Prisma Dev instance before the API connects.
- * No-op when not using Prisma Dev or in production.
+ * Sync DATABASE_URL from Prisma Dev only when explicitly enabled.
+ * Default dev uses Docker Postgres (fixed port) — no sync on every API restart.
  */
 export function syncDevDatabaseUrl() {
   if (process.env.NODE_ENV === 'production') {
+    return;
+  }
+
+  const flag = process.env.USE_PRISMA_DEV;
+  const usesPrismaDev = flag === '1' || flag === 'true';
+  const usesPrismaDevUrl = PRISMA_DEV_URL_PATTERN.test(
+    process.env.DATABASE_URL ?? '',
+  );
+
+  if (!usesPrismaDev && !usesPrismaDevUrl) {
     return;
   }
 

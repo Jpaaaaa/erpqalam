@@ -30,9 +30,11 @@ model School {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  users           User[]
-  students        Student[]
-  pendingStudents PendingStudent[]
+  users                      User[]
+  students                   Student[]
+  pendingStudents            PendingStudent[]
+  documentRequestSettings    DocumentRequestSettings?
+  documentRequestLetters     DocumentRequestLetter[]
 }
 
 /// Intake queue — staff or public check-in; approved rows move to Student.
@@ -62,6 +64,8 @@ model PendingStudent {
   submittedBy       User?    @relation("PendingStudentSubmissions", fields: [submittedByUserId], references: [id])
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
+
+  documentRequestLetters DocumentRequestLetter[]
 
   @@index([schoolId])
   @@index([submittedByUserId])
@@ -98,9 +102,41 @@ model Student {
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 
+  documentRequestLetters DocumentRequestLetter[]
+
   @@index([schoolId])
   @@index([registeredByUserId])
   @@index([schoolId, registeredAt])
+}
+
+model DocumentRequestSettings {
+  id         String   @id @default(cuid())
+  schoolId   String   @unique
+  school     School   @relation(fields: [schoolId], references: [id])
+  prefix     String   @default("ب")
+  nextNumber Int      @default(1)
+  updatedAt  DateTime @updatedAt
+}
+
+model DocumentRequestLetter {
+  id                 String   @id @default(cuid())
+  schoolId           String
+  school             School   @relation(fields: [schoolId], references: [id])
+  documentNumber     String
+  documentDate       DateTime @db.Date
+  studentFullName    String
+  previousSchoolName String
+  pendingStudentId   String?
+  pendingStudent     PendingStudent? @relation(fields: [pendingStudentId], references: [id], onDelete: SetNull)
+  studentId          String?
+  student            Student? @relation(fields: [studentId], references: [id], onDelete: SetNull)
+  generatedByUserId  String
+  generatedBy        User     @relation(fields: [generatedByUserId], references: [id])
+  createdAt          DateTime @default(now())
+
+  @@index([schoolId, createdAt])
+  @@index([studentId])
+  @@index([pendingStudentId])
 }
 
 model User {
@@ -118,9 +154,10 @@ model User {
   createdAt    DateTime         @default(now())
   updatedAt    DateTime         @updatedAt
 
-  refreshTokens      RefreshToken[]
-  registeredStudents Student[]
-  pendingSubmissions PendingStudent[] @relation("PendingStudentSubmissions")
+  refreshTokens           RefreshToken[]
+  registeredStudents      Student[]
+  pendingSubmissions      PendingStudent[] @relation("PendingStudentSubmissions")
+  documentRequestLetters  DocumentRequestLetter[]
 
   @@index([schoolId])
   @@index([role])

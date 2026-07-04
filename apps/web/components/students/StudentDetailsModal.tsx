@@ -3,6 +3,10 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import {
+  ApiClientError as DocumentRequestApiError,
+  fetchLatestDocumentRequestPdf,
+} from '@/lib/api/document-requests';
+import {
   ApiClientError,
   updatePendingStudentDetails,
   updateStudentDetails,
@@ -13,7 +17,9 @@ import {
   type DetailsFormState,
   type StudentDetailsRecord,
 } from '@/lib/students/details-form';
-import { formatSectionValue } from '@/lib/students/format';
+import { formatSectionValue, formatStudentName } from '@/lib/students/format';
+import { DocumentRequestModal } from '@/components/document-requests/DocumentRequestModal';
+import { DocumentRequestPreviewModal } from '@/components/document-requests/DocumentRequestPreviewModal';
 import { FormFieldLabel } from '@/components/students/FormFieldLabel';
 import { ReadOnlyField } from '@/components/students/ReadOnlyField';
 import { Alert } from '@/components/ui/Alert';
@@ -71,6 +77,11 @@ export function StudentDetailsModal({
   const [form, setForm] = useState<DetailsFormState>(() => recordToDetailsForm(record));
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [docRequestOpen, setDocRequestOpen] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewBlob, setPreviewBlob] = useState<Blob | null>(null);
+  const [documentNumber, setDocumentNumber] = useState('');
+  const [isPreviewLoading, setIsPreviewLoading] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -78,6 +89,43 @@ export function StudentDetailsModal({
       setError('');
     }
   }, [open, record]);
+
+  function resetPreview() {
+    setPreviewBlob(null);
+    setDocumentNumber('');
+  }
+
+  function handlePreviewClose() {
+    resetPreview();
+    setPreviewOpen(false);
+  }
+
+  async function handlePreview() {
+    setError('');
+    setIsPreviewLoading(true);
+
+    try {
+      const result = await fetchLatestDocumentRequestPdf({
+        studentId: mode === 'registered' ? record.id : undefined,
+        pendingStudentId: mode === 'pending' ? record.id : undefined,
+      });
+
+      resetPreview();
+      setPreviewBlob(result.blob);
+      setDocumentNumber(result.documentNumber);
+      setPreviewOpen(true);
+    } catch (err) {
+      const message =
+        err instanceof DocumentRequestApiError && err.status === 404
+          ? t('documentRequest.previewNotFound')
+          : err instanceof DocumentRequestApiError
+            ? err.message
+            : t('documentRequest.previewError');
+      setError(message);
+    } finally {
+      setIsPreviewLoading(false);
+    }
+  }
 
   function updateField(field: keyof DetailsFormState, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -112,26 +160,43 @@ export function StudentDetailsModal({
     : '—';
 
   return (
-    <Modal
-      open={open}
-      onClose={onClose}
-      title={tDetails('title')}
-      footer={
-        <>
-          <Button type="button" variant="secondary" onClick={onClose}>
-            {tDetails('skip')}
-          </Button>
-          <Button
-            type="submit"
-            form="student-details-form"
-            isLoading={isLoading}
-            loadingLabel={tCommon('pleaseWait')}
-          >
-            {tDetails('save')}
-          </Button>
-        </>
-      }
-    >
+    <>
+      <Modal
+        open={open}
+        onClose={onClose}
+        title={tDetails('title')}
+        footer={
+          <>
+            <Button type="button" variant="secondary" onClick={onClose}>
+              {tDetails('skip')}
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setDocRequestOpen(true)}
+            >
+              {t('documentRequest.generateButton')}
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={handlePreview}
+              isLoading={isPreviewLoading}
+              loadingLabel={tCommon('pleaseWait')}
+            >
+              {t('documentRequest.previewButton')}
+            </Button>
+            <Button
+              type="submit"
+              form="student-details-form"
+              isLoading={isLoading}
+              loadingLabel={tCommon('pleaseWait')}
+            >
+              {tDetails('save')}
+            </Button>
+          </>
+        }
+      >
       <form id="student-details-form" onSubmit={handleSubmit} className="space-y-5">
         {error && <Alert variant="error">{error}</Alert>}
 
@@ -230,5 +295,23 @@ export function StudentDetailsModal({
         />
       </form>
     </Modal>
+
+      <DocumentRequestModal
+        open={docRequestOpen}
+        target={{
+          studentName: formatStudentName(record),
+          studentId: mode === 'registered' ? record.id : undefined,
+          pendingStudentId: mode === 'pending' ? record.id : undefined,
+        }}
+        onClose={() => setDocRequestOpen(false)}
+      />
+
+      <DocumentRequestPreviewModal
+        open={previewOpen}
+        previewBlob={previewBlob}
+        documentNumber={documentNumber}
+        onClose={handlePreviewClose}
+      />
+    </>
   );
 }

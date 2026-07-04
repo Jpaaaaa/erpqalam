@@ -17,10 +17,12 @@ import {
   formatStudentName,
 } from '@/lib/students/format';
 import type { Student } from '@/lib/types/student';
+import type { CreateDocumentRequestTarget } from '@/lib/types/document-request';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { DetailRow, MobileCard } from '@/components/ui/MobileCard';
 import { StudentDetailsModal } from '@/components/students/StudentDetailsModal';
+import { DocumentRequestModal } from '@/components/document-requests/DocumentRequestModal';
 import {
   RegisteredStudentsAdvancedFilters,
   RegisteredStudentsFilterToggle,
@@ -43,6 +45,8 @@ export function RegisteredStudentsList({ refreshKey = 0 }: RegisteredStudentsLis
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [detailsTarget, setDetailsTarget] = useState<Student | null>(null);
+  const [docRequestTarget, setDocRequestTarget] =
+    useState<CreateDocumentRequestTarget | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [draftFilters, setDraftFilters] = useState<RegisteredStudentFilters>(
     emptyRegisteredStudentFilters(),
@@ -123,6 +127,12 @@ export function RegisteredStudentsList({ refreshKey = 0 }: RegisteredStudentsLis
         />
       )}
 
+      <DocumentRequestModal
+        open={Boolean(docRequestTarget)}
+        target={docRequestTarget}
+        onClose={() => setDocRequestTarget(null)}
+      />
+
       {loading ? (
         <p className="text-sm text-slate-500">{tCommon('loading')}</p>
       ) : students.length === 0 ? (
@@ -164,19 +174,34 @@ export function RegisteredStudentsList({ refreshKey = 0 }: RegisteredStudentsLis
                           })}
                     </DetailRow>
                   </div>
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    className="w-full"
-                    onClick={() => setDetailsTarget(student)}
-                  >
-                    {t('detailsButton')}
-                    {!student.detailsCompletedAt && (
-                      <span className="ms-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">
-                        {t('detailsIncompleteBadge')}
-                      </span>
-                    )}
-                  </Button>
+                  <div className="flex flex-col gap-2">
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      className="w-full"
+                      onClick={() => setDetailsTarget(student)}
+                    >
+                      {t('detailsButton')}
+                      {!student.detailsCompletedAt && (
+                        <span className="ms-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">
+                          {t('detailsIncompleteBadge')}
+                        </span>
+                      )}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      className="w-full"
+                      onClick={() =>
+                        setDocRequestTarget({
+                          studentName: formatStudentName(student),
+                          studentId: student.id,
+                        })
+                      }
+                    >
+                      {t('documentRequest.generateButton')}
+                    </Button>
+                  </div>
                 </div>
               </MobileCard>
             ))}
@@ -240,18 +265,32 @@ export function RegisteredStudentsList({ refreshKey = 0 }: RegisteredStudentsLis
                           })}
                     </td>
                     <td className="px-4 py-3.5">
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        onClick={() => setDetailsTarget(student)}
-                      >
-                        {t('detailsButton')}
-                        {!student.detailsCompletedAt && (
-                          <span className="ms-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">
-                            {t('detailsIncompleteBadge')}
-                          </span>
-                        )}
-                      </Button>
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          onClick={() => setDetailsTarget(student)}
+                        >
+                          {t('detailsButton')}
+                          {!student.detailsCompletedAt && (
+                            <span className="ms-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">
+                              {t('detailsIncompleteBadge')}
+                            </span>
+                          )}
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          onClick={() =>
+                            setDocRequestTarget({
+                              studentName: formatStudentName(student),
+                              studentId: student.id,
+                            })
+                          }
+                        >
+                          {t('documentRequest.generateButton')}
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))}

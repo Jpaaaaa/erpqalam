@@ -52,20 +52,28 @@ cp apps/web/.env.example apps/web/.env.local
 
 ### 2. Start Postgres
 
+**Easiest:** just run `npm run dev` — it picks the database automatically:
+
+1. **Docker Postgres** if Docker Desktop is running (stable, fixed port)
+2. **Prisma Dev** fallback if Docker is unavailable
+
+Optional manual start:
+
 ```bash
-docker compose -f docker/docker-compose.dev.yml up postgres -d
+npm run db:start   # Docker only; warns if Docker is off
 ```
 
-Or use Prisma Dev: `cd apps/api && npx prisma dev -d`
+`predev` verifies the connection, sets `DATABASE_URL` in `apps/api/.env`, and runs migrations + seed.
 
-`npm run dev` runs `predev`, which starts Prisma Dev if needed, **syncs `DATABASE_URL` in `apps/api/.env` from the live Prisma Dev port**, verifies the connection, and runs migrations + seed. If you see `Server has closed the connection`, run `npm run db:ensure` (or restart with `npm run dev`).
+To force Prisma Dev only, set `USE_PRISMA_DEV=1` in `apps/api/.env`.
 
 ### 3. Database setup (first time)
 
+Migrations and seed run automatically on `npm run dev`. To run manually:
+
 ```bash
-cd apps/api
-npx prisma migrate deploy
-npx prisma db seed
+npm run db:migrate
+npm run db:seed
 ```
 
 ### 4. Run backend + frontend (one command)
@@ -78,7 +86,7 @@ npm run dev
 
 `predev` automatically:
 1. Frees ports **3000** and **3001**
-2. Starts **Prisma Dev** Postgres (if not running)
+2. Starts **Docker Postgres** or falls back to **Prisma Dev**, then verifies the connection
 3. Runs migrations + seed
 
 Then both servers start.

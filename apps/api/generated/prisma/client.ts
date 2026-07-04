@@ -55,6 +55,16 @@ export type PendingStudent = Prisma.PendingStudentModel
  */
 export type Student = Prisma.StudentModel
 /**
+ * Model DocumentRequestSettings
+ * 
+ */
+export type DocumentRequestSettings = Prisma.DocumentRequestSettingsModel
+/**
+ * Model DocumentRequestLetter
+ * 
+ */
+export type DocumentRequestLetter = Prisma.DocumentRequestLetterModel
+/**
  * Model User
  * 
  */

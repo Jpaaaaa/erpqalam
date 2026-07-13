@@ -27,6 +27,7 @@
     "seed": "ts-node prisma/seed.ts"
   },
   "dependencies": {
+    "@napi-rs/canvas": "^1.0.2",
     "@nestjs/cache-manager": "^3.1.2",
     "@nestjs/common": "^10.0.0",
     "@nestjs/config": "^4.0.4",
@@ -40,6 +41,7 @@
     "@prisma/client": "^7.8.0",
     "arabic-persian-reshaper": "^1.0.1",
     "bcrypt": "^6.0.0",
+    "bidi-js": "^1.0.3",
     "cache-manager": "^7.2.8",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.4",

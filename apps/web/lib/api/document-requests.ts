@@ -6,6 +6,7 @@ import {
 import { getAccessToken } from '@/lib/auth/storage';
 import type {
   CreateDocumentRequestPayload,
+  DocumentRequestCreateDefaults,
   DocumentRequestSettings,
   PaginatedDocumentRequests,
   UpdateDocumentRequestSettingsPayload,
@@ -13,6 +14,19 @@ import type {
 import type { ApiError } from '@/lib/types/auth';
 
 export { ApiClientError };
+
+export async function getDocumentRequestCreateDefaults(): Promise<DocumentRequestCreateDefaults> {
+  return apiRequest<DocumentRequestCreateDefaults>('/document-requests/defaults');
+}
+
+export async function checkDocumentRequestNumber(
+  documentNumber: string,
+): Promise<{ exists: boolean }> {
+  const search = new URLSearchParams({ documentNumber });
+  return apiRequest<{ exists: boolean }>(
+    `/document-requests/check-number?${search.toString()}`,
+  );
+}
 
 export async function getDocumentRequestSettings(): Promise<DocumentRequestSettings> {
   return apiRequest<DocumentRequestSettings>('/document-requests/settings');

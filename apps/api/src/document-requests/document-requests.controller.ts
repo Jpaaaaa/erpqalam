@@ -27,6 +27,9 @@ import { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
 import { DocumentRequestsService } from './document-requests.service';
 import {
   CreateDocumentRequestDto,
+  CheckDocumentNumberQueryDto,
+  CheckDocumentNumberResponseDto,
+  DocumentRequestCreateDefaultsResponseDto,
   DocumentRequestLetterResponseDto,
   DocumentRequestSettingsResponseDto,
   ListDocumentRequestsQueryDto,
@@ -62,6 +65,29 @@ export class DocumentRequestsController {
     @CurrentUser() user: JwtPayload,
   ): Promise<DocumentRequestSettingsResponseDto> {
     return this.documentRequestsService.updateSettings(user, dto);
+  }
+
+  @Get('defaults')
+  @Permissions(UserPermission.STUDENT_REGISTRATION)
+  @ApiOperation({
+    summary: 'Defaults for the create document request modal',
+  })
+  @ApiResponse({ status: 200, type: DocumentRequestCreateDefaultsResponseDto })
+  getCreateDefaults(
+    @CurrentUser() user: JwtPayload,
+  ): Promise<DocumentRequestCreateDefaultsResponseDto> {
+    return this.documentRequestsService.getCreateDefaults(user);
+  }
+
+  @Get('check-number')
+  @Permissions(UserPermission.STUDENT_REGISTRATION)
+  @ApiOperation({ summary: 'Check whether a document number is already used' })
+  @ApiResponse({ status: 200, type: CheckDocumentNumberResponseDto })
+  checkDocumentNumber(
+    @Query() query: CheckDocumentNumberQueryDto,
+    @CurrentUser() user: JwtPayload,
+  ): Promise<CheckDocumentNumberResponseDto> {
+    return this.documentRequestsService.checkDocumentNumber(user, query);
   }
 
   @Get()

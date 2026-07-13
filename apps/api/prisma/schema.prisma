@@ -110,12 +110,14 @@ model Student {
 }
 
 model DocumentRequestSettings {
-  id         String   @id @default(cuid())
-  schoolId   String   @unique
-  school     School   @relation(fields: [schoolId], references: [id])
-  prefix     String   @default("ب")
-  nextNumber Int      @default(1)
-  updatedAt  DateTime @updatedAt
+  id                  String   @id @default(cuid())
+  schoolId            String   @unique
+  school              School   @relation(fields: [schoolId], references: [id])
+  prefix              String   @default("ب")
+  nextNumber          Int      @default(1)
+  defaultAcademicYear String?
+  bodyTemplate        String   @default("نظراً للقبول الطالب/ة {{studentName}} في معهدنا ({{instituteName}}) للعام الدراسي {{academicYear}} يرجى تزويدنا بالوثيقة لآخر المرحلة الدراسية .")
+  updatedAt           DateTime @updatedAt
 }
 
 model DocumentRequestLetter {
@@ -124,6 +126,8 @@ model DocumentRequestLetter {
   school             School   @relation(fields: [schoolId], references: [id])
   documentNumber     String
   documentDate       DateTime @db.Date
+  academicYear       String?
+  language           String   @default("ar")
   studentFullName    String
   previousSchoolName String
   pendingStudentId   String?
@@ -134,6 +138,7 @@ model DocumentRequestLetter {
   generatedBy        User     @relation(fields: [generatedByUserId], references: [id])
   createdAt          DateTime @default(now())
 
+  @@unique([schoolId, documentNumber])
   @@index([schoolId, createdAt])
   @@index([studentId])
   @@index([pendingStudentId])

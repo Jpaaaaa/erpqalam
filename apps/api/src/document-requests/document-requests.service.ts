@@ -1,13 +1,16 @@
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { UserRole } from '@generated/prisma/client';
 import { PrismaService } from '../database/prisma.service';
 import { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
 import {
+  CheckDocumentNumberQueryDto,
+  CheckDocumentNumberResponseDto,
   CreateDocumentRequestDto,
+  DocumentRequestCreateDefaultsResponseDto,
   DocumentRequestLetterResponseDto,
   DocumentRequestSettingsResponseDto,
   ListDocumentRequestsQueryDto,
@@ -18,12 +21,25 @@ import {
   buildDocumentRequestPdf,
   getAcademicYear,
 } from './document-request-pdf.service';
+import {
+  parseBodyTemplateFields,
+  serializeBodyTemplate,
+} from './body-template.util';
+import {
+  normalizeDocumentRequestLanguage,
+  type DocumentRequestLanguage,
+} from './document-request-language';
+import {
+  formatStudentSectionLabel,
+} from '../students/section-labels';
 
 const staffSelect = {
   id: true,
   firstName: true,
   lastName: true,
 } as const;
+
+const ACADEMIC_YEAR_PATTERN = /^\d{4}-\d{4}$/;
 
 function formatStudentFullName(row: {
   firstName: string;
@@ -69,6 +85,45 @@ function toLetterResponse(row: {
   };
 }
 
+function parseDocumentNumberSuffix(
+  documentNumber: string,
+  prefix: string,
+): number | null {
+  if (!documentNumber.startsWith(prefix)) {
+    return null;
+  }
+
+  const suffix = documentNumber.slice(prefix.length);
+  if (!/^\d+$/.test(suffix)) {
+    return null;
+  }
+
+  const parsed = Number.parseInt(suffix, 10);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function resolveAcademicYear(
+  provided: string | undefined,
+  savedDefault: string | null | undefined,
+  documentDate: Date,
+): string {
+  const trimmed = provided?.trim();
+  if (trimmed) {
+    if (!ACADEMIC_YEAR_PATTERN.test(trimmed)) {
+      throw new BadRequestException(
+        'academicYear must be in YYYY-YYYY format',
+      );
+    }
+    return trimmed;
+  }
+
+  if (savedDefault?.trim()) {
+    return savedDefault.trim();
+  }
+
+  return getAcademicYear(documentDate);
+}
+
 @Injectable()
 export class DocumentRequestsService {
   constructor(private readonly prisma: PrismaService) {}
@@ -84,11 +139,15 @@ export class DocumentRequestsService {
   private toSettingsResponse(settings: {
     prefix: string;
     nextNumber: number;
+    defaultAcademicYear: string | null;
+    bodyTemplate: string;
   }): DocumentRequestSettingsResponseDto {
     return {
       prefix: settings.prefix,
       nextNumber: settings.nextNumber,
       nextDocumentNumber: `${settings.prefix}${settings.nextNumber}`,
+      defaultAcademicYear: settings.defaultAcademicYear,
+      bodyParagraph: parseBodyTemplateFields(settings.bodyTemplate),
     };
   }
 
@@ -97,6 +156,42 @@ export class DocumentRequestsService {
   ): Promise<DocumentRequestSettingsResponseDto> {
     const settings = await this.ensureSettings(user.schoolId);
     return this.toSettingsResponse(settings);
+  }
+
+  async getCreateDefaults(
+    user: JwtPayload,
+  ): Promise<DocumentRequestCreateDefaultsResponseDto> {
+    const settings = await this.ensureSettings(user.schoolId);
+    const documentDate = new Date();
+    documentDate.setHours(0, 0, 0, 0);
+
+    return {
+      prefix: settings.prefix,
+      nextNumber: settings.nextNumber,
+      nextDocumentNumber: `${settings.prefix}${settings.nextNumber}`,
+      academicYear: resolveAcademicYear(
+        undefined,
+        settings.defaultAcademicYear,
+        documentDate,
+      ),
+    };
+  }
+
+  async checkDocumentNumber(
+    user: JwtPayload,
+    query: CheckDocumentNumberQueryDto,
+  ): Promise<CheckDocumentNumberResponseDto> {
+    const documentNumber = query.documentNumber.trim();
+    if (!documentNumber) {
+      throw new BadRequestException('documentNumber is required');
+    }
+
+    const existing = await this.prisma.documentRequestLetter.findFirst({
+      where: { schoolId: user.schoolId, documentNumber },
+      select: { id: true },
+    });
+
+    return { exists: Boolean(existing) };
   }
 
   async updateSettings(
@@ -110,6 +205,9 @@ export class DocumentRequestsService {
       data: {
         ...(dto.prefix !== undefined ? { prefix: dto.prefix.trim() } : {}),
         ...(dto.nextNumber !== undefined ? { nextNumber: dto.nextNumber } : {}),
+        ...(dto.bodyParagraph !== undefined
+          ? { bodyTemplate: serializeBodyTemplate(dto.bodyParagraph) }
+          : {}),
       },
     });
 
@@ -161,17 +259,29 @@ export class DocumentRequestsService {
     };
   }
 
-  private async resolveManagerName(schoolId: string): Promise<string> {
-    const manager = await this.prisma.user.findFirst({
-      where: { schoolId, role: UserRole.MANAGER, status: 'ACTIVE' },
-      select: { firstName: true, lastName: true },
-    });
-
-    if (!manager) {
-      return 'مدير المعهد';
+  private async resolveStudentSectionLabel(params: {
+    studentId: string | null;
+    pendingStudentId: string | null;
+    schoolId: string;
+    language: DocumentRequestLanguage;
+  }): Promise<string> {
+    if (params.studentId) {
+      const student = await this.prisma.student.findFirst({
+        where: { id: params.studentId, schoolId: params.schoolId },
+        select: { section: true },
+      });
+      return formatStudentSectionLabel(student?.section, params.language);
     }
 
-    return `${manager.firstName} ${manager.lastName}`;
+    if (params.pendingStudentId) {
+      const pending = await this.prisma.pendingStudent.findFirst({
+        where: { id: params.pendingStudentId, schoolId: params.schoolId },
+        select: { section: true },
+      });
+      return formatStudentSectionLabel(pending?.section, params.language);
+    }
+
+    return '';
   }
 
   async create(
@@ -192,7 +302,10 @@ export class DocumentRequestsService {
       throw new BadRequestException('Previous school name is required');
     }
 
+    const language = normalizeDocumentRequestLanguage(dto.language);
+
     let studentFullName: string;
+    let studentSectionLabel: string;
 
     if (dto.studentId) {
       const student = await this.prisma.student.findFirst({
@@ -202,6 +315,7 @@ export class DocumentRequestsService {
         throw new NotFoundException('Student not found');
       }
       studentFullName = formatStudentFullName(student);
+      studentSectionLabel = formatStudentSectionLabel(student.section, language);
     } else {
       const pending = await this.prisma.pendingStudent.findFirst({
         where: { id: dto.pendingStudentId!, schoolId: user.schoolId },
@@ -210,6 +324,13 @@ export class DocumentRequestsService {
         throw new NotFoundException('Pending student not found');
       }
       studentFullName = formatStudentFullName(pending);
+      studentSectionLabel = formatStudentSectionLabel(pending.section, language);
+    }
+
+    if (!studentSectionLabel) {
+      throw new BadRequestException(
+        'Student section is required before generating a document request',
+      );
     }
 
     const documentDate = new Date();
@@ -219,7 +340,14 @@ export class DocumentRequestsService {
       where: { id: user.schoolId },
     });
 
-    const managerName = await this.resolveManagerName(user.schoolId);
+    const settingsBefore = await this.ensureSettings(user.schoolId);
+    const academicYear = resolveAcademicYear(
+      dto.academicYear,
+      settingsBefore.defaultAcademicYear,
+      documentDate,
+    );
+
+    const customDocumentNumber = dto.documentNumber?.trim();
 
     const result = await this.prisma.$transaction(async (tx) => {
       await tx.documentRequestSettings.upsert({
@@ -228,19 +356,64 @@ export class DocumentRequestsService {
         update: {},
       });
 
-      const settings = await tx.documentRequestSettings.update({
-        where: { schoolId: user.schoolId },
-        data: { nextNumber: { increment: 1 } },
-      });
+      const currentSettings = await tx.documentRequestSettings.findUniqueOrThrow(
+        {
+          where: { schoolId: user.schoolId },
+        },
+      );
 
-      const assignedNumber = settings.nextNumber - 1;
-      const documentNumber = `${settings.prefix}${assignedNumber}`;
+      let documentNumber: string;
+
+      if (customDocumentNumber) {
+        documentNumber = customDocumentNumber;
+
+        const existing = await tx.documentRequestLetter.findFirst({
+          where: {
+            schoolId: user.schoolId,
+            documentNumber,
+          },
+          select: { id: true },
+        });
+
+        if (existing) {
+          throw new ConflictException(
+            `Document number ${documentNumber} is already in use`,
+          );
+        }
+
+        const suffix = parseDocumentNumberSuffix(
+          documentNumber,
+          currentSettings.prefix,
+        );
+
+        if (suffix !== null && suffix >= currentSettings.nextNumber) {
+          await tx.documentRequestSettings.update({
+            where: { schoolId: user.schoolId },
+            data: { nextNumber: suffix + 1 },
+          });
+        }
+      } else {
+        const settings = await tx.documentRequestSettings.update({
+          where: { schoolId: user.schoolId },
+          data: { nextNumber: { increment: 1 } },
+        });
+
+        const assignedNumber = settings.nextNumber - 1;
+        documentNumber = `${settings.prefix}${assignedNumber}`;
+      }
+
+      await tx.documentRequestSettings.update({
+        where: { schoolId: user.schoolId },
+        data: { defaultAcademicYear: academicYear },
+      });
 
       const letter = await tx.documentRequestLetter.create({
         data: {
           schoolId: user.schoolId,
           documentNumber,
           documentDate,
+          academicYear,
+          language,
           studentFullName,
           previousSchoolName,
           studentId: dto.studentId ?? null,
@@ -259,8 +432,10 @@ export class DocumentRequestsService {
       documentNumber: result.documentNumber,
       documentDate,
       studentFullName,
-      academicYear: getAcademicYear(documentDate),
-      managerName,
+      academicYear,
+      studentSectionLabel,
+      bodyTemplate: settingsBefore.bodyTemplate,
+      language,
     });
 
     return {
@@ -286,8 +461,18 @@ export class DocumentRequestsService {
       where: { id: user.schoolId },
     });
 
-    const managerName = await this.resolveManagerName(user.schoolId);
     const documentDate = new Date(letter.documentDate);
+    const settings = await this.ensureSettings(user.schoolId);
+    const language = normalizeDocumentRequestLanguage(letter.language);
+    const studentSectionLabel = await this.resolveStudentSectionLabel({
+      studentId: letter.studentId,
+      pendingStudentId: letter.pendingStudentId,
+      schoolId: user.schoolId,
+      language,
+    });
+
+    const academicYear =
+      letter.academicYear?.trim() || getAcademicYear(documentDate);
 
     const pdf = await buildDocumentRequestPdf({
       schoolName: school.name,
@@ -295,8 +480,10 @@ export class DocumentRequestsService {
       documentNumber: letter.documentNumber,
       documentDate,
       studentFullName: letter.studentFullName,
-      academicYear: getAcademicYear(documentDate),
-      managerName,
+      academicYear,
+      studentSectionLabel,
+      bodyTemplate: settings.bodyTemplate,
+      language,
     });
 
     return {

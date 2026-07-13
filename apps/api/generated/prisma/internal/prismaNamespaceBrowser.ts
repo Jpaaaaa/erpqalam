@@ -152,6 +152,8 @@ export const DocumentRequestSettingsScalarFieldEnum = {
   schoolId: 'schoolId',
   prefix: 'prefix',
   nextNumber: 'nextNumber',
+  defaultAcademicYear: 'defaultAcademicYear',
+  bodyTemplate: 'bodyTemplate',
   updatedAt: 'updatedAt'
 } as const
 
@@ -163,6 +165,8 @@ export const DocumentRequestLetterScalarFieldEnum = {
   schoolId: 'schoolId',
   documentNumber: 'documentNumber',
   documentDate: 'documentDate',
+  academicYear: 'academicYear',
+  language: 'language',
   studentFullName: 'studentFullName',
   previousSchoolName: 'previousSchoolName',
   pendingStudentId: 'pendingStudentId',

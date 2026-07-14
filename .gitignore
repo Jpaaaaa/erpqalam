@@ -1,3 +1,5 @@
 node_modules/
 apps/web/.next/
 apps/api/dist/
+apps/api/uploads/
+apps/api/.env

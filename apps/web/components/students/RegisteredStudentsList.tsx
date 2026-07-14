@@ -19,9 +19,9 @@ import {
 import type { Student } from '@/lib/types/student';
 import type { CreateDocumentRequestTarget } from '@/lib/types/document-request';
 import { Alert } from '@/components/ui/Alert';
-import { Button } from '@/components/ui/Button';
 import { DetailRow, MobileCard } from '@/components/ui/MobileCard';
 import { StudentDetailsModal } from '@/components/students/StudentDetailsModal';
+import { StudentRowActions } from '@/components/students/StudentRowActions';
 import { DocumentRequestModal } from '@/components/document-requests/DocumentRequestModal';
 import {
   RegisteredStudentsAdvancedFilters,
@@ -44,7 +44,10 @@ export function RegisteredStudentsList({ refreshKey = 0 }: RegisteredStudentsLis
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [detailsTarget, setDetailsTarget] = useState<Student | null>(null);
+  const [detailsModal, setDetailsModal] = useState<{
+    student: Student;
+    sectionEditable: boolean;
+  } | null>(null);
   const [docRequestTarget, setDocRequestTarget] =
     useState<CreateDocumentRequestTarget | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -117,12 +120,13 @@ export function RegisteredStudentsList({ refreshKey = 0 }: RegisteredStudentsLis
 
       {error && <Alert variant="error">{error}</Alert>}
 
-      {detailsTarget && (
+      {detailsModal && (
         <StudentDetailsModal
           open
           mode="registered"
-          record={detailsTarget}
-          onClose={() => setDetailsTarget(null)}
+          record={detailsModal.student}
+          sectionEditable={detailsModal.sectionEditable}
+          onClose={() => setDetailsModal(null)}
           onSaved={load}
         />
       )}
@@ -174,34 +178,16 @@ export function RegisteredStudentsList({ refreshKey = 0 }: RegisteredStudentsLis
                           })}
                     </DetailRow>
                   </div>
-                  <div className="flex flex-col gap-2">
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      className="w-full"
-                      onClick={() => setDetailsTarget(student)}
-                    >
-                      {t('detailsButton')}
-                      {!student.detailsCompletedAt && (
-                        <span className="ms-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">
-                          {t('detailsIncompleteBadge')}
-                        </span>
-                      )}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      className="w-full"
-                      onClick={() =>
-                        setDocRequestTarget({
-                          studentName: formatStudentName(student),
-                          studentId: student.id,
-                        })
-                      }
-                    >
-                      {t('documentRequest.generateButton')}
-                    </Button>
-                  </div>
+                  <StudentRowActions
+                    student={student}
+                    onOpenDetails={() =>
+                      setDetailsModal({ student, sectionEditable: false })
+                    }
+                    onOpenEdit={() =>
+                      setDetailsModal({ student, sectionEditable: true })
+                    }
+                    onOpenDocumentRequest={setDocRequestTarget}
+                  />
                 </div>
               </MobileCard>
             ))}
@@ -265,32 +251,16 @@ export function RegisteredStudentsList({ refreshKey = 0 }: RegisteredStudentsLis
                           })}
                     </td>
                     <td className="px-4 py-3.5">
-                      <div className="flex flex-wrap gap-2">
-                        <Button
-                          type="button"
-                          variant="secondary"
-                          onClick={() => setDetailsTarget(student)}
-                        >
-                          {t('detailsButton')}
-                          {!student.detailsCompletedAt && (
-                            <span className="ms-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">
-                              {t('detailsIncompleteBadge')}
-                            </span>
-                          )}
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="secondary"
-                          onClick={() =>
-                            setDocRequestTarget({
-                              studentName: formatStudentName(student),
-                              studentId: student.id,
-                            })
-                          }
-                        >
-                          {t('documentRequest.generateButton')}
-                        </Button>
-                      </div>
+                      <StudentRowActions
+                        student={student}
+                        onOpenDetails={() =>
+                          setDetailsModal({ student, sectionEditable: false })
+                        }
+                        onOpenEdit={() =>
+                          setDetailsModal({ student, sectionEditable: true })
+                        }
+                        onOpenDocumentRequest={setDocRequestTarget}
+                      />
                     </td>
                   </tr>
                 ))}

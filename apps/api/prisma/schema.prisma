@@ -117,6 +117,8 @@ model DocumentRequestSettings {
   nextNumber          Int      @default(1)
   defaultAcademicYear String?
   bodyTemplate        String   @default("نظراً للقبول الطالب/ة {{studentName}} في معهدنا ({{instituteName}}) للعام الدراسي {{academicYear}} يرجى تزويدنا بالوثيقة لآخر المرحلة الدراسية .")
+  letterheadTemplateFileName     String?
+  letterheadTemplateUploadedAt   DateTime?
   updatedAt           DateTime @updatedAt
 }
 

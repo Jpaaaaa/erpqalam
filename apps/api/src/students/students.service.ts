@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { UserPermission } from '@generated/prisma/client';
 import { PrismaService } from '../database/prisma.service';
 import { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
@@ -7,6 +7,7 @@ import {
   ListStudentsQueryDto,
   PaginatedStudentsResponseDto,
   StudentResponseDto,
+  UpdateStudentDto,
 } from './dto/students.dto';
 import {
   UpdateStudentDetailsDto,
@@ -147,6 +148,60 @@ export class StudentsService {
         ...buildDetailsUpdateData(dto),
         ...(phoneNumbers !== undefined && { phoneNumbers }),
       },
+      include: studentInclude,
+    });
+
+    return toStudentResponse(student);
+  }
+
+  async update(
+    id: string,
+    dto: UpdateStudentDto,
+    actor: JwtPayload,
+  ): Promise<StudentResponseDto> {
+    if (!hasPermission(actor.role, actor.permissions, UserPermission.STUDENT_REGISTRATION)) {
+      throw new ForbiddenException('You do not have permission to update students');
+    }
+
+    const existing = await this.prisma.student.findFirst({
+      where: { id, schoolId: actor.schoolId },
+    });
+
+    if (!existing) {
+      throw new NotFoundException('Student not found');
+    }
+
+    const data: {
+      firstName?: string;
+      secondName?: string;
+      thirdName?: string | null;
+      fourthName?: string | null;
+      section?: string;
+    } = {};
+
+    if (dto.firstName !== undefined) {
+      data.firstName = dto.firstName.trim();
+    }
+    if (dto.secondName !== undefined) {
+      data.secondName = dto.secondName.trim();
+    }
+    if (dto.thirdName !== undefined) {
+      data.thirdName = dto.thirdName.trim() || null;
+    }
+    if (dto.fourthName !== undefined) {
+      data.fourthName = dto.fourthName.trim() || null;
+    }
+    if (dto.section !== undefined) {
+      data.section = dto.section.trim();
+    }
+
+    if (Object.keys(data).length === 0) {
+      throw new BadRequestException('At least one field is required');
+    }
+
+    const student = await this.prisma.student.update({
+      where: { id },
+      data,
       include: studentInclude,
     });
 

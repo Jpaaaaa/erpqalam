@@ -1,5 +1,6 @@
 import type { PendingStudent, Student } from '@/lib/types/student';
 import type { UpdateStudentDetailsPayload } from '@/lib/types/student-details';
+import { isSectionOption, type SectionOption } from '@/lib/students/sections';
 
 export type StudentDetailsRecord = Pick<
   PendingStudent | Student,
@@ -22,6 +23,11 @@ export type StudentDetailsRecord = Pick<
 >;
 
 export interface DetailsFormState {
+  firstName: string;
+  secondName: string;
+  thirdName: string;
+  fourthName: string;
+  section: SectionOption | '';
   homeAddress: string;
   birthPlace: string;
   birthDate: string;
@@ -42,7 +48,16 @@ export function formatBirthDateForInput(value?: string | null): string {
 }
 
 export function recordToDetailsForm(record: StudentDetailsRecord): DetailsFormState {
+  const sectionValue = record.section?.trim();
+  const section =
+    sectionValue && isSectionOption(sectionValue) ? sectionValue : '';
+
   return {
+    firstName: record.firstName ?? '',
+    secondName: record.secondName ?? '',
+    thirdName: record.thirdName ?? '',
+    fourthName: record.fourthName ?? '',
+    section,
     homeAddress: record.homeAddress ?? '',
     birthPlace: record.birthPlace ?? '',
     birthDate: formatBirthDateForInput(record.birthDate),
@@ -53,6 +68,16 @@ export function recordToDetailsForm(record: StudentDetailsRecord): DetailsFormSt
     guardianMobile: record.guardianMobile ?? record.phoneNumbers[1] ?? '',
     studentMobile: record.phoneNumbers[0] ?? '',
     stage: record.stage ?? '',
+  };
+}
+
+export function editFormToStudentPayload(form: DetailsFormState) {
+  return {
+    section: form.section,
+    firstName: form.firstName.trim(),
+    secondName: form.secondName.trim(),
+    thirdName: form.thirdName.trim() || undefined,
+    fourthName: form.fourthName.trim() || undefined,
   };
 }
 

@@ -22,6 +22,9 @@ export interface DocumentRequestSettings {
   nextDocumentNumber: string;
   defaultAcademicYear?: string | null;
   bodyParagraph: BodyParagraphFields;
+  hasCustomLetterheadTemplate: boolean;
+  letterheadTemplateFileName?: string | null;
+  letterheadTemplateUploadedAt?: string | null;
 }
 
 export interface UpdateDocumentRequestSettingsPayload {

@@ -133,6 +133,7 @@
     "sectionPlaceholder": "نموونە: پۆلی ٥ / أ",
     "sectionSelectPlaceholder": "بەش هەڵبژێرە",
     "sectionRequired": "تکایە بەشێک هەڵبژێرە.",
+    "nameRequired": "ناوی یەکەم و دووەم پێویستن.",
     "sectionOptions": {
       "oil_and_gas": "نەوت و گاز",
       "computer": "کۆمپیوتەر",
@@ -198,6 +199,8 @@
     "registeredAt": "تۆمارکرا لە {date}",
     "loadRegisteredError": "بارکردنی قوتابی تۆمارکراو سەرکەوتوو نەبوو.",
     "detailsButton": "وردەکاری",
+    "editButton": "دەستکاری",
+    "editSectionTitle": "دەستکاری بەش",
     "detailsIncompleteBadge": "تەواو نەکراو",
     "filters": {
       "showAdvanced": "فیلتەری پێشکەوتوو",
@@ -220,7 +223,7 @@
     },
     "detailsForm": {
       "title": "زانیاری قوتابی",
-      "alreadyRecordedHint": "ناو و بەش لە هەنگاوی پێشوودا تۆمارکراون و لێرە ناگۆڕدرێن.",
+      "sectionEditHint": "لێرە دەتوانیت ناو و بەشی قوتابی دەستکاری بکەیت.",
       "save": "پاشەکەوتکردنی وردەکاری",
       "skip": "ئێستا بەجێی بهێڵە",
       "saveError": "پاشەکەوتکردنی وردەکاری سەرکەوتوو نەبوو. تکایە دووبارە هەوڵ بدەرەوە.",
@@ -279,7 +282,7 @@
       "numberingTitle": "ژمارەکردنی بەڵگە",
       "description": "پێشگر و ژمارەی داهاتوو دیاری بکە.",
       "templateTitle": "دەقی فقرة نامە",
-      "templateDescription": "بەشەکانی فقرة داواکاری بەڵگە دەستکاری بکە. ناوی قوتابی و ساڵی خوێندن خۆکارانە دەخرێتە ناو.",
+      "templateDescription": "بەشەکانی فقرة داواکاری بەڵگە دەستکاری بکە.",
       "introText": "دەستپێکی فقرة",
       "afterStudentText": "دوای ناوی قوتابی",
       "instituteName": "ناوی پەیمانگا",
@@ -297,7 +300,22 @@
       "saveError": "نەتوانرا ڕێکخستن پاشەکەوت بکرێت.",
       "saveSuccess": "ڕێکخستن پاشەکەوت کرا.",
       "invalidNumber": "ژمارەی داهاتوو دەبێت لانیکەم 1 بێت.",
-      "invalidTemplate": "دەقی فقرة نامە پێویستە."
+      "invalidTemplate": "دەقی فقرة نامە پێویستە.",
+      "letterheadTitle": "قالب PDF",
+      "letterheadDescription": "فایل PDF ی قالب باربکە. سیستەم دەقی نامەکە لەسەر ئەم قالبە دەنووسێت. پێویستە هەمان شوێنی بەتاڵ بمێنێتەوە وەک قالبی بنەڕەت.",
+      "letterheadDefault": "قالبی بنەڕەت بەکاردەهێنرێت.",
+      "letterheadCurrent": "قالبی ئێستا: {name}",
+      "letterheadUploaded": "قالبی بارکراو",
+      "letterheadSelected": "فایلی هەڵبژێردراو: {name}",
+      "letterheadNoFile": "تکایە فایلی PDF هەڵبژێرە.",
+      "letterheadUpload": "بارکردنی قالب",
+      "letterheadPreview": "پێشبینی قالب",
+      "letterheadRemove": "سڕینەوەی قالب",
+      "letterheadUploadSuccess": "قالب بە سەرکەوتوویی بارکرا.",
+      "letterheadUploadError": "نەتوانرا قالب بار بکرێت.",
+      "letterheadRemoveSuccess": "قالب سڕایەوە. ئێستا قالبی بنەڕەت بەکاردەهێنرێت.",
+      "letterheadRemoveError": "نەتوانرا قالب بسڕدرێتەوە.",
+      "letterheadPreviewError": "نەتوانرا قالب پیشان بدرێت."
     },
     "history": {
       "empty": "هێشتا هیچ نامەیەک دروست نەکراوە.",

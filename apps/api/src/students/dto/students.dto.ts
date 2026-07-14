@@ -1,6 +1,7 @@
-import { IsIn, IsOptional, IsString } from 'class-validator';
+import { IsIn, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
+import { STUDENT_SECTION_KEYS } from '../section-labels';
 
 export class ListStudentsQueryDto {
   @ApiPropertyOptional({ default: 1 })
@@ -133,6 +134,39 @@ export class StudentResponseDto {
 
   @ApiProperty()
   updatedAt: Date;
+}
+
+export class UpdateStudentDto {
+  @ApiPropertyOptional({ example: 'Ahmad' })
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  firstName?: string;
+
+  @ApiPropertyOptional({ example: 'Karim' })
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  secondName?: string;
+
+  @ApiPropertyOptional({ example: 'Hassan' })
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  thirdName?: string;
+
+  @ApiPropertyOptional({ example: 'Ali' })
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  fourthName?: string;
+
+  @ApiPropertyOptional({ example: 'computer', enum: STUDENT_SECTION_KEYS })
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  @IsIn([...STUDENT_SECTION_KEYS])
+  section?: string;
 }
 
 export class PaginatedStudentsResponseDto {

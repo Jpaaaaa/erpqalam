@@ -124,7 +124,7 @@ export function drawCanvasTextAt(
   yFromTop: number,
   size: number,
   direction: 'rtl' | 'ltr' = 'rtl',
-  align: 'left' | 'right' | 'start' = 'left',
+  align: 'left' | 'right' | 'start' | 'center' = 'left',
 ): void {
   const trimmed = text.trim();
   if (!trimmed) {

@@ -67,6 +67,17 @@ export class DocumentRequestSettingsResponseDto {
 
   @ApiProperty({ type: DocumentRequestBodyParagraphDto })
   bodyParagraph: DocumentRequestBodyParagraphDto;
+
+  @ApiProperty({
+    description: 'Whether a custom uploaded letterhead PDF is configured',
+  })
+  hasCustomLetterheadTemplate: boolean;
+
+  @ApiPropertyOptional()
+  letterheadTemplateFileName?: string | null;
+
+  @ApiPropertyOptional()
+  letterheadTemplateUploadedAt?: string | null;
 }
 
 export class DocumentRequestCreateDefaultsResponseDto {

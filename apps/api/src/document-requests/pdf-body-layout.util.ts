@@ -16,10 +16,24 @@ function buildInstituteSegment(
   department: string,
   language: DocumentRequestLanguage,
 ): string {
+  if (language === 'ku') {
+    if (institute && department) {
+      return `(${institute} بەشی ${department})`;
+    }
+
+    if (institute) {
+      return `(${institute})`;
+    }
+
+    if (department) {
+      return `(بەشی ${department})`;
+    }
+
+    return '';
+  }
+
   if (institute && department) {
-    return language === 'ku'
-      ? `(${department} / ${institute})`
-      : `(${institute}/ ${department})`;
+    return `(${institute} قسم ${department})`;
   }
 
   if (institute) {

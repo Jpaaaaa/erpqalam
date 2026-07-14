@@ -62,6 +62,7 @@
     "section": "Bölüm",
     "sectionSelectPlaceholder": "Select a section",
     "sectionRequired": "Please select a section.",
+    "nameRequired": "First and second name are required.",
     "sectionOptions": {
       "oil_and_gas": "Oil and gas",
       "computer": "Computer",
@@ -112,6 +113,8 @@
     "registeredAt": "Registered {date}",
     "loadRegisteredError": "Unable to load registered students.",
     "detailsButton": "Details",
+    "editButton": "Düzenle",
+    "editSectionTitle": "Bölümü düzenle",
     "detailsIncompleteBadge": "Incomplete",
     "filters": {
       "showAdvanced": "Gelişmiş filtreler",
@@ -134,7 +137,7 @@
     },
     "detailsForm": {
       "title": "Öğrenci bilgileri",
-      "alreadyRecordedHint": "Ad ve bölüm bir önceki adımda kaydedildi; burada değiştirilemez.",
+      "sectionEditHint": "Öğrencinin adını ve bölümünü burada düzenleyebilirsiniz.",
       "save": "Detayları kaydet",
       "skip": "Şimdilik atla",
       "saveError": "Öğrenci detayları kaydedilemedi. Lütfen tekrar deneyin.",
@@ -193,7 +196,7 @@
       "numberingTitle": "Document numbering",
       "description": "Set the prefix letter and the next number to assign.",
       "templateTitle": "Letter body paragraph",
-      "templateDescription": "Edit each part of the document request paragraph. Student name and academic year are inserted automatically.",
+      "templateDescription": "Edit each part of the document request paragraph.",
       "introText": "Opening text",
       "afterStudentText": "After student name",
       "instituteName": "Institute name",
@@ -211,7 +214,22 @@
       "saveError": "Unable to save settings.",
       "saveSuccess": "Settings saved.",
       "invalidNumber": "Next number must be at least 1.",
-      "invalidTemplate": "Letter body text is required."
+      "invalidTemplate": "Letter body text is required.",
+      "letterheadTitle": "PDF letterhead template",
+      "letterheadDescription": "Upload a PDF template. The system writes document text on top of it. Keep the same blank areas as the default template.",
+      "letterheadDefault": "Using the default template.",
+      "letterheadCurrent": "Current template: {name}",
+      "letterheadUploaded": "Uploaded template",
+      "letterheadSelected": "Selected file: {name}",
+      "letterheadNoFile": "Please choose a PDF file.",
+      "letterheadUpload": "Upload template",
+      "letterheadPreview": "Preview template",
+      "letterheadRemove": "Remove template",
+      "letterheadUploadSuccess": "Template uploaded successfully.",
+      "letterheadUploadError": "Unable to upload template.",
+      "letterheadRemoveSuccess": "Template removed. Using the default template now.",
+      "letterheadRemoveError": "Unable to remove template.",
+      "letterheadPreviewError": "Unable to preview template."
     },
     "history": {
       "empty": "No document request letters generated yet.",

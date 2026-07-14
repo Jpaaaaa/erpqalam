@@ -41,6 +41,83 @@ export async function updateDocumentRequestSettings(
   });
 }
 
+export async function uploadDocumentRequestLetterheadTemplate(
+  file: File,
+): Promise<DocumentRequestSettings> {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const headers: HeadersInit = {};
+  const token = getAccessToken();
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  const response = await fetch(
+    `${API_BASE_URL}/document-requests/settings/template`,
+    {
+      method: 'POST',
+      headers,
+      body: formData,
+      cache: 'no-store',
+    },
+  );
+
+  if (!response.ok) {
+    let message = response.statusText;
+    try {
+      const body = (await response.json()) as ApiError;
+      message = Array.isArray(body.message)
+        ? body.message.join(', ')
+        : body.message;
+    } catch {
+      // ignore
+    }
+    throw new ApiClientError(message, response.status);
+  }
+
+  return response.json() as Promise<DocumentRequestSettings>;
+}
+
+export async function fetchDocumentRequestLetterheadTemplate(): Promise<Blob> {
+  const headers: HeadersInit = {};
+  const token = getAccessToken();
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  const response = await fetch(
+    `${API_BASE_URL}/document-requests/settings/template`,
+    {
+      method: 'GET',
+      headers,
+      cache: 'no-store',
+    },
+  );
+
+  if (!response.ok) {
+    let message = response.statusText;
+    try {
+      const body = (await response.json()) as ApiError;
+      message = Array.isArray(body.message)
+        ? body.message.join(', ')
+        : body.message;
+    } catch {
+      // ignore
+    }
+    throw new ApiClientError(message, response.status);
+  }
+
+  return response.blob();
+}
+
+export async function deleteDocumentRequestLetterheadTemplate(): Promise<DocumentRequestSettings> {
+  return apiRequest<DocumentRequestSettings>(
+    '/document-requests/settings/template',
+    { method: 'DELETE' },
+  );
+}
+
 export async function listDocumentRequests(params?: {
   page?: number;
   limit?: number;

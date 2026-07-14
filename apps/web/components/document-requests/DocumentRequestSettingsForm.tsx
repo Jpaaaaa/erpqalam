@@ -2,6 +2,7 @@
 
 import { FormEvent, useCallback, useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { LetterheadTemplateUpload } from '@/components/document-requests/LetterheadTemplateUpload';
 import {
   ApiClientError,
   getDocumentRequestSettings,
@@ -15,17 +16,6 @@ import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 
-function AutoField({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="space-y-1.5">
-      <span className="block text-sm font-medium text-slate-700">{label}</span>
-      <div className="rounded-xl border border-dashed border-teal-200 bg-teal-50 px-3 py-2.5 text-sm text-teal-900">
-        {value}
-      </div>
-    </div>
-  );
-}
-
 export function DocumentRequestSettingsForm() {
   const t = useTranslations('documentRequests.settings');
   const tCommon = useTranslations('common');
@@ -35,6 +25,11 @@ export function DocumentRequestSettingsForm() {
     DEFAULT_BODY_PARAGRAPH_FIELDS,
   );
   const [preview, setPreview] = useState('ب1');
+  const [hasCustomLetterheadTemplate, setHasCustomLetterheadTemplate] =
+    useState(false);
+  const [letterheadTemplateFileName, setLetterheadTemplateFileName] = useState<
+    string | null
+  >(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -49,6 +44,8 @@ export function DocumentRequestSettingsForm() {
       setNextNumber(String(settings.nextNumber));
       setBodyParagraph(settings.bodyParagraph);
       setPreview(settings.nextDocumentNumber);
+      setHasCustomLetterheadTemplate(settings.hasCustomLetterheadTemplate);
+      setLetterheadTemplateFileName(settings.letterheadTemplateFileName ?? null);
     } catch (err) {
       const message =
         err instanceof ApiClientError ? err.message : t('loadError');
@@ -161,6 +158,12 @@ export function DocumentRequestSettingsForm() {
         </div>
       </section>
 
+      <LetterheadTemplateUpload
+        hasCustomTemplate={hasCustomLetterheadTemplate}
+        templateFileName={letterheadTemplateFileName}
+        onUpdated={load}
+      />
+
       <section className="space-y-4 border-t border-slate-200 pt-8">
         <div>
           <h2 className="text-base font-semibold text-slate-900">
@@ -176,11 +179,6 @@ export function DocumentRequestSettingsForm() {
             required
             value={bodyParagraph.introText}
             onChange={(e) => updateParagraphField('introText', e.target.value)}
-          />
-
-          <AutoField
-            label={t('studentNameAuto')}
-            value={t('studentNameAutoHint')}
           />
 
           <Input
@@ -203,11 +201,6 @@ export function DocumentRequestSettingsForm() {
             }
           />
 
-          <AutoField
-            label={t('studentSectionAuto')}
-            value={t('studentSectionAutoHint')}
-          />
-
           <Input
             label={t('beforeYearText')}
             name="beforeYearText"
@@ -216,11 +209,6 @@ export function DocumentRequestSettingsForm() {
             onChange={(e) =>
               updateParagraphField('beforeYearText', e.target.value)
             }
-          />
-
-          <AutoField
-            label={t('academicYearAuto')}
-            value={t('academicYearAutoHint')}
           />
 
           <Input

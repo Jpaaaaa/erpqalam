@@ -1,14 +1,18 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
   Post,
   Query,
   Res,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -65,6 +69,63 @@ export class DocumentRequestsController {
     @CurrentUser() user: JwtPayload,
   ): Promise<DocumentRequestSettingsResponseDto> {
     return this.documentRequestsService.updateSettings(user, dto);
+  }
+
+  @Post('settings/template')
+  @Roles(UserRole.MANAGER)
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: { fileSize: 10 * 1024 * 1024 },
+    }),
+  )
+  @ApiOperation({ summary: 'Upload letterhead PDF template (manager only)' })
+  @ApiResponse({ status: 200, type: DocumentRequestSettingsResponseDto })
+  uploadLetterheadTemplate(
+    @UploadedFile() file:
+      | {
+          buffer: Buffer;
+          mimetype: string;
+          originalname: string;
+          size: number;
+        }
+      | undefined,
+    @CurrentUser() user: JwtPayload,
+  ): Promise<DocumentRequestSettingsResponseDto> {
+    return this.documentRequestsService.uploadLetterheadTemplate(user, {
+      buffer: file?.buffer ?? Buffer.alloc(0),
+      mimetype: file?.mimetype ?? '',
+      originalname: file?.originalname ?? '',
+      size: file?.size ?? 0,
+    });
+  }
+
+  @Get('settings/template')
+  @Roles(UserRole.MANAGER)
+  @ApiOperation({ summary: 'Download uploaded letterhead PDF template' })
+  async getLetterheadTemplate(
+    @CurrentUser() user: JwtPayload,
+    @Res() res: Response,
+  ): Promise<void> {
+    const { bytes, fileName } =
+      await this.documentRequestsService.getLetterheadTemplate(user);
+
+    const encodedName = encodeURIComponent(fileName);
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader(
+      'Content-Disposition',
+      `inline; filename="${encodedName}"; filename*=UTF-8''${encodedName}`,
+    );
+    res.status(200).send(bytes);
+  }
+
+  @Delete('settings/template')
+  @Roles(UserRole.MANAGER)
+  @ApiOperation({ summary: 'Remove custom letterhead PDF template' })
+  @ApiResponse({ status: 200, type: DocumentRequestSettingsResponseDto })
+  deleteLetterheadTemplate(
+    @CurrentUser() user: JwtPayload,
+  ): Promise<DocumentRequestSettingsResponseDto> {
+    return this.documentRequestsService.deleteLetterheadTemplate(user);
   }
 
   @Get('defaults')

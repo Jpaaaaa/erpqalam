@@ -1045,6 +1045,8 @@ export const DocumentRequestSettingsScalarFieldEnum = {
   nextNumber: 'nextNumber',
   defaultAcademicYear: 'defaultAcademicYear',
   bodyTemplate: 'bodyTemplate',
+  letterheadTemplateFileName: 'letterheadTemplateFileName',
+  letterheadTemplateUploadedAt: 'letterheadTemplateUploadedAt',
   updatedAt: 'updatedAt'
 } as const
 

@@ -19,7 +19,7 @@ const SECTION_LABELS_AR: Record<StudentSectionKey, string> = {
 const SECTION_LABELS_KU: Record<StudentSectionKey, string> = {
   computer: 'کۆمپیوتەر',
   oil_and_gas: 'نەوت و گاز',
-  management: 'بەڕێوەبردن',
+  management: 'کارگێری',
   accounting: 'ژمێریاری',
 };
 

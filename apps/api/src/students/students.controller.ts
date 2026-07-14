@@ -26,6 +26,7 @@ import {
   ListStudentsQueryDto,
   PaginatedStudentsResponseDto,
   StudentResponseDto,
+  UpdateStudentDto,
 } from './dto/students.dto';
 import {
   CreatePendingStudentCheckInDto,
@@ -147,5 +148,19 @@ export class StudentsController {
     @CurrentUser() user: JwtPayload,
   ): Promise<StudentResponseDto> {
     return this.studentsService.updateDetails(id, dto, user);
+  }
+
+  @Patch('students/:id')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions(UserPermission.STUDENT_REGISTRATION)
+  @ApiOperation({ summary: 'Update enrolled student fields (e.g. section)' })
+  @ApiResponse({ status: 200, type: StudentResponseDto })
+  async updateStudent(
+    @Param('id') id: string,
+    @Body() dto: UpdateStudentDto,
+    @CurrentUser() user: JwtPayload,
+  ): Promise<StudentResponseDto> {
+    return this.studentsService.update(id, dto, user);
   }
 }

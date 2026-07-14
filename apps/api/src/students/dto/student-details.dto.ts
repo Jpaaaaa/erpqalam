@@ -1,5 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsDateString, IsOptional, IsString } from 'class-validator';
+import { IsDateString, IsIn, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { STUDENT_SECTION_KEYS } from '../section-labels';
 
 export class UpdateStudentDetailsDto {
   @ApiPropertyOptional({ example: 'Erbil, Ankawa' })
@@ -51,6 +52,13 @@ export class UpdateStudentDetailsDto {
   @IsOptional()
   @IsString()
   studentMobile?: string;
+
+  @ApiPropertyOptional({ example: 'computer', enum: STUDENT_SECTION_KEYS })
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  @IsIn([...STUDENT_SECTION_KEYS])
+  section?: string;
 }
 
 export class StudentDetailsFieldsDto {
@@ -142,6 +150,9 @@ export function buildDetailsUpdateData(dto: UpdateStudentDetailsDto) {
   }
   if (dto.stage !== undefined) {
     data.stage = dto.stage.trim() || null;
+  }
+  if (dto.section !== undefined) {
+    data.section = dto.section.trim();
   }
 
   data.detailsCompletedAt = new Date();

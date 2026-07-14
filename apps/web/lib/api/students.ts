@@ -106,6 +106,24 @@ export async function listStudents(
   return apiRequest<PaginatedStudents>(`/students${query ? `?${query}` : ''}`);
 }
 
+export interface UpdateStudentPayload {
+  firstName?: string;
+  secondName?: string;
+  thirdName?: string;
+  fourthName?: string;
+  section?: string;
+}
+
+export async function updateStudent(
+  id: string,
+  payload: UpdateStudentPayload,
+): Promise<Student> {
+  return apiRequest<Student>(`/students/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(payload),
+  });
+}
+
 export async function updatePendingStudentDetails(
   id: string,
   payload: UpdateStudentDetailsPayload,

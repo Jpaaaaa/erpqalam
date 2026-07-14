@@ -6,7 +6,7 @@ export const DEFAULT_KURDISH_BODY_TEMPLATE_FIELDS: BodyTemplateFields = {
   introText:
     'داواکارین لە بەڕێزتان کە بەرزامەندی بەفەرموون بۆ ناردنی بڕوانامەی و پڕۆفایلی قوتابی',
   afterStudentText: 'کە یەکێکە لە خوێندکارانی پەیمانگاکەمان',
-  instituteName: 'پەیمانگای فەڵسەفی ناحکومی',
+  instituteName: 'پەیمانگای قەڵەمی ناحکومی',
   beforeYearText: 'بۆ ساڵی خوێندنی',
   closingText:
     'لە ڕێکەی ئی-میلی پەروەردەوە بۆ کۆدی پەیمانگا (٦٠٢٠١٠) یان بەدەستی قوتابی بۆمان ڕەوان بکەن.',
@@ -41,6 +41,8 @@ const STATIC_CONTENT: Record<DocumentRequestLanguage, DocumentRequestStaticConte
       greeting: 'سڵاو:',
       closing: 'لەگەڵ ڕێزماندا.....',
       directorTitle: 'بەڕێوەبەری پەیمانگا بە وەکالەت',
+      footerCopyLine: 'کۆپی بۆ:',
+      footerBullet: '• دەرچوو',
     },
   };
 

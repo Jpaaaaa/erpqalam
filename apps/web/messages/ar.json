@@ -133,6 +133,7 @@
     "sectionPlaceholder": "مثال: الصف الخامس / أ",
     "sectionSelectPlaceholder": "اختر القسم",
     "sectionRequired": "يرجى اختيار القسم.",
+    "nameRequired": "الاسم الأول والثاني مطلوبان.",
     "sectionOptions": {
       "oil_and_gas": "النفط والغاز",
       "computer": "حاسوب",
@@ -198,6 +199,8 @@
     "registeredAt": "سُجّل في {date}",
     "loadRegisteredError": "تعذر تحميل الطلاب المسجلين.",
     "detailsButton": "التفاصيل",
+    "editButton": "تعديل",
+    "editSectionTitle": "تعديل القسم",
     "detailsIncompleteBadge": "غير مكتمل",
     "filters": {
       "showAdvanced": "فلاتر متقدمة",
@@ -220,7 +223,7 @@
     },
     "detailsForm": {
       "title": "معلومات الطالب",
-      "alreadyRecordedHint": "تم تسجيل الاسم والقسم في الخطوة السابقة ولا يمكن تعديلهما هنا.",
+      "sectionEditHint": "يمكنك تعديل اسم الطالب وقسمه هنا.",
       "save": "حفظ التفاصيل",
       "skip": "تخطي الآن",
       "saveError": "تعذر حفظ تفاصيل الطالب. يرجى المحاولة مرة أخرى.",
@@ -279,7 +282,7 @@
       "numberingTitle": "ترقيم الوثائق",
       "description": "حدد حرف البادئة والرقم التالي. مثال: بادئة ب مع الرقم 5 ينتج ب5.",
       "templateTitle": "نص فقرة الخطاب",
-      "templateDescription": "عدّل أجزاء فقرة طلب الوثيقة. اسم الطالب والعام الدراسي يُدرجان تلقائياً عند إنشاء الخطاب.",
+      "templateDescription": "عدّل أجزاء فقرة طلب الوثيقة.",
       "introText": "بداية الفقرة",
       "afterStudentText": "بعد اسم الطالب",
       "instituteName": "اسم المعهد",
@@ -299,7 +302,22 @@
       "saveError": "تعذر حفظ الإعدادات.",
       "saveSuccess": "تم حفظ الإعدادات.",
       "invalidNumber": "يجب أن يكون الرقم التالي 1 على الأقل.",
-      "invalidTemplate": "نص فقرة الخطاب مطلوب."
+      "invalidTemplate": "نص فقرة الخطاب مطلوب.",
+      "letterheadTitle": "قالب PDF",
+      "letterheadDescription": "ارفع ملف PDF للقالب. يكتب النظام نص الطلب فوقه. يجب الإبقاء على نفس المساحات الفارغة كالقالب الافتراضي.",
+      "letterheadDefault": "يتم استخدام القالب الافتراضي.",
+      "letterheadCurrent": "القالب الحالي: {name}",
+      "letterheadUploaded": "قالب مرفوع",
+      "letterheadSelected": "الملف المحدد: {name}",
+      "letterheadNoFile": "يرجى اختيار ملف PDF.",
+      "letterheadUpload": "رفع القالب",
+      "letterheadPreview": "معاينة القالب",
+      "letterheadRemove": "إزالة القالب",
+      "letterheadUploadSuccess": "تم رفع القالب بنجاح.",
+      "letterheadUploadError": "تعذر رفع القالب.",
+      "letterheadRemoveSuccess": "تمت إزالة القالب. يُستخدم القالب الافتراضي الآن.",
+      "letterheadRemoveError": "تعذر إزالة القالب.",
+      "letterheadPreviewError": "تعذر معاينة القالب."
     },
     "history": {
       "empty": "لم يتم إنشاء أي طلبات وثائق بعد.",

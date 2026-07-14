@@ -38,6 +38,8 @@ import {
 
   drawCanvasTextRtl,
 
+  measureCanvasTextWidth,
+
   renderCanvasOverlay,
 
 } from './pdf-canvas-text.util';
@@ -67,6 +69,7 @@ export interface DocumentRequestPdfInput {
   studentSectionLabel: string;
   bodyTemplate: string;
   language: DocumentRequestLanguage;
+  templateBytes?: Buffer;
 }
 
 
@@ -361,17 +364,20 @@ function drawHeaderFields(
 
 
 
+export function loadDefaultLetterheadTemplateBytes(): Buffer {
+  return readFileSync(
+    resolveAssetPath(TEMPLATE_CANDIDATES, 'Letterhead template'),
+  );
+}
+
 export async function buildDocumentRequestPdf(
 
   input: DocumentRequestPdfInput,
 
 ): Promise<Buffer> {
 
-  const templateBytes = readFileSync(
-
-    resolveAssetPath(TEMPLATE_CANDIDATES, 'Letterhead template'),
-
-  );
+  const templateBytes =
+    input.templateBytes ?? loadDefaultLetterheadTemplateBytes();
 
   const fontPath =
     input.language === 'ku'
@@ -487,11 +493,27 @@ export async function buildDocumentRequestPdf(
 
 
 
-  const signatureFromTop = pageHeight - MARGIN - 52;
+  const signatureFromTop = pageHeight - MARGIN - 68;
 
   drawCanvasTextLeft(ctx, content.directorTitle, leftX, signatureFromTop, BODY_SIZE);
 
-  drawCanvasTextLeft(ctx, signatureName, leftX, signatureFromTop + 16, BODY_SIZE);
+  const titleWidth = measureCanvasTextWidth(
+    ctx,
+    content.directorTitle,
+    BODY_SIZE,
+    'rtl',
+  );
+  const titleCenterX = leftX + titleWidth / 2;
+
+  drawCanvasTextAt(
+    ctx,
+    signatureName,
+    titleCenterX,
+    signatureFromTop + 16,
+    BODY_SIZE,
+    'rtl',
+    'center',
+  );
 
 
 

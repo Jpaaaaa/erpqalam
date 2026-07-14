@@ -21,6 +21,11 @@ import {
   buildDocumentRequestPdf,
   getAcademicYear,
 } from './document-request-pdf.service';
+import { DocumentRequestTemplateStorage } from './document-request-template.storage';
+import {
+  assertValidLetterheadPdf,
+  type UploadedPdfFile,
+} from './document-request-template.util';
 import {
   parseBodyTemplateFields,
   serializeBodyTemplate,
@@ -126,7 +131,10 @@ function resolveAcademicYear(
 
 @Injectable()
 export class DocumentRequestsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly templateStorage: DocumentRequestTemplateStorage,
+  ) {}
 
   private async ensureSettings(schoolId: string) {
     return this.prisma.documentRequestSettings.upsert({
@@ -141,6 +149,8 @@ export class DocumentRequestsService {
     nextNumber: number;
     defaultAcademicYear: string | null;
     bodyTemplate: string;
+    letterheadTemplateFileName: string | null;
+    letterheadTemplateUploadedAt: Date | null;
   }): DocumentRequestSettingsResponseDto {
     return {
       prefix: settings.prefix,
@@ -148,13 +158,74 @@ export class DocumentRequestsService {
       nextDocumentNumber: `${settings.prefix}${settings.nextNumber}`,
       defaultAcademicYear: settings.defaultAcademicYear,
       bodyParagraph: parseBodyTemplateFields(settings.bodyTemplate),
+      hasCustomLetterheadTemplate: Boolean(settings.letterheadTemplateFileName),
+      letterheadTemplateFileName: settings.letterheadTemplateFileName,
+      letterheadTemplateUploadedAt:
+        settings.letterheadTemplateUploadedAt?.toISOString() ?? null,
     };
+  }
+
+  private resolveTemplateBytes(schoolId: string): Buffer | undefined {
+    return this.templateStorage.read(schoolId) ?? undefined;
   }
 
   async getSettings(
     user: JwtPayload,
   ): Promise<DocumentRequestSettingsResponseDto> {
     const settings = await this.ensureSettings(user.schoolId);
+    return this.toSettingsResponse(settings);
+  }
+
+  async uploadLetterheadTemplate(
+    user: JwtPayload,
+    file: UploadedPdfFile,
+  ): Promise<DocumentRequestSettingsResponseDto> {
+    await assertValidLetterheadPdf(file);
+
+    await this.ensureSettings(user.schoolId);
+    this.templateStorage.write(user.schoolId, file.buffer);
+
+    const settings = await this.prisma.documentRequestSettings.update({
+      where: { schoolId: user.schoolId },
+      data: {
+        letterheadTemplateFileName: file.originalname.trim() || 'template.pdf',
+        letterheadTemplateUploadedAt: new Date(),
+      },
+    });
+
+    return this.toSettingsResponse(settings);
+  }
+
+  async getLetterheadTemplate(
+    user: JwtPayload,
+  ): Promise<{ bytes: Buffer; fileName: string }> {
+    const settings = await this.ensureSettings(user.schoolId);
+    const bytes = this.templateStorage.read(user.schoolId);
+
+    if (!bytes || !settings.letterheadTemplateFileName) {
+      throw new NotFoundException('Letterhead template not found');
+    }
+
+    return {
+      bytes,
+      fileName: settings.letterheadTemplateFileName,
+    };
+  }
+
+  async deleteLetterheadTemplate(
+    user: JwtPayload,
+  ): Promise<DocumentRequestSettingsResponseDto> {
+    await this.ensureSettings(user.schoolId);
+    this.templateStorage.delete(user.schoolId);
+
+    const settings = await this.prisma.documentRequestSettings.update({
+      where: { schoolId: user.schoolId },
+      data: {
+        letterheadTemplateFileName: null,
+        letterheadTemplateUploadedAt: null,
+      },
+    });
+
     return this.toSettingsResponse(settings);
   }
 
@@ -436,6 +507,7 @@ export class DocumentRequestsService {
       studentSectionLabel,
       bodyTemplate: settingsBefore.bodyTemplate,
       language,
+      templateBytes: this.resolveTemplateBytes(user.schoolId),
     });
 
     return {
@@ -484,6 +556,7 @@ export class DocumentRequestsService {
       studentSectionLabel,
       bodyTemplate: settings.bodyTemplate,
       language,
+      templateBytes: this.resolveTemplateBytes(user.schoolId),
     });
 
     return {

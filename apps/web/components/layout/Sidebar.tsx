@@ -5,6 +5,7 @@ import { Link } from '@/i18n/navigation';
 import type { AuthUser } from '@/lib/types/auth';
 import { useDashboardNavWithActive } from '@/lib/navigation/useDashboardNav';
 import { AppLogoIcon } from '@/components/layout/NavIcons';
+import webPackage from '@/package.json';
 
 interface SidebarProps {
   user: AuthUser;
@@ -56,6 +57,9 @@ export function Sidebar({ user }: SidebarProps) {
         </div>
         <span className="max-w-[4rem] truncate text-center text-[10px] font-medium text-slate-500">
           {tRoles(user.role)}
+        </span>
+        <span className="text-[9px] font-medium text-slate-400">
+          v{webPackage.version}
         </span>
         <span className="sr-only">{t('appName')}</span>
       </div>

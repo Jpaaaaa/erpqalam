@@ -9,7 +9,7 @@ export const DEFAULT_KURDISH_BODY_TEMPLATE_FIELDS: BodyTemplateFields = {
   instituteName: 'پەیمانگای قەڵەمی ناحکومی',
   beforeYearText: 'بۆ ساڵی خوێندنی',
   closingText:
-    'لە ڕێکەی ئی پەروەردەوە بۆ کۆدی پەیمانگا (٦٠٢٠١٠) یان بەدەستی فێرخواز بۆمان ڕەوان بکەن.',
+    'لە ڕێکەی ئی-میلی پەروەردەوە بۆ کۆدی پەیمانگا (٦٠٢٠١٠) یان بەدەستی فێرخواز بۆمان ڕەوان بکەن.',
 };
 
 export const KURDISH_MANAGER_NAME = 'هاوسەر عەزیز عەبدالقادر';

@@ -36,7 +36,7 @@ export function DocumentRequestPreviewModal({
     if (!previewBlob) return;
 
     setPrintError('');
-    const opened = openDocumentRequestPdfInNewTab(previewBlob, documentNumber);
+    const opened = openDocumentRequestPdfInNewTab(previewBlob);
     if (!opened) {
       setPrintError(t('printBlocked'));
     }

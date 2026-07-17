@@ -246,7 +246,7 @@ export function downloadDocumentRequestPdf(blob: Blob, documentNumber: string) {
   URL.revokeObjectURL(url);
 }
 
-export function openDocumentRequestPdfInNewTab(blob: Blob, documentNumber: string) {
+export function openDocumentRequestPdfInNewTab(blob: Blob) {
   const url = URL.createObjectURL(blob);
   const opened = window.open(url, '_blank');
 

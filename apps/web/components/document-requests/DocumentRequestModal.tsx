@@ -134,7 +134,7 @@ export function DocumentRequestModal({
     try {
       const result = await generateDocumentRequest(payload);
 
-      openDocumentRequestPdfInNewTab(result.blob, result.documentNumber);
+      openDocumentRequestPdfInNewTab(result.blob);
       onGenerated?.();
       handleClose();
     } catch (err) {

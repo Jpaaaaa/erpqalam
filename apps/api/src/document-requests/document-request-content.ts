@@ -4,12 +4,12 @@ import type { DocumentRequestLanguage } from './document-request-language';
 
 export const DEFAULT_KURDISH_BODY_TEMPLATE_FIELDS: BodyTemplateFields = {
   introText:
-    'داواکارین لە بەڕێزتان کە بەرزامەندی بەفەرموون بۆ ناردنی بڕوانامەی و پڕۆفایلی قوتابی',
-  afterStudentText: 'کە یەکێکە لە خوێندکارانی پەیمانگاکەمان',
+    'داواکارین لە بەڕێزتان کە بەرزامەندی بەفەرموون بۆ ناردنی بڕوانامەی و پڕۆفایلی فێرخواز',
+  afterStudentText: 'کە یەکێکە لە فێرخوازانی پەیمانگاکەمان',
   instituteName: 'پەیمانگای قەڵەمی ناحکومی',
   beforeYearText: 'بۆ ساڵی خوێندنی',
   closingText:
-    'لە ڕێکەی ئی-میلی پەروەردەوە بۆ کۆدی پەیمانگا (٦٠٢٠١٠) یان بەدەستی قوتابی بۆمان ڕەوان بکەن.',
+    'لە ڕێکەی ئی پەروەردەوە بۆ کۆدی پەیمانگا (٦٠٢٠١٠) یان بەدەستی فێرخواز بۆمان ڕەوان بکەن.',
 };
 
 export const KURDISH_MANAGER_NAME = 'هاوسەر عەزیز عەبدالقادر';

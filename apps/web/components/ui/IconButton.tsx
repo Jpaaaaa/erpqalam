@@ -1,6 +1,6 @@
 import { ButtonHTMLAttributes } from 'react';
 
-type IconButtonVariant = 'secondary' | 'ghost' | 'primary';
+type IconButtonVariant = 'secondary' | 'ghost' | 'primary' | 'danger';
 
 interface IconButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   label: string;
@@ -15,6 +15,8 @@ const variants: Record<IconButtonVariant, string> = {
   secondary:
     'border border-slate-200 bg-white text-slate-700 shadow-sm hover:bg-slate-50 focus-visible:ring-slate-400',
   ghost: 'text-slate-600 hover:bg-slate-100 focus-visible:ring-slate-400',
+  danger:
+    'border border-red-100 bg-white text-red-600 shadow-sm hover:bg-red-50 hover:text-red-700 focus-visible:ring-red-400',
 };
 
 export function IconButton({

@@ -55,6 +55,7 @@ export const ModelName = {
   PendingStudent: 'PendingStudent',
   Student: 'Student',
   DocumentRequestSettings: 'DocumentRequestSettings',
+  BackupSettings: 'BackupSettings',
   DocumentRequestLetter: 'DocumentRequestLetter',
   User: 'User',
   RefreshToken: 'RefreshToken'
@@ -160,6 +161,25 @@ export const DocumentRequestSettingsScalarFieldEnum = {
 } as const
 
 export type DocumentRequestSettingsScalarFieldEnum = (typeof DocumentRequestSettingsScalarFieldEnum)[keyof typeof DocumentRequestSettingsScalarFieldEnum]
+
+
+export const BackupSettingsScalarFieldEnum = {
+  id: 'id',
+  botToken: 'botToken',
+  chatIds: 'chatIds',
+  backupTime: 'backupTime',
+  dailyReportEnabled: 'dailyReportEnabled',
+  dailyReportTime: 'dailyReportTime',
+  weeklyReportEnabled: 'weeklyReportEnabled',
+  weeklyReportDay: 'weeklyReportDay',
+  weeklyReportTime: 'weeklyReportTime',
+  monthlyReportEnabled: 'monthlyReportEnabled',
+  monthlyReportDay: 'monthlyReportDay',
+  monthlyReportTime: 'monthlyReportTime',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BackupSettingsScalarFieldEnum = (typeof BackupSettingsScalarFieldEnum)[keyof typeof BackupSettingsScalarFieldEnum]
 
 
 export const DocumentRequestLetterScalarFieldEnum = {

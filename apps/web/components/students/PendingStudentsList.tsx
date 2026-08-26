@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import {
   ApiClientError,
   approvePendingStudent,
+  deletePendingStudent,
   listPendingStudents,
 } from '@/lib/api/students';
 import {
@@ -19,6 +20,9 @@ import { useAuth } from '@/lib/auth/context';
 import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Alert';
 import { DetailRow, MobileCard } from '@/components/ui/MobileCard';
+import { PendingStudentEditModal } from '@/components/students/PendingStudentEditModal';
+import { PendingStudentRowActions } from '@/components/students/PendingStudentRowActions';
+import { StudentDetailsModal } from '@/components/students/StudentDetailsModal';
 
 function formatDate(value: string, locale: string) {
   return new Date(value).toLocaleString(locale);
@@ -37,6 +41,8 @@ export function PendingStudentsList({ refreshKey = 0 }: PendingStudentsListProps
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [actionId, setActionId] = useState<string | null>(null);
+  const [editTarget, setEditTarget] = useState<PendingStudent | null>(null);
+  const [detailsTarget, setDetailsTarget] = useState<PendingStudent | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -58,7 +64,7 @@ export function PendingStudentsList({ refreshKey = 0 }: PendingStudentsListProps
   }, [load, refreshKey]);
 
   async function handleApprove(id: string) {
-    setActionId(id);
+    setActionId(`approve:${id}`);
     setError('');
     try {
       await approvePendingStudent(id);
@@ -72,6 +78,29 @@ export function PendingStudentsList({ refreshKey = 0 }: PendingStudentsListProps
     }
   }
 
+  async function handleDelete(id: string) {
+    if (!window.confirm(t('deletePendingConfirm'))) return;
+
+    setActionId(`delete:${id}`);
+    setError('');
+    try {
+      await deletePendingStudent(id);
+      setStudents((prev) => prev.filter((s) => s.id !== id));
+      if (editTarget?.id === id) setEditTarget(null);
+      if (detailsTarget?.id === id) setDetailsTarget(null);
+    } catch (err) {
+      const message =
+        err instanceof ApiClientError ? err.message : t('deleteError');
+      setError(message);
+    } finally {
+      setActionId(null);
+    }
+  }
+
+  function handleStudentSaved(updated: PendingStudent) {
+    setStudents((prev) => prev.map((s) => (s.id === updated.id ? updated : s)));
+  }
+
   if (loading) {
     return <p className="text-sm text-slate-500">{tCommon('loading')}</p>;
   }
@@ -79,6 +108,27 @@ export function PendingStudentsList({ refreshKey = 0 }: PendingStudentsListProps
   return (
     <div className="space-y-4">
       {error && <Alert variant="error">{error}</Alert>}
+
+      {editTarget && (
+        <PendingStudentEditModal
+          open
+          student={editTarget}
+          onClose={() => setEditTarget(null)}
+          onSaved={handleStudentSaved}
+        />
+      )}
+
+      {detailsTarget && (
+        <StudentDetailsModal
+          open
+          mode="pending"
+          record={detailsTarget}
+          onClose={() => setDetailsTarget(null)}
+          onSaved={() => {
+            void load();
+          }}
+        />
+      )}
 
       {students.length === 0 ? (
         <p className="rounded-2xl bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">
@@ -91,6 +141,7 @@ export function PendingStudentsList({ refreshKey = 0 }: PendingStudentsListProps
             {students.map((student) => {
               const canApprove =
                 Boolean(student.section?.trim()) && student.phoneNumbers.length === 2;
+              const busy = actionId?.endsWith(`:${student.id}`) ?? false;
 
               return (
                 <MobileCard key={student.id}>
@@ -132,17 +183,26 @@ export function PendingStudentsList({ refreshKey = 0 }: PendingStudentsListProps
                           : t('checkInSubmission')}
                       </DetailRow>
                     </div>
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      className="w-full"
-                      disabled={!canApprove}
-                      isLoading={actionId === student.id}
-                      loadingLabel={tCommon('pleaseWait')}
-                      onClick={() => handleApprove(student.id)}
-                    >
-                      {t('markRegistered')}
-                    </Button>
+                    <div className="flex flex-col gap-2">
+                      <PendingStudentRowActions
+                        student={student}
+                        onOpenDetails={() => setDetailsTarget(student)}
+                        onOpenEdit={() => setEditTarget(student)}
+                        onDelete={() => void handleDelete(student.id)}
+                        isDeleting={actionId === `delete:${student.id}`}
+                      />
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        className="w-full"
+                        disabled={!canApprove || busy}
+                        isLoading={actionId === `approve:${student.id}`}
+                        loadingLabel={tCommon('pleaseWait')}
+                        onClick={() => handleApprove(student.id)}
+                      >
+                        {t('markRegistered')}
+                      </Button>
+                    </div>
                   </div>
                 </MobileCard>
               );
@@ -181,6 +241,7 @@ export function PendingStudentsList({ refreshKey = 0 }: PendingStudentsListProps
                 {students.map((student) => {
                   const canApprove =
                     Boolean(student.section?.trim()) && student.phoneNumbers.length === 2;
+                  const busy = actionId?.endsWith(`:${student.id}`) ?? false;
 
                   return (
                     <tr key={student.id} className="align-top transition hover:bg-slate-50/80">
@@ -220,11 +281,18 @@ export function PendingStudentsList({ refreshKey = 0 }: PendingStudentsListProps
                           : t('checkInSubmission')}
                       </td>
                       <td className="px-4 py-3.5">
-                        <div className="flex justify-end">
+                        <div className="flex flex-wrap items-center justify-end gap-2">
+                          <PendingStudentRowActions
+                            student={student}
+                            onOpenDetails={() => setDetailsTarget(student)}
+                            onOpenEdit={() => setEditTarget(student)}
+                            onDelete={() => void handleDelete(student.id)}
+                            isDeleting={actionId === `delete:${student.id}`}
+                          />
                           <Button
                             type="button"
                             variant="secondary"
-                            disabled={!canApprove}
+                            disabled={!canApprove || busy}
                             title={
                               !canApprove
                                 ? t('approveIncompleteHint')
@@ -234,7 +302,7 @@ export function PendingStudentsList({ refreshKey = 0 }: PendingStudentsListProps
                                     })
                                   : undefined
                             }
-                            isLoading={actionId === student.id}
+                            isLoading={actionId === `approve:${student.id}`}
                             loadingLabel={tCommon('pleaseWait')}
                             onClick={() => handleApprove(student.id)}
                           >

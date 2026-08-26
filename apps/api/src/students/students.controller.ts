@@ -1,7 +1,10 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   Patch,
   Post,
@@ -123,6 +126,20 @@ export class StudentsController {
     return toStudentResponse(student);
   }
 
+  @Delete('pending-students/:id')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions(UserPermission.STUDENT_REGISTRATION)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Delete a pending student' })
+  @ApiResponse({ status: 204, description: 'Pending student deleted' })
+  async deletePending(
+    @Param('id') id: string,
+    @CurrentUser() user: JwtPayload,
+  ): Promise<void> {
+    await this.pendingStudentsService.remove(id, user);
+  }
+
   @Get('students')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, PermissionsGuard)
@@ -162,5 +179,19 @@ export class StudentsController {
     @CurrentUser() user: JwtPayload,
   ): Promise<StudentResponseDto> {
     return this.studentsService.update(id, dto, user);
+  }
+
+  @Delete('students/:id')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions(UserPermission.STUDENT_REGISTRATION)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Delete a registered student' })
+  @ApiResponse({ status: 204, description: 'Student deleted' })
+  async deleteStudent(
+    @Param('id') id: string,
+    @CurrentUser() user: JwtPayload,
+  ): Promise<void> {
+    await this.studentsService.remove(id, user);
   }
 }

@@ -1,36 +1,31 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { DocumentIcon } from '@/components/layout/NavIcons';
 import {
   StudentDeleteIcon,
   StudentDetailsIcon,
   StudentEditIcon,
 } from '@/components/students/StudentListActionIcons';
 import { IconButton } from '@/components/ui/IconButton';
-import type { CreateDocumentRequestTarget } from '@/lib/types/document-request';
-import type { Student } from '@/lib/types/student';
-import { formatStudentName } from '@/lib/students/format';
+import type { PendingStudent } from '@/lib/types/student';
 
-interface StudentRowActionsProps {
-  student: Student;
+interface PendingStudentRowActionsProps {
+  student: PendingStudent;
   onOpenDetails: () => void;
   onOpenEdit: () => void;
-  onOpenDocumentRequest: (target: CreateDocumentRequestTarget) => void;
   onDelete: () => void;
   isDeleting?: boolean;
   className?: string;
 }
 
-export function StudentRowActions({
+export function PendingStudentRowActions({
   student,
   onOpenDetails,
   onOpenEdit,
-  onOpenDocumentRequest,
   onDelete,
   isDeleting = false,
   className = '',
-}: StudentRowActionsProps) {
+}: PendingStudentRowActionsProps) {
   const t = useTranslations('students');
   const tCommon = useTranslations('common');
 
@@ -48,18 +43,6 @@ export function StudentRowActions({
 
       <IconButton label={t('editButton')} onClick={onOpenEdit}>
         <StudentEditIcon className="h-5 w-5" />
-      </IconButton>
-
-      <IconButton
-        label={t('documentRequest.generateButton')}
-        onClick={() =>
-          onOpenDocumentRequest({
-            studentName: formatStudentName(student),
-            studentId: student.id,
-          })
-        }
-      >
-        <DocumentIcon className="h-5 w-5" />
       </IconButton>
 
       <IconButton

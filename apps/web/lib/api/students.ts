@@ -76,6 +76,18 @@ export async function approvePendingStudent(id: string): Promise<Student> {
   });
 }
 
+export async function deletePendingStudent(id: string): Promise<void> {
+  await apiRequest<void>(`/pending-students/${id}`, {
+    method: 'DELETE',
+  });
+}
+
+export async function deleteStudent(id: string): Promise<void> {
+  await apiRequest<void>(`/students/${id}`, {
+    method: 'DELETE',
+  });
+}
+
 import type { RegisteredStudentFilters } from '@/lib/students/registered-filters';
 import { filtersToQueryParams } from '@/lib/students/registered-filters';
 

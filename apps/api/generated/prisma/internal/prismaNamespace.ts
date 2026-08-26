@@ -388,6 +388,7 @@ export const ModelName = {
   PendingStudent: 'PendingStudent',
   Student: 'Student',
   DocumentRequestSettings: 'DocumentRequestSettings',
+  BackupSettings: 'BackupSettings',
   DocumentRequestLetter: 'DocumentRequestLetter',
   User: 'User',
   RefreshToken: 'RefreshToken'
@@ -406,7 +407,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "school" | "pendingStudent" | "student" | "documentRequestSettings" | "documentRequestLetter" | "user" | "refreshToken"
+    modelProps: "school" | "pendingStudent" | "student" | "documentRequestSettings" | "backupSettings" | "documentRequestLetter" | "user" | "refreshToken"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -703,6 +704,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.DocumentRequestSettingsCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.DocumentRequestSettingsCountAggregateOutputType> | number
+        }
+      }
+    }
+    BackupSettings: {
+      payload: Prisma.$BackupSettingsPayload<ExtArgs>
+      fields: Prisma.BackupSettingsFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.BackupSettingsFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BackupSettingsPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.BackupSettingsFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BackupSettingsPayload>
+        }
+        findFirst: {
+          args: Prisma.BackupSettingsFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BackupSettingsPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.BackupSettingsFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BackupSettingsPayload>
+        }
+        findMany: {
+          args: Prisma.BackupSettingsFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BackupSettingsPayload>[]
+        }
+        create: {
+          args: Prisma.BackupSettingsCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BackupSettingsPayload>
+        }
+        createMany: {
+          args: Prisma.BackupSettingsCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.BackupSettingsCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BackupSettingsPayload>[]
+        }
+        delete: {
+          args: Prisma.BackupSettingsDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BackupSettingsPayload>
+        }
+        update: {
+          args: Prisma.BackupSettingsUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BackupSettingsPayload>
+        }
+        deleteMany: {
+          args: Prisma.BackupSettingsDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.BackupSettingsUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.BackupSettingsUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BackupSettingsPayload>[]
+        }
+        upsert: {
+          args: Prisma.BackupSettingsUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BackupSettingsPayload>
+        }
+        aggregate: {
+          args: Prisma.BackupSettingsAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateBackupSettings>
+        }
+        groupBy: {
+          args: Prisma.BackupSettingsGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BackupSettingsGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.BackupSettingsCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BackupSettingsCountAggregateOutputType> | number
         }
       }
     }
@@ -1053,6 +1128,25 @@ export const DocumentRequestSettingsScalarFieldEnum = {
 export type DocumentRequestSettingsScalarFieldEnum = (typeof DocumentRequestSettingsScalarFieldEnum)[keyof typeof DocumentRequestSettingsScalarFieldEnum]
 
 
+export const BackupSettingsScalarFieldEnum = {
+  id: 'id',
+  botToken: 'botToken',
+  chatIds: 'chatIds',
+  backupTime: 'backupTime',
+  dailyReportEnabled: 'dailyReportEnabled',
+  dailyReportTime: 'dailyReportTime',
+  weeklyReportEnabled: 'weeklyReportEnabled',
+  weeklyReportDay: 'weeklyReportDay',
+  weeklyReportTime: 'weeklyReportTime',
+  monthlyReportEnabled: 'monthlyReportEnabled',
+  monthlyReportDay: 'monthlyReportDay',
+  monthlyReportTime: 'monthlyReportTime',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BackupSettingsScalarFieldEnum = (typeof BackupSettingsScalarFieldEnum)[keyof typeof BackupSettingsScalarFieldEnum]
+
+
 export const DocumentRequestLetterScalarFieldEnum = {
   id: 'id',
   schoolId: 'schoolId',
@@ -1169,6 +1263,13 @@ export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'In
  * Reference to a field of type 'Int[]'
  */
 export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
+    
+
+
+/**
+ * Reference to a field of type 'Boolean'
+ */
+export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
     
 
 
@@ -1341,6 +1442,7 @@ export type GlobalOmitConfig = {
   pendingStudent?: Prisma.PendingStudentOmit
   student?: Prisma.StudentOmit
   documentRequestSettings?: Prisma.DocumentRequestSettingsOmit
+  backupSettings?: Prisma.BackupSettingsOmit
   documentRequestLetter?: Prisma.DocumentRequestLetterOmit
   user?: Prisma.UserOmit
   refreshToken?: Prisma.RefreshTokenOmit

@@ -122,6 +122,27 @@ model DocumentRequestSettings {
   updatedAt           DateTime @updatedAt
 }
 
+model BackupSettings {
+  id         String   @id @default(cuid())
+  botToken   String   @default("")
+  chatIds    String[] @default([])
+  backupTime String   @default("20:00")
+
+  /// PDF activity reports via Telegram
+  dailyReportEnabled   Boolean @default(true)
+  dailyReportTime      String  @default("20:00")
+  weeklyReportEnabled  Boolean @default(true)
+  /// 0=Sunday … 6=Saturday (same as JS Date.getDay())
+  weeklyReportDay      Int     @default(6)
+  weeklyReportTime     String  @default("20:00")
+  monthlyReportEnabled Boolean @default(true)
+  /// Day of month to send previous month's report (1–28 recommended)
+  monthlyReportDay     Int     @default(1)
+  monthlyReportTime    String  @default("20:00")
+
+  updatedAt DateTime @updatedAt
+}
+
 model DocumentRequestLetter {
   id                 String   @id @default(cuid())
   schoolId           String

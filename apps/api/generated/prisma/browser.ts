@@ -38,6 +38,11 @@ export type Student = Prisma.StudentModel
  */
 export type DocumentRequestSettings = Prisma.DocumentRequestSettingsModel
 /**
+ * Model BackupSettings
+ * 
+ */
+export type BackupSettings = Prisma.BackupSettingsModel
+/**
  * Model DocumentRequestLetter
  * 
  */

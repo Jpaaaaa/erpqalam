@@ -3,6 +3,7 @@ export const CAME_VIA_SOURCES = [
   'telegram_groups',
   'brochure',
   'street_ads',
+  'events',
   'friends',
 ] as const;
 

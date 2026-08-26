@@ -4,6 +4,12 @@ import { FormEvent, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useAuth } from '@/lib/auth/context';
 import { ApiClientError, createPendingStudent } from '@/lib/api/students';
+import {
+  emptyPendingStudentForm,
+  formToCreatePayload,
+  validatePendingFormForCreate,
+  type PendingStudentFormState,
+} from '@/lib/students/pending-form';
 import { formatStaffName } from '@/lib/students/format';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -11,47 +17,28 @@ import { Alert } from '@/components/ui/Alert';
 import { ArrowNavForm } from '@/components/ui/ArrowNavForm';
 import { CameViaWhatField } from '@/components/students/CameViaWhatField';
 import { SectionField } from '@/components/students/SectionField';
-import {
-  buildCameViaValue,
-  type CameViaSource,
-} from '@/lib/students/came-via';
 import type { PendingStudent } from '@/lib/types/student';
-import type { SectionOption } from '@/lib/students/sections';
 
 interface PendingStudentFormProps {
   onSubmitted?: (record: PendingStudent) => void;
-}
-
-function emptyForm() {
-  return {
-    firstName: '',
-    secondName: '',
-    thirdName: '',
-    fourthName: '',
-    section: '' as SectionOption | '',
-    phoneNumbers: ['', ''],
-    guardianInfo: '',
-    cameViaSource: '' as CameViaSource | '',
-    cameViaFriendDetail: '',
-  };
 }
 
 export function PendingStudentForm({ onSubmitted }: PendingStudentFormProps) {
   const t = useTranslations('students');
   const tCommon = useTranslations('common');
   const { user } = useAuth();
-  const [form, setForm] = useState(emptyForm);
+  const [form, setForm] = useState<PendingStudentFormState>(emptyPendingStudentForm);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  function updateField(field: string, value: string) {
+  function updateField(field: keyof PendingStudentFormState, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }));
   }
 
-  function updatePhone(index: number, value: string) {
+  function updatePhone(index: 0 | 1, value: string) {
     setForm((prev) => {
-      const phoneNumbers = [...prev.phoneNumbers];
+      const phoneNumbers = [...prev.phoneNumbers] as [string, string];
       phoneNumbers[index] = value;
       return { ...prev, phoneNumbers };
     });
@@ -63,43 +50,17 @@ export function PendingStudentForm({ onSubmitted }: PendingStudentFormProps) {
     setSuccess('');
     setIsLoading(true);
 
-    const phoneNumbers = form.phoneNumbers.map((p) => p.trim());
-    if (phoneNumbers.some((p) => !p)) {
-      setError(t('phoneNumbersRequired'));
+    const validationError = validatePendingFormForCreate(form);
+    if (validationError) {
+      setError(t(validationError));
       setIsLoading(false);
       return;
     }
-
-    if (!form.section) {
-      setError(t('sectionRequired'));
-      setIsLoading(false);
-      return;
-    }
-
-    if (!form.cameViaSource) {
-      setError(t('cameViaRequired'));
-      setIsLoading(false);
-      return;
-    }
-
-    const comeViaWho = buildCameViaValue(
-      form.cameViaSource,
-      form.cameViaFriendDetail,
-    );
 
     try {
-      const created = await createPendingStudent({
-        firstName: form.firstName,
-        secondName: form.secondName,
-        thirdName: form.thirdName,
-        fourthName: form.fourthName,
-        section: form.section,
-        phoneNumbers,
-        guardianInfo: form.guardianInfo || undefined,
-        comeViaWho,
-      });
+      const created = await createPendingStudent(formToCreatePayload(form));
       setSuccess(t('pendingFormSuccess'));
-      setForm(emptyForm());
+      setForm(emptyPendingStudentForm());
       onSubmitted?.(created);
     } catch (err) {
       const message =

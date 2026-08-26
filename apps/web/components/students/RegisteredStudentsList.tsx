@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { ApiClientError, listStudents } from '@/lib/api/students';
+import { ApiClientError, deleteStudent, listStudents } from '@/lib/api/students';
 import {
   emptyRegisteredStudentFilters,
   filtersToQueryParams,
@@ -44,6 +44,7 @@ export function RegisteredStudentsList({ refreshKey = 0 }: RegisteredStudentsLis
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [actionId, setActionId] = useState<string | null>(null);
   const [detailsModal, setDetailsModal] = useState<{
     student: Student;
     sectionEditable: boolean;
@@ -88,6 +89,27 @@ export function RegisteredStudentsList({ refreshKey = 0 }: RegisteredStudentsLis
     const empty = emptyRegisteredStudentFilters();
     setDraftFilters(empty);
     setAppliedFilters(empty);
+  }
+
+  async function handleDelete(id: string) {
+    if (!window.confirm(t('deleteRegisteredConfirm'))) return;
+
+    setActionId(id);
+    setError('');
+    try {
+      await deleteStudent(id);
+      setStudents((prev) => prev.filter((s) => s.id !== id));
+      setTotal((prev) => Math.max(0, prev - 1));
+      if (detailsModal?.student.id === id) {
+        setDetailsModal(null);
+      }
+    } catch (err) {
+      const message =
+        err instanceof ApiClientError ? err.message : t('deleteError');
+      setError(message);
+    } finally {
+      setActionId(null);
+    }
   }
 
   return (
@@ -187,6 +209,8 @@ export function RegisteredStudentsList({ refreshKey = 0 }: RegisteredStudentsLis
                       setDetailsModal({ student, sectionEditable: true })
                     }
                     onOpenDocumentRequest={setDocRequestTarget}
+                    onDelete={() => void handleDelete(student.id)}
+                    isDeleting={actionId === student.id}
                   />
                 </div>
               </MobileCard>
@@ -260,6 +284,8 @@ export function RegisteredStudentsList({ refreshKey = 0 }: RegisteredStudentsLis
                           setDetailsModal({ student, sectionEditable: true })
                         }
                         onOpenDocumentRequest={setDocRequestTarget}
+                        onDelete={() => void handleDelete(student.id)}
+                        isDeleting={actionId === student.id}
                       />
                     </td>
                   </tr>

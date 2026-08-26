@@ -5,6 +5,7 @@ import { Link } from '@/i18n/navigation';
 import { usePathname } from '@/i18n/navigation';
 import { useAuth } from '@/lib/auth/context';
 import { canAccessStudentRegistration } from '@/lib/permissions';
+import { BackupSettingsForm } from '@/components/document-requests/BackupSettingsForm';
 import { DocumentRequestHistoryList } from '@/components/document-requests/DocumentRequestHistoryList';
 import { DocumentRequestSettingsForm } from '@/components/document-requests/DocumentRequestSettingsForm';
 import { PageHeader } from '@/components/ui/PageHeader';
@@ -21,18 +22,26 @@ export function DocumentRequestsPanel() {
   }
 
   const isSettings = pathname.endsWith('/settings');
-  const activeKey = isSettings ? 'settings' : 'history';
+  const isBackup = pathname.endsWith('/backup');
+  const activeKey = isBackup ? 'backup' : isSettings ? 'settings' : 'history';
 
   const tabs = [
     { key: 'history', label: t('historyTab'), href: '/dashboard/document-requests' },
   ];
 
   if (user.role === 'MANAGER') {
-    tabs.push({
-      key: 'settings',
-      label: t('settingsTab'),
-      href: '/dashboard/document-requests/settings',
-    });
+    tabs.push(
+      {
+        key: 'settings',
+        label: t('settingsTab'),
+        href: '/dashboard/document-requests/settings',
+      },
+      {
+        key: 'backup',
+        label: t('backupTab'),
+        href: '/dashboard/document-requests/backup',
+      },
+    );
   }
 
   return (
@@ -51,7 +60,13 @@ export function DocumentRequestsPanel() {
         />
       )}
 
-      {isSettings ? (
+      {isBackup ? (
+        user.role === 'MANAGER' ? (
+          <BackupSettingsForm />
+        ) : (
+          <Alert variant="error">{t('managerOnly')}</Alert>
+        )
+      ) : isSettings ? (
         user.role === 'MANAGER' ? (
           <DocumentRequestSettingsForm />
         ) : (

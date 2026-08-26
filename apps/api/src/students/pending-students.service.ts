@@ -320,4 +320,21 @@ export class PendingStudentsService {
       return student;
     });
   }
+
+  async remove(id: string, actor: JwtPayload): Promise<void> {
+    if (!hasPermission(actor.role, actor.permissions, UserPermission.STUDENT_REGISTRATION)) {
+      throw new ForbiddenException('You do not have permission to delete students');
+    }
+
+    const existing = await this.prisma.pendingStudent.findFirst({
+      where: { id, schoolId: actor.schoolId },
+      select: { id: true },
+    });
+
+    if (!existing) {
+      throw new NotFoundException('Pending student not found');
+    }
+
+    await this.prisma.pendingStudent.delete({ where: { id } });
+  }
 }

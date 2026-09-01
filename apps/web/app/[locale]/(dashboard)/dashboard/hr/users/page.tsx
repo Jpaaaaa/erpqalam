@@ -1,5 +1,5 @@
 import { getTranslations } from 'next-intl/server';
-import { ModuleLauncher } from '@/components/dashboard/ModuleLauncher';
+import { UsersPanel } from '@/components/users/UsersPanel';
 
 export async function generateMetadata({
   params: { locale },
@@ -7,9 +7,9 @@ export async function generateMetadata({
   params: { locale: string };
 }) {
   const t = await getTranslations({ locale, namespace: 'metadata' });
-  return { title: t('dashboardTitle') };
+  return { title: t('usersTitle') };
 }
 
-export default function DashboardPage() {
-  return <ModuleLauncher />;
+export default async function UsersPage() {
+  return <UsersPanel />;
 }

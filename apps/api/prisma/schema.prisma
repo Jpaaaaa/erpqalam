@@ -35,6 +35,11 @@ model School {
   pendingStudents            PendingStudent[]
   documentRequestSettings    DocumentRequestSettings?
   documentRequestLetters     DocumentRequestLetter[]
+  attendanceDevices          AttendanceDevice[]
+  attendanceSettings         AttendanceSettings[]
+  attendanceUsers            AttendanceUser[]
+  attendanceRecords          AttendanceRecord[]
+  attendanceHolidays         AttendanceHoliday[]
 }
 
 /// Intake queue — staff or public check-in; approved rows move to Student.
@@ -201,4 +206,136 @@ model RefreshToken {
   createdAt DateTime @default(now())
 
   @@index([userId])
+}
+
+// ─── Attendance (ported from HRAT) ───────────────────────────────────────────
+//
+// Punch timestamps use @db.Timestamp (TIMESTAMP WITHOUT TIME ZONE): the device's
+// local wall-clock time as reported, never converted to UTC.
+
+enum AttendanceHolidayType {
+  EARLY_EXIT @map("early_exit")
+  ENTRY_LATE @map("entry_late")
+  DAY_OFF    @map("day_off")
+}
+
+enum TimeLeaveUsageType {
+  LATE_ARRIVAL @map("late_arrival")
+  EARLY_EXIT   @map("early_exit")
+}
+
+model AttendanceDevice {
+  id           String    @id @default(cuid())
+  schoolId     String    @map("school_id")
+  serialNumber String    @unique @map("serial_number")
+  name         String    @default("")
+  lastSeenAt   DateTime? @map("last_seen_at") @db.Timestamp(3)
+  isActive     Boolean   @default(true) @map("is_active")
+
+  school School @relation(fields: [schoolId], references: [id])
+
+  @@index([schoolId])
+}
+
+model AttendanceUser {
+  id           String @id @default(cuid())
+  schoolId     String @map("school_id")
+  deviceUserId String @map("device_user_id")
+  name         String @default("")
+
+  workingDays            String? @map("working_days")
+  shiftStartTime         String? @map("shift_start_time")
+  shiftEndTime           String? @map("shift_end_time")
+  entryZoneStart         String? @map("entry_zone_start")
+  entryZoneEnd           String? @map("entry_zone_end")
+  exitZoneStart          String? @map("exit_zone_start")
+  exitZoneEnd            String? @map("exit_zone_end")
+  lateZoneStartTime      String? @map("late_zone_start_time")
+  lateZoneEndTime        String? @map("late_zone_end_time")
+  earlyLeftZoneStartTime String? @map("early_left_zone_start_time")
+  earlyLeftZoneEndTime   String? @map("early_left_zone_end_time")
+
+  linkedUserId String? @unique @map("linked_user_id")
+
+  school           School                @relation(fields: [schoolId], references: [id])
+  timeLeaveUsages  TimeLeaveUsage[]
+  leaveBalance     EmployeeLeaveBalance?
+  employeeHolidays EmployeeHoliday[]
+
+  @@unique([schoolId, deviceUserId])
+  @@index([schoolId])
+}
+
+model AttendanceRecord {
+  id           String   @id @default(cuid())
+  schoolId     String   @map("school_id")
+  deviceUserId String   @map("device_user_id")
+  timestamp    DateTime @db.Timestamp(3)
+  verifyType   String   @map("verify_type")
+  deviceSerial String   @map("device_serial")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  school School @relation(fields: [schoolId], references: [id])
+
+  @@unique([schoolId, deviceUserId, timestamp, deviceSerial])
+  @@index([schoolId, timestamp])
+  @@index([schoolId, deviceUserId])
+}
+
+model AttendanceSettings {
+  schoolId String @map("school_id")
+  key      String
+  value    String @default("")
+
+  school School @relation(fields: [schoolId], references: [id])
+
+  @@id([schoolId, key])
+}
+
+model AttendanceHoliday {
+  id       String                @id @default(cuid())
+  schoolId String                @map("school_id")
+  date     DateTime              @db.Date
+  type     AttendanceHolidayType
+
+  school School @relation(fields: [schoolId], references: [id])
+
+  @@unique([schoolId, date, type])
+  @@index([schoolId, date])
+}
+
+model TimeLeaveUsage {
+  id           String             @id @default(cuid())
+  schoolId     String             @map("school_id")
+  deviceUserId String             @map("device_user_id")
+  date         DateTime           @db.Date
+  timestamp    DateTime           @db.Timestamp(3)
+  type         TimeLeaveUsageType
+
+  user AttendanceUser @relation(fields: [schoolId, deviceUserId], references: [schoolId, deviceUserId])
+
+  @@unique([schoolId, deviceUserId, timestamp, type])
+  @@index([schoolId, deviceUserId, date])
+}
+
+model EmployeeLeaveBalance {
+  schoolId     String @map("school_id")
+  deviceUserId String @map("device_user_id")
+  balanceDays  Float  @default(0) @map("balance_days")
+
+  user AttendanceUser @relation(fields: [schoolId, deviceUserId], references: [schoolId, deviceUserId])
+
+  @@id([schoolId, deviceUserId])
+}
+
+model EmployeeHoliday {
+  id           String   @id @default(cuid())
+  schoolId     String   @map("school_id")
+  deviceUserId String   @map("device_user_id")
+  date         DateTime @db.Date
+
+  user AttendanceUser @relation(fields: [schoolId, deviceUserId], references: [schoolId, deviceUserId])
+
+  @@unique([schoolId, deviceUserId, date])
+  @@index([schoolId, deviceUserId, date])
 }

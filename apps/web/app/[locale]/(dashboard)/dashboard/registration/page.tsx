@@ -1,6 +1,6 @@
 import { redirect } from '@/i18n/navigation';
 
-export default function LegacyStudentsPendingRedirect({
+export default function RegistrationIndexPage({
   params: { locale },
 }: {
   params: { locale: string };

@@ -57,7 +57,19 @@
     "pendingStudents": "طلاب قيد الانتظار",
     "registeredStudents": "طلاب مسجلون",
     "needsReview": "يحتاج مراجعة",
-    "enrolled": "مسجل"
+    "enrolled": "مسجل",
+    "modulesTitle": "وحدات النظام",
+    "modulesDescription": "اختر الوحدة التي تريد العمل عليها",
+    "noModules": "لا توجد وحدات متاحة لحسابك.",
+    "modules": {
+      "registration": "التسجيل",
+      "hr": "الموارد البشرية"
+    }
+  },
+  "hr": {
+    "moduleTitle": "الموارد البشرية",
+    "comingSoon": "قريباً — الحضور والإجازات وإدارة الطاقم",
+    "accessDenied": "ليس لديك صلاحية للوصول إلى هذه الوحدة."
   },
   "users": {
     "title": "إدارة المستخدمين",

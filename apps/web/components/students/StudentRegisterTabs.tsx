@@ -5,8 +5,14 @@ import { usePathname } from '@/i18n/navigation';
 import { TabNav } from '@/components/ui/TabNav';
 
 const tabs = [
-  { href: '/dashboard/students/pending', key: 'pendingTab' as const },
-  { href: '/dashboard/students/registered', key: 'registeredTab' as const },
+  {
+    href: '/dashboard/registration/students/pending',
+    key: 'pendingTab' as const,
+  },
+  {
+    href: '/dashboard/registration/students/registered',
+    key: 'registeredTab' as const,
+  },
 ];
 
 export function StudentRegisterTabs() {

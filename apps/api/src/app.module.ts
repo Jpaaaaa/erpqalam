@@ -10,6 +10,7 @@ import { StudentsModule } from './students/students.module';
 import { HealthModule } from './health/health.module';
 import { DocumentRequestsModule } from './document-requests/document-requests.module';
 import { BackupSettingsModule } from './backup-settings/backup-settings.module';
+import { AttendanceModule } from './attendance/attendance.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { BackupSettingsModule } from './backup-settings/backup-settings.module';
     StudentsModule,
     DocumentRequestsModule,
     BackupSettingsModule,
+    AttendanceModule,
     HealthModule,
   ],
 })

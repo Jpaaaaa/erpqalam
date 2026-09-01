@@ -26,7 +26,11 @@ export function DocumentRequestsPanel() {
   const activeKey = isBackup ? 'backup' : isSettings ? 'settings' : 'history';
 
   const tabs = [
-    { key: 'history', label: t('historyTab'), href: '/dashboard/document-requests' },
+    {
+      key: 'history',
+      label: t('historyTab'),
+      href: '/dashboard/registration/document-requests',
+    },
   ];
 
   if (user.role === 'MANAGER') {
@@ -34,12 +38,12 @@ export function DocumentRequestsPanel() {
       {
         key: 'settings',
         label: t('settingsTab'),
-        href: '/dashboard/document-requests/settings',
+        href: '/dashboard/registration/document-requests/settings',
       },
       {
         key: 'backup',
         label: t('backupTab'),
-        href: '/dashboard/document-requests/backup',
+        href: '/dashboard/registration/document-requests/backup',
       },
     );
   }
@@ -78,7 +82,7 @@ export function DocumentRequestsPanel() {
             <p className="text-sm text-slate-600">
               {t('settingsHint')}{' '}
               <Link
-                href="/dashboard/document-requests/settings"
+                href="/dashboard/registration/document-requests/settings"
                 className="font-medium text-teal-700 hover:text-teal-800"
               >
                 {t('settingsLink')}

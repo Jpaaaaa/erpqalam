@@ -187,6 +187,11 @@ export type SchoolWhereInput = {
   pendingStudents?: Prisma.PendingStudentListRelationFilter
   documentRequestSettings?: Prisma.XOR<Prisma.DocumentRequestSettingsNullableScalarRelationFilter, Prisma.DocumentRequestSettingsWhereInput> | null
   documentRequestLetters?: Prisma.DocumentRequestLetterListRelationFilter
+  attendanceDevices?: Prisma.AttendanceDeviceListRelationFilter
+  attendanceSettings?: Prisma.AttendanceSettingsListRelationFilter
+  attendanceUsers?: Prisma.AttendanceUserListRelationFilter
+  attendanceRecords?: Prisma.AttendanceRecordListRelationFilter
+  attendanceHolidays?: Prisma.AttendanceHolidayListRelationFilter
 }
 
 export type SchoolOrderByWithRelationInput = {
@@ -200,6 +205,11 @@ export type SchoolOrderByWithRelationInput = {
   pendingStudents?: Prisma.PendingStudentOrderByRelationAggregateInput
   documentRequestSettings?: Prisma.DocumentRequestSettingsOrderByWithRelationInput
   documentRequestLetters?: Prisma.DocumentRequestLetterOrderByRelationAggregateInput
+  attendanceDevices?: Prisma.AttendanceDeviceOrderByRelationAggregateInput
+  attendanceSettings?: Prisma.AttendanceSettingsOrderByRelationAggregateInput
+  attendanceUsers?: Prisma.AttendanceUserOrderByRelationAggregateInput
+  attendanceRecords?: Prisma.AttendanceRecordOrderByRelationAggregateInput
+  attendanceHolidays?: Prisma.AttendanceHolidayOrderByRelationAggregateInput
 }
 
 export type SchoolWhereUniqueInput = Prisma.AtLeast<{
@@ -216,6 +226,11 @@ export type SchoolWhereUniqueInput = Prisma.AtLeast<{
   pendingStudents?: Prisma.PendingStudentListRelationFilter
   documentRequestSettings?: Prisma.XOR<Prisma.DocumentRequestSettingsNullableScalarRelationFilter, Prisma.DocumentRequestSettingsWhereInput> | null
   documentRequestLetters?: Prisma.DocumentRequestLetterListRelationFilter
+  attendanceDevices?: Prisma.AttendanceDeviceListRelationFilter
+  attendanceSettings?: Prisma.AttendanceSettingsListRelationFilter
+  attendanceUsers?: Prisma.AttendanceUserListRelationFilter
+  attendanceRecords?: Prisma.AttendanceRecordListRelationFilter
+  attendanceHolidays?: Prisma.AttendanceHolidayListRelationFilter
 }, "id" | "code">
 
 export type SchoolOrderByWithAggregationInput = {
@@ -251,6 +266,11 @@ export type SchoolCreateInput = {
   pendingStudents?: Prisma.PendingStudentCreateNestedManyWithoutSchoolInput
   documentRequestSettings?: Prisma.DocumentRequestSettingsCreateNestedOneWithoutSchoolInput
   documentRequestLetters?: Prisma.DocumentRequestLetterCreateNestedManyWithoutSchoolInput
+  attendanceDevices?: Prisma.AttendanceDeviceCreateNestedManyWithoutSchoolInput
+  attendanceSettings?: Prisma.AttendanceSettingsCreateNestedManyWithoutSchoolInput
+  attendanceUsers?: Prisma.AttendanceUserCreateNestedManyWithoutSchoolInput
+  attendanceRecords?: Prisma.AttendanceRecordCreateNestedManyWithoutSchoolInput
+  attendanceHolidays?: Prisma.AttendanceHolidayCreateNestedManyWithoutSchoolInput
 }
 
 export type SchoolUncheckedCreateInput = {
@@ -264,6 +284,11 @@ export type SchoolUncheckedCreateInput = {
   pendingStudents?: Prisma.PendingStudentUncheckedCreateNestedManyWithoutSchoolInput
   documentRequestSettings?: Prisma.DocumentRequestSettingsUncheckedCreateNestedOneWithoutSchoolInput
   documentRequestLetters?: Prisma.DocumentRequestLetterUncheckedCreateNestedManyWithoutSchoolInput
+  attendanceDevices?: Prisma.AttendanceDeviceUncheckedCreateNestedManyWithoutSchoolInput
+  attendanceSettings?: Prisma.AttendanceSettingsUncheckedCreateNestedManyWithoutSchoolInput
+  attendanceUsers?: Prisma.AttendanceUserUncheckedCreateNestedManyWithoutSchoolInput
+  attendanceRecords?: Prisma.AttendanceRecordUncheckedCreateNestedManyWithoutSchoolInput
+  attendanceHolidays?: Prisma.AttendanceHolidayUncheckedCreateNestedManyWithoutSchoolInput
 }
 
 export type SchoolUpdateInput = {
@@ -277,6 +302,11 @@ export type SchoolUpdateInput = {
   pendingStudents?: Prisma.PendingStudentUpdateManyWithoutSchoolNestedInput
   documentRequestSettings?: Prisma.DocumentRequestSettingsUpdateOneWithoutSchoolNestedInput
   documentRequestLetters?: Prisma.DocumentRequestLetterUpdateManyWithoutSchoolNestedInput
+  attendanceDevices?: Prisma.AttendanceDeviceUpdateManyWithoutSchoolNestedInput
+  attendanceSettings?: Prisma.AttendanceSettingsUpdateManyWithoutSchoolNestedInput
+  attendanceUsers?: Prisma.AttendanceUserUpdateManyWithoutSchoolNestedInput
+  attendanceRecords?: Prisma.AttendanceRecordUpdateManyWithoutSchoolNestedInput
+  attendanceHolidays?: Prisma.AttendanceHolidayUpdateManyWithoutSchoolNestedInput
 }
 
 export type SchoolUncheckedUpdateInput = {
@@ -290,6 +320,11 @@ export type SchoolUncheckedUpdateInput = {
   pendingStudents?: Prisma.PendingStudentUncheckedUpdateManyWithoutSchoolNestedInput
   documentRequestSettings?: Prisma.DocumentRequestSettingsUncheckedUpdateOneWithoutSchoolNestedInput
   documentRequestLetters?: Prisma.DocumentRequestLetterUncheckedUpdateManyWithoutSchoolNestedInput
+  attendanceDevices?: Prisma.AttendanceDeviceUncheckedUpdateManyWithoutSchoolNestedInput
+  attendanceSettings?: Prisma.AttendanceSettingsUncheckedUpdateManyWithoutSchoolNestedInput
+  attendanceUsers?: Prisma.AttendanceUserUncheckedUpdateManyWithoutSchoolNestedInput
+  attendanceRecords?: Prisma.AttendanceRecordUncheckedUpdateManyWithoutSchoolNestedInput
+  attendanceHolidays?: Prisma.AttendanceHolidayUncheckedUpdateManyWithoutSchoolNestedInput
 }
 
 export type SchoolCreateManyInput = {
@@ -423,6 +458,76 @@ export type SchoolUpdateOneRequiredWithoutUsersNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.SchoolUpdateToOneWithWhereWithoutUsersInput, Prisma.SchoolUpdateWithoutUsersInput>, Prisma.SchoolUncheckedUpdateWithoutUsersInput>
 }
 
+export type SchoolCreateNestedOneWithoutAttendanceDevicesInput = {
+  create?: Prisma.XOR<Prisma.SchoolCreateWithoutAttendanceDevicesInput, Prisma.SchoolUncheckedCreateWithoutAttendanceDevicesInput>
+  connectOrCreate?: Prisma.SchoolCreateOrConnectWithoutAttendanceDevicesInput
+  connect?: Prisma.SchoolWhereUniqueInput
+}
+
+export type SchoolUpdateOneRequiredWithoutAttendanceDevicesNestedInput = {
+  create?: Prisma.XOR<Prisma.SchoolCreateWithoutAttendanceDevicesInput, Prisma.SchoolUncheckedCreateWithoutAttendanceDevicesInput>
+  connectOrCreate?: Prisma.SchoolCreateOrConnectWithoutAttendanceDevicesInput
+  upsert?: Prisma.SchoolUpsertWithoutAttendanceDevicesInput
+  connect?: Prisma.SchoolWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.SchoolUpdateToOneWithWhereWithoutAttendanceDevicesInput, Prisma.SchoolUpdateWithoutAttendanceDevicesInput>, Prisma.SchoolUncheckedUpdateWithoutAttendanceDevicesInput>
+}
+
+export type SchoolCreateNestedOneWithoutAttendanceUsersInput = {
+  create?: Prisma.XOR<Prisma.SchoolCreateWithoutAttendanceUsersInput, Prisma.SchoolUncheckedCreateWithoutAttendanceUsersInput>
+  connectOrCreate?: Prisma.SchoolCreateOrConnectWithoutAttendanceUsersInput
+  connect?: Prisma.SchoolWhereUniqueInput
+}
+
+export type SchoolUpdateOneRequiredWithoutAttendanceUsersNestedInput = {
+  create?: Prisma.XOR<Prisma.SchoolCreateWithoutAttendanceUsersInput, Prisma.SchoolUncheckedCreateWithoutAttendanceUsersInput>
+  connectOrCreate?: Prisma.SchoolCreateOrConnectWithoutAttendanceUsersInput
+  upsert?: Prisma.SchoolUpsertWithoutAttendanceUsersInput
+  connect?: Prisma.SchoolWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.SchoolUpdateToOneWithWhereWithoutAttendanceUsersInput, Prisma.SchoolUpdateWithoutAttendanceUsersInput>, Prisma.SchoolUncheckedUpdateWithoutAttendanceUsersInput>
+}
+
+export type SchoolCreateNestedOneWithoutAttendanceRecordsInput = {
+  create?: Prisma.XOR<Prisma.SchoolCreateWithoutAttendanceRecordsInput, Prisma.SchoolUncheckedCreateWithoutAttendanceRecordsInput>
+  connectOrCreate?: Prisma.SchoolCreateOrConnectWithoutAttendanceRecordsInput
+  connect?: Prisma.SchoolWhereUniqueInput
+}
+
+export type SchoolUpdateOneRequiredWithoutAttendanceRecordsNestedInput = {
+  create?: Prisma.XOR<Prisma.SchoolCreateWithoutAttendanceRecordsInput, Prisma.SchoolUncheckedCreateWithoutAttendanceRecordsInput>
+  connectOrCreate?: Prisma.SchoolCreateOrConnectWithoutAttendanceRecordsInput
+  upsert?: Prisma.SchoolUpsertWithoutAttendanceRecordsInput
+  connect?: Prisma.SchoolWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.SchoolUpdateToOneWithWhereWithoutAttendanceRecordsInput, Prisma.SchoolUpdateWithoutAttendanceRecordsInput>, Prisma.SchoolUncheckedUpdateWithoutAttendanceRecordsInput>
+}
+
+export type SchoolCreateNestedOneWithoutAttendanceSettingsInput = {
+  create?: Prisma.XOR<Prisma.SchoolCreateWithoutAttendanceSettingsInput, Prisma.SchoolUncheckedCreateWithoutAttendanceSettingsInput>
+  connectOrCreate?: Prisma.SchoolCreateOrConnectWithoutAttendanceSettingsInput
+  connect?: Prisma.SchoolWhereUniqueInput
+}
+
+export type SchoolUpdateOneRequiredWithoutAttendanceSettingsNestedInput = {
+  create?: Prisma.XOR<Prisma.SchoolCreateWithoutAttendanceSettingsInput, Prisma.SchoolUncheckedCreateWithoutAttendanceSettingsInput>
+  connectOrCreate?: Prisma.SchoolCreateOrConnectWithoutAttendanceSettingsInput
+  upsert?: Prisma.SchoolUpsertWithoutAttendanceSettingsInput
+  connect?: Prisma.SchoolWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.SchoolUpdateToOneWithWhereWithoutAttendanceSettingsInput, Prisma.SchoolUpdateWithoutAttendanceSettingsInput>, Prisma.SchoolUncheckedUpdateWithoutAttendanceSettingsInput>
+}
+
+export type SchoolCreateNestedOneWithoutAttendanceHolidaysInput = {
+  create?: Prisma.XOR<Prisma.SchoolCreateWithoutAttendanceHolidaysInput, Prisma.SchoolUncheckedCreateWithoutAttendanceHolidaysInput>
+  connectOrCreate?: Prisma.SchoolCreateOrConnectWithoutAttendanceHolidaysInput
+  connect?: Prisma.SchoolWhereUniqueInput
+}
+
+export type SchoolUpdateOneRequiredWithoutAttendanceHolidaysNestedInput = {
+  create?: Prisma.XOR<Prisma.SchoolCreateWithoutAttendanceHolidaysInput, Prisma.SchoolUncheckedCreateWithoutAttendanceHolidaysInput>
+  connectOrCreate?: Prisma.SchoolCreateOrConnectWithoutAttendanceHolidaysInput
+  upsert?: Prisma.SchoolUpsertWithoutAttendanceHolidaysInput
+  connect?: Prisma.SchoolWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.SchoolUpdateToOneWithWhereWithoutAttendanceHolidaysInput, Prisma.SchoolUpdateWithoutAttendanceHolidaysInput>, Prisma.SchoolUncheckedUpdateWithoutAttendanceHolidaysInput>
+}
+
 export type SchoolCreateWithoutPendingStudentsInput = {
   id?: string
   name: string
@@ -433,6 +538,11 @@ export type SchoolCreateWithoutPendingStudentsInput = {
   students?: Prisma.StudentCreateNestedManyWithoutSchoolInput
   documentRequestSettings?: Prisma.DocumentRequestSettingsCreateNestedOneWithoutSchoolInput
   documentRequestLetters?: Prisma.DocumentRequestLetterCreateNestedManyWithoutSchoolInput
+  attendanceDevices?: Prisma.AttendanceDeviceCreateNestedManyWithoutSchoolInput
+  attendanceSettings?: Prisma.AttendanceSettingsCreateNestedManyWithoutSchoolInput
+  attendanceUsers?: Prisma.AttendanceUserCreateNestedManyWithoutSchoolInput
+  attendanceRecords?: Prisma.AttendanceRecordCreateNestedManyWithoutSchoolInput
+  attendanceHolidays?: Prisma.AttendanceHolidayCreateNestedManyWithoutSchoolInput
 }
 
 export type SchoolUncheckedCreateWithoutPendingStudentsInput = {
@@ -445,6 +555,11 @@ export type SchoolUncheckedCreateWithoutPendingStudentsInput = {
   students?: Prisma.StudentUncheckedCreateNestedManyWithoutSchoolInput
   documentRequestSettings?: Prisma.DocumentRequestSettingsUncheckedCreateNestedOneWithoutSchoolInput
   documentRequestLetters?: Prisma.DocumentRequestLetterUncheckedCreateNestedManyWithoutSchoolInput
+  attendanceDevices?: Prisma.AttendanceDeviceUncheckedCreateNestedManyWithoutSchoolInput
+  attendanceSettings?: Prisma.AttendanceSettingsUncheckedCreateNestedManyWithoutSchoolInput
+  attendanceUsers?: Prisma.AttendanceUserUncheckedCreateNestedManyWithoutSchoolInput
+  attendanceRecords?: Prisma.AttendanceRecordUncheckedCreateNestedManyWithoutSchoolInput
+  attendanceHolidays?: Prisma.AttendanceHolidayUncheckedCreateNestedManyWithoutSchoolInput
 }
 
 export type SchoolCreateOrConnectWithoutPendingStudentsInput = {
@@ -473,6 +588,11 @@ export type SchoolUpdateWithoutPendingStudentsInput = {
   students?: Prisma.StudentUpdateManyWithoutSchoolNestedInput
   documentRequestSettings?: Prisma.DocumentRequestSettingsUpdateOneWithoutSchoolNestedInput
   documentRequestLetters?: Prisma.DocumentRequestLetterUpdateManyWithoutSchoolNestedInput
+  attendanceDevices?: Prisma.AttendanceDeviceUpdateManyWithoutSchoolNestedInput
+  attendanceSettings?: Prisma.AttendanceSettingsUpdateManyWithoutSchoolNestedInput
+  attendanceUsers?: Prisma.AttendanceUserUpdateManyWithoutSchoolNestedInput
+  attendanceRecords?: Prisma.AttendanceRecordUpdateManyWithoutSchoolNestedInput
+  attendanceHolidays?: Prisma.AttendanceHolidayUpdateManyWithoutSchoolNestedInput
 }
 
 export type SchoolUncheckedUpdateWithoutPendingStudentsInput = {
@@ -485,6 +605,11 @@ export type SchoolUncheckedUpdateWithoutPendingStudentsInput = {
   students?: Prisma.StudentUncheckedUpdateManyWithoutSchoolNestedInput
   documentRequestSettings?: Prisma.DocumentRequestSettingsUncheckedUpdateOneWithoutSchoolNestedInput
   documentRequestLetters?: Prisma.DocumentRequestLetterUncheckedUpdateManyWithoutSchoolNestedInput
+  attendanceDevices?: Prisma.AttendanceDeviceUncheckedUpdateManyWithoutSchoolNestedInput
+  attendanceSettings?: Prisma.AttendanceSettingsUncheckedUpdateManyWithoutSchoolNestedInput
+  attendanceUsers?: Prisma.AttendanceUserUncheckedUpdateManyWithoutSchoolNestedInput
+  attendanceRecords?: Prisma.AttendanceRecordUncheckedUpdateManyWithoutSchoolNestedInput
+  attendanceHolidays?: Prisma.AttendanceHolidayUncheckedUpdateManyWithoutSchoolNestedInput
 }
 
 export type SchoolCreateWithoutStudentsInput = {
@@ -497,6 +622,11 @@ export type SchoolCreateWithoutStudentsInput = {
   pendingStudents?: Prisma.PendingStudentCreateNestedManyWithoutSchoolInput
   documentRequestSettings?: Prisma.DocumentRequestSettingsCreateNestedOneWithoutSchoolInput
   documentRequestLetters?: Prisma.DocumentRequestLetterCreateNestedManyWithoutSchoolInput
+  attendanceDevices?: Prisma.AttendanceDeviceCreateNestedManyWithoutSchoolInput
+  attendanceSettings?: Prisma.AttendanceSettingsCreateNestedManyWithoutSchoolInput
+  attendanceUsers?: Prisma.AttendanceUserCreateNestedManyWithoutSchoolInput
+  attendanceRecords?: Prisma.AttendanceRecordCreateNestedManyWithoutSchoolInput
+  attendanceHolidays?: Prisma.AttendanceHolidayCreateNestedManyWithoutSchoolInput
 }
 
 export type SchoolUncheckedCreateWithoutStudentsInput = {
@@ -509,6 +639,11 @@ export type SchoolUncheckedCreateWithoutStudentsInput = {
   pendingStudents?: Prisma.PendingStudentUncheckedCreateNestedManyWithoutSchoolInput
   documentRequestSettings?: Prisma.DocumentRequestSettingsUncheckedCreateNestedOneWithoutSchoolInput
   documentRequestLetters?: Prisma.DocumentRequestLetterUncheckedCreateNestedManyWithoutSchoolInput
+  attendanceDevices?: Prisma.AttendanceDeviceUncheckedCreateNestedManyWithoutSchoolInput
+  attendanceSettings?: Prisma.AttendanceSettingsUncheckedCreateNestedManyWithoutSchoolInput
+  attendanceUsers?: Prisma.AttendanceUserUncheckedCreateNestedManyWithoutSchoolInput
+  attendanceRecords?: Prisma.AttendanceRecordUncheckedCreateNestedManyWithoutSchoolInput
+  attendanceHolidays?: Prisma.AttendanceHolidayUncheckedCreateNestedManyWithoutSchoolInput
 }
 
 export type SchoolCreateOrConnectWithoutStudentsInput = {
@@ -537,6 +672,11 @@ export type SchoolUpdateWithoutStudentsInput = {
   pendingStudents?: Prisma.PendingStudentUpdateManyWithoutSchoolNestedInput
   documentRequestSettings?: Prisma.DocumentRequestSettingsUpdateOneWithoutSchoolNestedInput
   documentRequestLetters?: Prisma.DocumentRequestLetterUpdateManyWithoutSchoolNestedInput
+  attendanceDevices?: Prisma.AttendanceDeviceUpdateManyWithoutSchoolNestedInput
+  attendanceSettings?: Prisma.AttendanceSettingsUpdateManyWithoutSchoolNestedInput
+  attendanceUsers?: Prisma.AttendanceUserUpdateManyWithoutSchoolNestedInput
+  attendanceRecords?: Prisma.AttendanceRecordUpdateManyWithoutSchoolNestedInput
+  attendanceHolidays?: Prisma.AttendanceHolidayUpdateManyWithoutSchoolNestedInput
 }
 
 export type SchoolUncheckedUpdateWithoutStudentsInput = {
@@ -549,6 +689,11 @@ export type SchoolUncheckedUpdateWithoutStudentsInput = {
   pendingStudents?: Prisma.PendingStudentUncheckedUpdateManyWithoutSchoolNestedInput
   documentRequestSettings?: Prisma.DocumentRequestSettingsUncheckedUpdateOneWithoutSchoolNestedInput
   documentRequestLetters?: Prisma.DocumentRequestLetterUncheckedUpdateManyWithoutSchoolNestedInput
+  attendanceDevices?: Prisma.AttendanceDeviceUncheckedUpdateManyWithoutSchoolNestedInput
+  attendanceSettings?: Prisma.AttendanceSettingsUncheckedUpdateManyWithoutSchoolNestedInput
+  attendanceUsers?: Prisma.AttendanceUserUncheckedUpdateManyWithoutSchoolNestedInput
+  attendanceRecords?: Prisma.AttendanceRecordUncheckedUpdateManyWithoutSchoolNestedInput
+  attendanceHolidays?: Prisma.AttendanceHolidayUncheckedUpdateManyWithoutSchoolNestedInput
 }
 
 export type SchoolCreateWithoutDocumentRequestSettingsInput = {
@@ -561,6 +706,11 @@ export type SchoolCreateWithoutDocumentRequestSettingsInput = {
   students?: Prisma.StudentCreateNestedManyWithoutSchoolInput
   pendingStudents?: Prisma.PendingStudentCreateNestedManyWithoutSchoolInput
   documentRequestLetters?: Prisma.DocumentRequestLetterCreateNestedManyWithoutSchoolInput
+  attendanceDevices?: Prisma.AttendanceDeviceCreateNestedManyWithoutSchoolInput
+  attendanceSettings?: Prisma.AttendanceSettingsCreateNestedManyWithoutSchoolInput
+  attendanceUsers?: Prisma.AttendanceUserCreateNestedManyWithoutSchoolInput
+  attendanceRecords?: Prisma.AttendanceRecordCreateNestedManyWithoutSchoolInput
+  attendanceHolidays?: Prisma.AttendanceHolidayCreateNestedManyWithoutSchoolInput
 }
 
 export type SchoolUncheckedCreateWithoutDocumentRequestSettingsInput = {
@@ -573,6 +723,11 @@ export type SchoolUncheckedCreateWithoutDocumentRequestSettingsInput = {
   students?: Prisma.StudentUncheckedCreateNestedManyWithoutSchoolInput
   pendingStudents?: Prisma.PendingStudentUncheckedCreateNestedManyWithoutSchoolInput
   documentRequestLetters?: Prisma.DocumentRequestLetterUncheckedCreateNestedManyWithoutSchoolInput
+  attendanceDevices?: Prisma.AttendanceDeviceUncheckedCreateNestedManyWithoutSchoolInput
+  attendanceSettings?: Prisma.AttendanceSettingsUncheckedCreateNestedManyWithoutSchoolInput
+  attendanceUsers?: Prisma.AttendanceUserUncheckedCreateNestedManyWithoutSchoolInput
+  attendanceRecords?: Prisma.AttendanceRecordUncheckedCreateNestedManyWithoutSchoolInput
+  attendanceHolidays?: Prisma.AttendanceHolidayUncheckedCreateNestedManyWithoutSchoolInput
 }
 
 export type SchoolCreateOrConnectWithoutDocumentRequestSettingsInput = {
@@ -601,6 +756,11 @@ export type SchoolUpdateWithoutDocumentRequestSettingsInput = {
   students?: Prisma.StudentUpdateManyWithoutSchoolNestedInput
   pendingStudents?: Prisma.PendingStudentUpdateManyWithoutSchoolNestedInput
   documentRequestLetters?: Prisma.DocumentRequestLetterUpdateManyWithoutSchoolNestedInput
+  attendanceDevices?: Prisma.AttendanceDeviceUpdateManyWithoutSchoolNestedInput
+  attendanceSettings?: Prisma.AttendanceSettingsUpdateManyWithoutSchoolNestedInput
+  attendanceUsers?: Prisma.AttendanceUserUpdateManyWithoutSchoolNestedInput
+  attendanceRecords?: Prisma.AttendanceRecordUpdateManyWithoutSchoolNestedInput
+  attendanceHolidays?: Prisma.AttendanceHolidayUpdateManyWithoutSchoolNestedInput
 }
 
 export type SchoolUncheckedUpdateWithoutDocumentRequestSettingsInput = {
@@ -613,6 +773,11 @@ export type SchoolUncheckedUpdateWithoutDocumentRequestSettingsInput = {
   students?: Prisma.StudentUncheckedUpdateManyWithoutSchoolNestedInput
   pendingStudents?: Prisma.PendingStudentUncheckedUpdateManyWithoutSchoolNestedInput
   documentRequestLetters?: Prisma.DocumentRequestLetterUncheckedUpdateManyWithoutSchoolNestedInput
+  attendanceDevices?: Prisma.AttendanceDeviceUncheckedUpdateManyWithoutSchoolNestedInput
+  attendanceSettings?: Prisma.AttendanceSettingsUncheckedUpdateManyWithoutSchoolNestedInput
+  attendanceUsers?: Prisma.AttendanceUserUncheckedUpdateManyWithoutSchoolNestedInput
+  attendanceRecords?: Prisma.AttendanceRecordUncheckedUpdateManyWithoutSchoolNestedInput
+  attendanceHolidays?: Prisma.AttendanceHolidayUncheckedUpdateManyWithoutSchoolNestedInput
 }
 
 export type SchoolCreateWithoutDocumentRequestLettersInput = {
@@ -625,6 +790,11 @@ export type SchoolCreateWithoutDocumentRequestLettersInput = {
   students?: Prisma.StudentCreateNestedManyWithoutSchoolInput
   pendingStudents?: Prisma.PendingStudentCreateNestedManyWithoutSchoolInput
   documentRequestSettings?: Prisma.DocumentRequestSettingsCreateNestedOneWithoutSchoolInput
+  attendanceDevices?: Prisma.AttendanceDeviceCreateNestedManyWithoutSchoolInput
+  attendanceSettings?: Prisma.AttendanceSettingsCreateNestedManyWithoutSchoolInput
+  attendanceUsers?: Prisma.AttendanceUserCreateNestedManyWithoutSchoolInput
+  attendanceRecords?: Prisma.AttendanceRecordCreateNestedManyWithoutSchoolInput
+  attendanceHolidays?: Prisma.AttendanceHolidayCreateNestedManyWithoutSchoolInput
 }
 
 export type SchoolUncheckedCreateWithoutDocumentRequestLettersInput = {
@@ -637,6 +807,11 @@ export type SchoolUncheckedCreateWithoutDocumentRequestLettersInput = {
   students?: Prisma.StudentUncheckedCreateNestedManyWithoutSchoolInput
   pendingStudents?: Prisma.PendingStudentUncheckedCreateNestedManyWithoutSchoolInput
   documentRequestSettings?: Prisma.DocumentRequestSettingsUncheckedCreateNestedOneWithoutSchoolInput
+  attendanceDevices?: Prisma.AttendanceDeviceUncheckedCreateNestedManyWithoutSchoolInput
+  attendanceSettings?: Prisma.AttendanceSettingsUncheckedCreateNestedManyWithoutSchoolInput
+  attendanceUsers?: Prisma.AttendanceUserUncheckedCreateNestedManyWithoutSchoolInput
+  attendanceRecords?: Prisma.AttendanceRecordUncheckedCreateNestedManyWithoutSchoolInput
+  attendanceHolidays?: Prisma.AttendanceHolidayUncheckedCreateNestedManyWithoutSchoolInput
 }
 
 export type SchoolCreateOrConnectWithoutDocumentRequestLettersInput = {
@@ -665,6 +840,11 @@ export type SchoolUpdateWithoutDocumentRequestLettersInput = {
   students?: Prisma.StudentUpdateManyWithoutSchoolNestedInput
   pendingStudents?: Prisma.PendingStudentUpdateManyWithoutSchoolNestedInput
   documentRequestSettings?: Prisma.DocumentRequestSettingsUpdateOneWithoutSchoolNestedInput
+  attendanceDevices?: Prisma.AttendanceDeviceUpdateManyWithoutSchoolNestedInput
+  attendanceSettings?: Prisma.AttendanceSettingsUpdateManyWithoutSchoolNestedInput
+  attendanceUsers?: Prisma.AttendanceUserUpdateManyWithoutSchoolNestedInput
+  attendanceRecords?: Prisma.AttendanceRecordUpdateManyWithoutSchoolNestedInput
+  attendanceHolidays?: Prisma.AttendanceHolidayUpdateManyWithoutSchoolNestedInput
 }
 
 export type SchoolUncheckedUpdateWithoutDocumentRequestLettersInput = {
@@ -677,6 +857,11 @@ export type SchoolUncheckedUpdateWithoutDocumentRequestLettersInput = {
   students?: Prisma.StudentUncheckedUpdateManyWithoutSchoolNestedInput
   pendingStudents?: Prisma.PendingStudentUncheckedUpdateManyWithoutSchoolNestedInput
   documentRequestSettings?: Prisma.DocumentRequestSettingsUncheckedUpdateOneWithoutSchoolNestedInput
+  attendanceDevices?: Prisma.AttendanceDeviceUncheckedUpdateManyWithoutSchoolNestedInput
+  attendanceSettings?: Prisma.AttendanceSettingsUncheckedUpdateManyWithoutSchoolNestedInput
+  attendanceUsers?: Prisma.AttendanceUserUncheckedUpdateManyWithoutSchoolNestedInput
+  attendanceRecords?: Prisma.AttendanceRecordUncheckedUpdateManyWithoutSchoolNestedInput
+  attendanceHolidays?: Prisma.AttendanceHolidayUncheckedUpdateManyWithoutSchoolNestedInput
 }
 
 export type SchoolCreateWithoutUsersInput = {
@@ -689,6 +874,11 @@ export type SchoolCreateWithoutUsersInput = {
   pendingStudents?: Prisma.PendingStudentCreateNestedManyWithoutSchoolInput
   documentRequestSettings?: Prisma.DocumentRequestSettingsCreateNestedOneWithoutSchoolInput
   documentRequestLetters?: Prisma.DocumentRequestLetterCreateNestedManyWithoutSchoolInput
+  attendanceDevices?: Prisma.AttendanceDeviceCreateNestedManyWithoutSchoolInput
+  attendanceSettings?: Prisma.AttendanceSettingsCreateNestedManyWithoutSchoolInput
+  attendanceUsers?: Prisma.AttendanceUserCreateNestedManyWithoutSchoolInput
+  attendanceRecords?: Prisma.AttendanceRecordCreateNestedManyWithoutSchoolInput
+  attendanceHolidays?: Prisma.AttendanceHolidayCreateNestedManyWithoutSchoolInput
 }
 
 export type SchoolUncheckedCreateWithoutUsersInput = {
@@ -701,6 +891,11 @@ export type SchoolUncheckedCreateWithoutUsersInput = {
   pendingStudents?: Prisma.PendingStudentUncheckedCreateNestedManyWithoutSchoolInput
   documentRequestSettings?: Prisma.DocumentRequestSettingsUncheckedCreateNestedOneWithoutSchoolInput
   documentRequestLetters?: Prisma.DocumentRequestLetterUncheckedCreateNestedManyWithoutSchoolInput
+  attendanceDevices?: Prisma.AttendanceDeviceUncheckedCreateNestedManyWithoutSchoolInput
+  attendanceSettings?: Prisma.AttendanceSettingsUncheckedCreateNestedManyWithoutSchoolInput
+  attendanceUsers?: Prisma.AttendanceUserUncheckedCreateNestedManyWithoutSchoolInput
+  attendanceRecords?: Prisma.AttendanceRecordUncheckedCreateNestedManyWithoutSchoolInput
+  attendanceHolidays?: Prisma.AttendanceHolidayUncheckedCreateNestedManyWithoutSchoolInput
 }
 
 export type SchoolCreateOrConnectWithoutUsersInput = {
@@ -729,6 +924,11 @@ export type SchoolUpdateWithoutUsersInput = {
   pendingStudents?: Prisma.PendingStudentUpdateManyWithoutSchoolNestedInput
   documentRequestSettings?: Prisma.DocumentRequestSettingsUpdateOneWithoutSchoolNestedInput
   documentRequestLetters?: Prisma.DocumentRequestLetterUpdateManyWithoutSchoolNestedInput
+  attendanceDevices?: Prisma.AttendanceDeviceUpdateManyWithoutSchoolNestedInput
+  attendanceSettings?: Prisma.AttendanceSettingsUpdateManyWithoutSchoolNestedInput
+  attendanceUsers?: Prisma.AttendanceUserUpdateManyWithoutSchoolNestedInput
+  attendanceRecords?: Prisma.AttendanceRecordUpdateManyWithoutSchoolNestedInput
+  attendanceHolidays?: Prisma.AttendanceHolidayUpdateManyWithoutSchoolNestedInput
 }
 
 export type SchoolUncheckedUpdateWithoutUsersInput = {
@@ -741,6 +941,431 @@ export type SchoolUncheckedUpdateWithoutUsersInput = {
   pendingStudents?: Prisma.PendingStudentUncheckedUpdateManyWithoutSchoolNestedInput
   documentRequestSettings?: Prisma.DocumentRequestSettingsUncheckedUpdateOneWithoutSchoolNestedInput
   documentRequestLetters?: Prisma.DocumentRequestLetterUncheckedUpdateManyWithoutSchoolNestedInput
+  attendanceDevices?: Prisma.AttendanceDeviceUncheckedUpdateManyWithoutSchoolNestedInput
+  attendanceSettings?: Prisma.AttendanceSettingsUncheckedUpdateManyWithoutSchoolNestedInput
+  attendanceUsers?: Prisma.AttendanceUserUncheckedUpdateManyWithoutSchoolNestedInput
+  attendanceRecords?: Prisma.AttendanceRecordUncheckedUpdateManyWithoutSchoolNestedInput
+  attendanceHolidays?: Prisma.AttendanceHolidayUncheckedUpdateManyWithoutSchoolNestedInput
+}
+
+export type SchoolCreateWithoutAttendanceDevicesInput = {
+  id?: string
+  name: string
+  code: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  users?: Prisma.UserCreateNestedManyWithoutSchoolInput
+  students?: Prisma.StudentCreateNestedManyWithoutSchoolInput
+  pendingStudents?: Prisma.PendingStudentCreateNestedManyWithoutSchoolInput
+  documentRequestSettings?: Prisma.DocumentRequestSettingsCreateNestedOneWithoutSchoolInput
+  documentRequestLetters?: Prisma.DocumentRequestLetterCreateNestedManyWithoutSchoolInput
+  attendanceSettings?: Prisma.AttendanceSettingsCreateNestedManyWithoutSchoolInput
+  attendanceUsers?: Prisma.AttendanceUserCreateNestedManyWithoutSchoolInput
+  attendanceRecords?: Prisma.AttendanceRecordCreateNestedManyWithoutSchoolInput
+  attendanceHolidays?: Prisma.AttendanceHolidayCreateNestedManyWithoutSchoolInput
+}
+
+export type SchoolUncheckedCreateWithoutAttendanceDevicesInput = {
+  id?: string
+  name: string
+  code: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  users?: Prisma.UserUncheckedCreateNestedManyWithoutSchoolInput
+  students?: Prisma.StudentUncheckedCreateNestedManyWithoutSchoolInput
+  pendingStudents?: Prisma.PendingStudentUncheckedCreateNestedManyWithoutSchoolInput
+  documentRequestSettings?: Prisma.DocumentRequestSettingsUncheckedCreateNestedOneWithoutSchoolInput
+  documentRequestLetters?: Prisma.DocumentRequestLetterUncheckedCreateNestedManyWithoutSchoolInput
+  attendanceSettings?: Prisma.AttendanceSettingsUncheckedCreateNestedManyWithoutSchoolInput
+  attendanceUsers?: Prisma.AttendanceUserUncheckedCreateNestedManyWithoutSchoolInput
+  attendanceRecords?: Prisma.AttendanceRecordUncheckedCreateNestedManyWithoutSchoolInput
+  attendanceHolidays?: Prisma.AttendanceHolidayUncheckedCreateNestedManyWithoutSchoolInput
+}
+
+export type SchoolCreateOrConnectWithoutAttendanceDevicesInput = {
+  where: Prisma.SchoolWhereUniqueInput
+  create: Prisma.XOR<Prisma.SchoolCreateWithoutAttendanceDevicesInput, Prisma.SchoolUncheckedCreateWithoutAttendanceDevicesInput>
+}
+
+export type SchoolUpsertWithoutAttendanceDevicesInput = {
+  update: Prisma.XOR<Prisma.SchoolUpdateWithoutAttendanceDevicesInput, Prisma.SchoolUncheckedUpdateWithoutAttendanceDevicesInput>
+  create: Prisma.XOR<Prisma.SchoolCreateWithoutAttendanceDevicesInput, Prisma.SchoolUncheckedCreateWithoutAttendanceDevicesInput>
+  where?: Prisma.SchoolWhereInput
+}
+
+export type SchoolUpdateToOneWithWhereWithoutAttendanceDevicesInput = {
+  where?: Prisma.SchoolWhereInput
+  data: Prisma.XOR<Prisma.SchoolUpdateWithoutAttendanceDevicesInput, Prisma.SchoolUncheckedUpdateWithoutAttendanceDevicesInput>
+}
+
+export type SchoolUpdateWithoutAttendanceDevicesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  code?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  users?: Prisma.UserUpdateManyWithoutSchoolNestedInput
+  students?: Prisma.StudentUpdateManyWithoutSchoolNestedInput
+  pendingStudents?: Prisma.PendingStudentUpdateManyWithoutSchoolNestedInput
+  documentRequestSettings?: Prisma.DocumentRequestSettingsUpdateOneWithoutSchoolNestedInput
+  documentRequestLetters?: Prisma.DocumentRequestLetterUpdateManyWithoutSchoolNestedInput
+  attendanceSettings?: Prisma.AttendanceSettingsUpdateManyWithoutSchoolNestedInput
+  attendanceUsers?: Prisma.AttendanceUserUpdateManyWithoutSchoolNestedInput
+  attendanceRecords?: Prisma.AttendanceRecordUpdateManyWithoutSchoolNestedInput
+  attendanceHolidays?: Prisma.AttendanceHolidayUpdateManyWithoutSchoolNestedInput
+}
+
+export type SchoolUncheckedUpdateWithoutAttendanceDevicesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  code?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  users?: Prisma.UserUncheckedUpdateManyWithoutSchoolNestedInput
+  students?: Prisma.StudentUncheckedUpdateManyWithoutSchoolNestedInput
+  pendingStudents?: Prisma.PendingStudentUncheckedUpdateManyWithoutSchoolNestedInput
+  documentRequestSettings?: Prisma.DocumentRequestSettingsUncheckedUpdateOneWithoutSchoolNestedInput
+  documentRequestLetters?: Prisma.DocumentRequestLetterUncheckedUpdateManyWithoutSchoolNestedInput
+  attendanceSettings?: Prisma.AttendanceSettingsUncheckedUpdateManyWithoutSchoolNestedInput
+  attendanceUsers?: Prisma.AttendanceUserUncheckedUpdateManyWithoutSchoolNestedInput
+  attendanceRecords?: Prisma.AttendanceRecordUncheckedUpdateManyWithoutSchoolNestedInput
+  attendanceHolidays?: Prisma.AttendanceHolidayUncheckedUpdateManyWithoutSchoolNestedInput
+}
+
+export type SchoolCreateWithoutAttendanceUsersInput = {
+  id?: string
+  name: string
+  code: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  users?: Prisma.UserCreateNestedManyWithoutSchoolInput
+  students?: Prisma.StudentCreateNestedManyWithoutSchoolInput
+  pendingStudents?: Prisma.PendingStudentCreateNestedManyWithoutSchoolInput
+  documentRequestSettings?: Prisma.DocumentRequestSettingsCreateNestedOneWithoutSchoolInput
+  documentRequestLetters?: Prisma.DocumentRequestLetterCreateNestedManyWithoutSchoolInput
+  attendanceDevices?: Prisma.AttendanceDeviceCreateNestedManyWithoutSchoolInput
+  attendanceSettings?: Prisma.AttendanceSettingsCreateNestedManyWithoutSchoolInput
+  attendanceRecords?: Prisma.AttendanceRecordCreateNestedManyWithoutSchoolInput
+  attendanceHolidays?: Prisma.AttendanceHolidayCreateNestedManyWithoutSchoolInput
+}
+
+export type SchoolUncheckedCreateWithoutAttendanceUsersInput = {
+  id?: string
+  name: string
+  code: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  users?: Prisma.UserUncheckedCreateNestedManyWithoutSchoolInput
+  students?: Prisma.StudentUncheckedCreateNestedManyWithoutSchoolInput
+  pendingStudents?: Prisma.PendingStudentUncheckedCreateNestedManyWithoutSchoolInput
+  documentRequestSettings?: Prisma.DocumentRequestSettingsUncheckedCreateNestedOneWithoutSchoolInput
+  documentRequestLetters?: Prisma.DocumentRequestLetterUncheckedCreateNestedManyWithoutSchoolInput
+  attendanceDevices?: Prisma.AttendanceDeviceUncheckedCreateNestedManyWithoutSchoolInput
+  attendanceSettings?: Prisma.AttendanceSettingsUncheckedCreateNestedManyWithoutSchoolInput
+  attendanceRecords?: Prisma.AttendanceRecordUncheckedCreateNestedManyWithoutSchoolInput
+  attendanceHolidays?: Prisma.AttendanceHolidayUncheckedCreateNestedManyWithoutSchoolInput
+}
+
+export type SchoolCreateOrConnectWithoutAttendanceUsersInput = {
+  where: Prisma.SchoolWhereUniqueInput
+  create: Prisma.XOR<Prisma.SchoolCreateWithoutAttendanceUsersInput, Prisma.SchoolUncheckedCreateWithoutAttendanceUsersInput>
+}
+
+export type SchoolUpsertWithoutAttendanceUsersInput = {
+  update: Prisma.XOR<Prisma.SchoolUpdateWithoutAttendanceUsersInput, Prisma.SchoolUncheckedUpdateWithoutAttendanceUsersInput>
+  create: Prisma.XOR<Prisma.SchoolCreateWithoutAttendanceUsersInput, Prisma.SchoolUncheckedCreateWithoutAttendanceUsersInput>
+  where?: Prisma.SchoolWhereInput
+}
+
+export type SchoolUpdateToOneWithWhereWithoutAttendanceUsersInput = {
+  where?: Prisma.SchoolWhereInput
+  data: Prisma.XOR<Prisma.SchoolUpdateWithoutAttendanceUsersInput, Prisma.SchoolUncheckedUpdateWithoutAttendanceUsersInput>
+}
+
+export type SchoolUpdateWithoutAttendanceUsersInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  code?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  users?: Prisma.UserUpdateManyWithoutSchoolNestedInput
+  students?: Prisma.StudentUpdateManyWithoutSchoolNestedInput
+  pendingStudents?: Prisma.PendingStudentUpdateManyWithoutSchoolNestedInput
+  documentRequestSettings?: Prisma.DocumentRequestSettingsUpdateOneWithoutSchoolNestedInput
+  documentRequestLetters?: Prisma.DocumentRequestLetterUpdateManyWithoutSchoolNestedInput
+  attendanceDevices?: Prisma.AttendanceDeviceUpdateManyWithoutSchoolNestedInput
+  attendanceSettings?: Prisma.AttendanceSettingsUpdateManyWithoutSchoolNestedInput
+  attendanceRecords?: Prisma.AttendanceRecordUpdateManyWithoutSchoolNestedInput
+  attendanceHolidays?: Prisma.AttendanceHolidayUpdateManyWithoutSchoolNestedInput
+}
+
+export type SchoolUncheckedUpdateWithoutAttendanceUsersInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  code?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  users?: Prisma.UserUncheckedUpdateManyWithoutSchoolNestedInput
+  students?: Prisma.StudentUncheckedUpdateManyWithoutSchoolNestedInput
+  pendingStudents?: Prisma.PendingStudentUncheckedUpdateManyWithoutSchoolNestedInput
+  documentRequestSettings?: Prisma.DocumentRequestSettingsUncheckedUpdateOneWithoutSchoolNestedInput
+  documentRequestLetters?: Prisma.DocumentRequestLetterUncheckedUpdateManyWithoutSchoolNestedInput
+  attendanceDevices?: Prisma.AttendanceDeviceUncheckedUpdateManyWithoutSchoolNestedInput
+  attendanceSettings?: Prisma.AttendanceSettingsUncheckedUpdateManyWithoutSchoolNestedInput
+  attendanceRecords?: Prisma.AttendanceRecordUncheckedUpdateManyWithoutSchoolNestedInput
+  attendanceHolidays?: Prisma.AttendanceHolidayUncheckedUpdateManyWithoutSchoolNestedInput
+}
+
+export type SchoolCreateWithoutAttendanceRecordsInput = {
+  id?: string
+  name: string
+  code: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  users?: Prisma.UserCreateNestedManyWithoutSchoolInput
+  students?: Prisma.StudentCreateNestedManyWithoutSchoolInput
+  pendingStudents?: Prisma.PendingStudentCreateNestedManyWithoutSchoolInput
+  documentRequestSettings?: Prisma.DocumentRequestSettingsCreateNestedOneWithoutSchoolInput
+  documentRequestLetters?: Prisma.DocumentRequestLetterCreateNestedManyWithoutSchoolInput
+  attendanceDevices?: Prisma.AttendanceDeviceCreateNestedManyWithoutSchoolInput
+  attendanceSettings?: Prisma.AttendanceSettingsCreateNestedManyWithoutSchoolInput
+  attendanceUsers?: Prisma.AttendanceUserCreateNestedManyWithoutSchoolInput
+  attendanceHolidays?: Prisma.AttendanceHolidayCreateNestedManyWithoutSchoolInput
+}
+
+export type SchoolUncheckedCreateWithoutAttendanceRecordsInput = {
+  id?: string
+  name: string
+  code: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  users?: Prisma.UserUncheckedCreateNestedManyWithoutSchoolInput
+  students?: Prisma.StudentUncheckedCreateNestedManyWithoutSchoolInput
+  pendingStudents?: Prisma.PendingStudentUncheckedCreateNestedManyWithoutSchoolInput
+  documentRequestSettings?: Prisma.DocumentRequestSettingsUncheckedCreateNestedOneWithoutSchoolInput
+  documentRequestLetters?: Prisma.DocumentRequestLetterUncheckedCreateNestedManyWithoutSchoolInput
+  attendanceDevices?: Prisma.AttendanceDeviceUncheckedCreateNestedManyWithoutSchoolInput
+  attendanceSettings?: Prisma.AttendanceSettingsUncheckedCreateNestedManyWithoutSchoolInput
+  attendanceUsers?: Prisma.AttendanceUserUncheckedCreateNestedManyWithoutSchoolInput
+  attendanceHolidays?: Prisma.AttendanceHolidayUncheckedCreateNestedManyWithoutSchoolInput
+}
+
+export type SchoolCreateOrConnectWithoutAttendanceRecordsInput = {
+  where: Prisma.SchoolWhereUniqueInput
+  create: Prisma.XOR<Prisma.SchoolCreateWithoutAttendanceRecordsInput, Prisma.SchoolUncheckedCreateWithoutAttendanceRecordsInput>
+}
+
+export type SchoolUpsertWithoutAttendanceRecordsInput = {
+  update: Prisma.XOR<Prisma.SchoolUpdateWithoutAttendanceRecordsInput, Prisma.SchoolUncheckedUpdateWithoutAttendanceRecordsInput>
+  create: Prisma.XOR<Prisma.SchoolCreateWithoutAttendanceRecordsInput, Prisma.SchoolUncheckedCreateWithoutAttendanceRecordsInput>
+  where?: Prisma.SchoolWhereInput
+}
+
+export type SchoolUpdateToOneWithWhereWithoutAttendanceRecordsInput = {
+  where?: Prisma.SchoolWhereInput
+  data: Prisma.XOR<Prisma.SchoolUpdateWithoutAttendanceRecordsInput, Prisma.SchoolUncheckedUpdateWithoutAttendanceRecordsInput>
+}
+
+export type SchoolUpdateWithoutAttendanceRecordsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  code?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  users?: Prisma.UserUpdateManyWithoutSchoolNestedInput
+  students?: Prisma.StudentUpdateManyWithoutSchoolNestedInput
+  pendingStudents?: Prisma.PendingStudentUpdateManyWithoutSchoolNestedInput
+  documentRequestSettings?: Prisma.DocumentRequestSettingsUpdateOneWithoutSchoolNestedInput
+  documentRequestLetters?: Prisma.DocumentRequestLetterUpdateManyWithoutSchoolNestedInput
+  attendanceDevices?: Prisma.AttendanceDeviceUpdateManyWithoutSchoolNestedInput
+  attendanceSettings?: Prisma.AttendanceSettingsUpdateManyWithoutSchoolNestedInput
+  attendanceUsers?: Prisma.AttendanceUserUpdateManyWithoutSchoolNestedInput
+  attendanceHolidays?: Prisma.AttendanceHolidayUpdateManyWithoutSchoolNestedInput
+}
+
+export type SchoolUncheckedUpdateWithoutAttendanceRecordsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  code?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  users?: Prisma.UserUncheckedUpdateManyWithoutSchoolNestedInput
+  students?: Prisma.StudentUncheckedUpdateManyWithoutSchoolNestedInput
+  pendingStudents?: Prisma.PendingStudentUncheckedUpdateManyWithoutSchoolNestedInput
+  documentRequestSettings?: Prisma.DocumentRequestSettingsUncheckedUpdateOneWithoutSchoolNestedInput
+  documentRequestLetters?: Prisma.DocumentRequestLetterUncheckedUpdateManyWithoutSchoolNestedInput
+  attendanceDevices?: Prisma.AttendanceDeviceUncheckedUpdateManyWithoutSchoolNestedInput
+  attendanceSettings?: Prisma.AttendanceSettingsUncheckedUpdateManyWithoutSchoolNestedInput
+  attendanceUsers?: Prisma.AttendanceUserUncheckedUpdateManyWithoutSchoolNestedInput
+  attendanceHolidays?: Prisma.AttendanceHolidayUncheckedUpdateManyWithoutSchoolNestedInput
+}
+
+export type SchoolCreateWithoutAttendanceSettingsInput = {
+  id?: string
+  name: string
+  code: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  users?: Prisma.UserCreateNestedManyWithoutSchoolInput
+  students?: Prisma.StudentCreateNestedManyWithoutSchoolInput
+  pendingStudents?: Prisma.PendingStudentCreateNestedManyWithoutSchoolInput
+  documentRequestSettings?: Prisma.DocumentRequestSettingsCreateNestedOneWithoutSchoolInput
+  documentRequestLetters?: Prisma.DocumentRequestLetterCreateNestedManyWithoutSchoolInput
+  attendanceDevices?: Prisma.AttendanceDeviceCreateNestedManyWithoutSchoolInput
+  attendanceUsers?: Prisma.AttendanceUserCreateNestedManyWithoutSchoolInput
+  attendanceRecords?: Prisma.AttendanceRecordCreateNestedManyWithoutSchoolInput
+  attendanceHolidays?: Prisma.AttendanceHolidayCreateNestedManyWithoutSchoolInput
+}
+
+export type SchoolUncheckedCreateWithoutAttendanceSettingsInput = {
+  id?: string
+  name: string
+  code: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  users?: Prisma.UserUncheckedCreateNestedManyWithoutSchoolInput
+  students?: Prisma.StudentUncheckedCreateNestedManyWithoutSchoolInput
+  pendingStudents?: Prisma.PendingStudentUncheckedCreateNestedManyWithoutSchoolInput
+  documentRequestSettings?: Prisma.DocumentRequestSettingsUncheckedCreateNestedOneWithoutSchoolInput
+  documentRequestLetters?: Prisma.DocumentRequestLetterUncheckedCreateNestedManyWithoutSchoolInput
+  attendanceDevices?: Prisma.AttendanceDeviceUncheckedCreateNestedManyWithoutSchoolInput
+  attendanceUsers?: Prisma.AttendanceUserUncheckedCreateNestedManyWithoutSchoolInput
+  attendanceRecords?: Prisma.AttendanceRecordUncheckedCreateNestedManyWithoutSchoolInput
+  attendanceHolidays?: Prisma.AttendanceHolidayUncheckedCreateNestedManyWithoutSchoolInput
+}
+
+export type SchoolCreateOrConnectWithoutAttendanceSettingsInput = {
+  where: Prisma.SchoolWhereUniqueInput
+  create: Prisma.XOR<Prisma.SchoolCreateWithoutAttendanceSettingsInput, Prisma.SchoolUncheckedCreateWithoutAttendanceSettingsInput>
+}
+
+export type SchoolUpsertWithoutAttendanceSettingsInput = {
+  update: Prisma.XOR<Prisma.SchoolUpdateWithoutAttendanceSettingsInput, Prisma.SchoolUncheckedUpdateWithoutAttendanceSettingsInput>
+  create: Prisma.XOR<Prisma.SchoolCreateWithoutAttendanceSettingsInput, Prisma.SchoolUncheckedCreateWithoutAttendanceSettingsInput>
+  where?: Prisma.SchoolWhereInput
+}
+
+export type SchoolUpdateToOneWithWhereWithoutAttendanceSettingsInput = {
+  where?: Prisma.SchoolWhereInput
+  data: Prisma.XOR<Prisma.SchoolUpdateWithoutAttendanceSettingsInput, Prisma.SchoolUncheckedUpdateWithoutAttendanceSettingsInput>
+}
+
+export type SchoolUpdateWithoutAttendanceSettingsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  code?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  users?: Prisma.UserUpdateManyWithoutSchoolNestedInput
+  students?: Prisma.StudentUpdateManyWithoutSchoolNestedInput
+  pendingStudents?: Prisma.PendingStudentUpdateManyWithoutSchoolNestedInput
+  documentRequestSettings?: Prisma.DocumentRequestSettingsUpdateOneWithoutSchoolNestedInput
+  documentRequestLetters?: Prisma.DocumentRequestLetterUpdateManyWithoutSchoolNestedInput
+  attendanceDevices?: Prisma.AttendanceDeviceUpdateManyWithoutSchoolNestedInput
+  attendanceUsers?: Prisma.AttendanceUserUpdateManyWithoutSchoolNestedInput
+  attendanceRecords?: Prisma.AttendanceRecordUpdateManyWithoutSchoolNestedInput
+  attendanceHolidays?: Prisma.AttendanceHolidayUpdateManyWithoutSchoolNestedInput
+}
+
+export type SchoolUncheckedUpdateWithoutAttendanceSettingsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  code?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  users?: Prisma.UserUncheckedUpdateManyWithoutSchoolNestedInput
+  students?: Prisma.StudentUncheckedUpdateManyWithoutSchoolNestedInput
+  pendingStudents?: Prisma.PendingStudentUncheckedUpdateManyWithoutSchoolNestedInput
+  documentRequestSettings?: Prisma.DocumentRequestSettingsUncheckedUpdateOneWithoutSchoolNestedInput
+  documentRequestLetters?: Prisma.DocumentRequestLetterUncheckedUpdateManyWithoutSchoolNestedInput
+  attendanceDevices?: Prisma.AttendanceDeviceUncheckedUpdateManyWithoutSchoolNestedInput
+  attendanceUsers?: Prisma.AttendanceUserUncheckedUpdateManyWithoutSchoolNestedInput
+  attendanceRecords?: Prisma.AttendanceRecordUncheckedUpdateManyWithoutSchoolNestedInput
+  attendanceHolidays?: Prisma.AttendanceHolidayUncheckedUpdateManyWithoutSchoolNestedInput
+}
+
+export type SchoolCreateWithoutAttendanceHolidaysInput = {
+  id?: string
+  name: string
+  code: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  users?: Prisma.UserCreateNestedManyWithoutSchoolInput
+  students?: Prisma.StudentCreateNestedManyWithoutSchoolInput
+  pendingStudents?: Prisma.PendingStudentCreateNestedManyWithoutSchoolInput
+  documentRequestSettings?: Prisma.DocumentRequestSettingsCreateNestedOneWithoutSchoolInput
+  documentRequestLetters?: Prisma.DocumentRequestLetterCreateNestedManyWithoutSchoolInput
+  attendanceDevices?: Prisma.AttendanceDeviceCreateNestedManyWithoutSchoolInput
+  attendanceSettings?: Prisma.AttendanceSettingsCreateNestedManyWithoutSchoolInput
+  attendanceUsers?: Prisma.AttendanceUserCreateNestedManyWithoutSchoolInput
+  attendanceRecords?: Prisma.AttendanceRecordCreateNestedManyWithoutSchoolInput
+}
+
+export type SchoolUncheckedCreateWithoutAttendanceHolidaysInput = {
+  id?: string
+  name: string
+  code: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  users?: Prisma.UserUncheckedCreateNestedManyWithoutSchoolInput
+  students?: Prisma.StudentUncheckedCreateNestedManyWithoutSchoolInput
+  pendingStudents?: Prisma.PendingStudentUncheckedCreateNestedManyWithoutSchoolInput
+  documentRequestSettings?: Prisma.DocumentRequestSettingsUncheckedCreateNestedOneWithoutSchoolInput
+  documentRequestLetters?: Prisma.DocumentRequestLetterUncheckedCreateNestedManyWithoutSchoolInput
+  attendanceDevices?: Prisma.AttendanceDeviceUncheckedCreateNestedManyWithoutSchoolInput
+  attendanceSettings?: Prisma.AttendanceSettingsUncheckedCreateNestedManyWithoutSchoolInput
+  attendanceUsers?: Prisma.AttendanceUserUncheckedCreateNestedManyWithoutSchoolInput
+  attendanceRecords?: Prisma.AttendanceRecordUncheckedCreateNestedManyWithoutSchoolInput
+}
+
+export type SchoolCreateOrConnectWithoutAttendanceHolidaysInput = {
+  where: Prisma.SchoolWhereUniqueInput
+  create: Prisma.XOR<Prisma.SchoolCreateWithoutAttendanceHolidaysInput, Prisma.SchoolUncheckedCreateWithoutAttendanceHolidaysInput>
+}
+
+export type SchoolUpsertWithoutAttendanceHolidaysInput = {
+  update: Prisma.XOR<Prisma.SchoolUpdateWithoutAttendanceHolidaysInput, Prisma.SchoolUncheckedUpdateWithoutAttendanceHolidaysInput>
+  create: Prisma.XOR<Prisma.SchoolCreateWithoutAttendanceHolidaysInput, Prisma.SchoolUncheckedCreateWithoutAttendanceHolidaysInput>
+  where?: Prisma.SchoolWhereInput
+}
+
+export type SchoolUpdateToOneWithWhereWithoutAttendanceHolidaysInput = {
+  where?: Prisma.SchoolWhereInput
+  data: Prisma.XOR<Prisma.SchoolUpdateWithoutAttendanceHolidaysInput, Prisma.SchoolUncheckedUpdateWithoutAttendanceHolidaysInput>
+}
+
+export type SchoolUpdateWithoutAttendanceHolidaysInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  code?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  users?: Prisma.UserUpdateManyWithoutSchoolNestedInput
+  students?: Prisma.StudentUpdateManyWithoutSchoolNestedInput
+  pendingStudents?: Prisma.PendingStudentUpdateManyWithoutSchoolNestedInput
+  documentRequestSettings?: Prisma.DocumentRequestSettingsUpdateOneWithoutSchoolNestedInput
+  documentRequestLetters?: Prisma.DocumentRequestLetterUpdateManyWithoutSchoolNestedInput
+  attendanceDevices?: Prisma.AttendanceDeviceUpdateManyWithoutSchoolNestedInput
+  attendanceSettings?: Prisma.AttendanceSettingsUpdateManyWithoutSchoolNestedInput
+  attendanceUsers?: Prisma.AttendanceUserUpdateManyWithoutSchoolNestedInput
+  attendanceRecords?: Prisma.AttendanceRecordUpdateManyWithoutSchoolNestedInput
+}
+
+export type SchoolUncheckedUpdateWithoutAttendanceHolidaysInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  code?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  users?: Prisma.UserUncheckedUpdateManyWithoutSchoolNestedInput
+  students?: Prisma.StudentUncheckedUpdateManyWithoutSchoolNestedInput
+  pendingStudents?: Prisma.PendingStudentUncheckedUpdateManyWithoutSchoolNestedInput
+  documentRequestSettings?: Prisma.DocumentRequestSettingsUncheckedUpdateOneWithoutSchoolNestedInput
+  documentRequestLetters?: Prisma.DocumentRequestLetterUncheckedUpdateManyWithoutSchoolNestedInput
+  attendanceDevices?: Prisma.AttendanceDeviceUncheckedUpdateManyWithoutSchoolNestedInput
+  attendanceSettings?: Prisma.AttendanceSettingsUncheckedUpdateManyWithoutSchoolNestedInput
+  attendanceUsers?: Prisma.AttendanceUserUncheckedUpdateManyWithoutSchoolNestedInput
+  attendanceRecords?: Prisma.AttendanceRecordUncheckedUpdateManyWithoutSchoolNestedInput
 }
 
 
@@ -753,6 +1378,11 @@ export type SchoolCountOutputType = {
   students: number
   pendingStudents: number
   documentRequestLetters: number
+  attendanceDevices: number
+  attendanceSettings: number
+  attendanceUsers: number
+  attendanceRecords: number
+  attendanceHolidays: number
 }
 
 export type SchoolCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -760,6 +1390,11 @@ export type SchoolCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions
   students?: boolean | SchoolCountOutputTypeCountStudentsArgs
   pendingStudents?: boolean | SchoolCountOutputTypeCountPendingStudentsArgs
   documentRequestLetters?: boolean | SchoolCountOutputTypeCountDocumentRequestLettersArgs
+  attendanceDevices?: boolean | SchoolCountOutputTypeCountAttendanceDevicesArgs
+  attendanceSettings?: boolean | SchoolCountOutputTypeCountAttendanceSettingsArgs
+  attendanceUsers?: boolean | SchoolCountOutputTypeCountAttendanceUsersArgs
+  attendanceRecords?: boolean | SchoolCountOutputTypeCountAttendanceRecordsArgs
+  attendanceHolidays?: boolean | SchoolCountOutputTypeCountAttendanceHolidaysArgs
 }
 
 /**
@@ -800,6 +1435,41 @@ export type SchoolCountOutputTypeCountDocumentRequestLettersArgs<ExtArgs extends
   where?: Prisma.DocumentRequestLetterWhereInput
 }
 
+/**
+ * SchoolCountOutputType without action
+ */
+export type SchoolCountOutputTypeCountAttendanceDevicesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.AttendanceDeviceWhereInput
+}
+
+/**
+ * SchoolCountOutputType without action
+ */
+export type SchoolCountOutputTypeCountAttendanceSettingsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.AttendanceSettingsWhereInput
+}
+
+/**
+ * SchoolCountOutputType without action
+ */
+export type SchoolCountOutputTypeCountAttendanceUsersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.AttendanceUserWhereInput
+}
+
+/**
+ * SchoolCountOutputType without action
+ */
+export type SchoolCountOutputTypeCountAttendanceRecordsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.AttendanceRecordWhereInput
+}
+
+/**
+ * SchoolCountOutputType without action
+ */
+export type SchoolCountOutputTypeCountAttendanceHolidaysArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.AttendanceHolidayWhereInput
+}
+
 
 export type SchoolSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -812,6 +1482,11 @@ export type SchoolSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   pendingStudents?: boolean | Prisma.School$pendingStudentsArgs<ExtArgs>
   documentRequestSettings?: boolean | Prisma.School$documentRequestSettingsArgs<ExtArgs>
   documentRequestLetters?: boolean | Prisma.School$documentRequestLettersArgs<ExtArgs>
+  attendanceDevices?: boolean | Prisma.School$attendanceDevicesArgs<ExtArgs>
+  attendanceSettings?: boolean | Prisma.School$attendanceSettingsArgs<ExtArgs>
+  attendanceUsers?: boolean | Prisma.School$attendanceUsersArgs<ExtArgs>
+  attendanceRecords?: boolean | Prisma.School$attendanceRecordsArgs<ExtArgs>
+  attendanceHolidays?: boolean | Prisma.School$attendanceHolidaysArgs<ExtArgs>
   _count?: boolean | Prisma.SchoolCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["school"]>
 
@@ -846,6 +1521,11 @@ export type SchoolInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   pendingStudents?: boolean | Prisma.School$pendingStudentsArgs<ExtArgs>
   documentRequestSettings?: boolean | Prisma.School$documentRequestSettingsArgs<ExtArgs>
   documentRequestLetters?: boolean | Prisma.School$documentRequestLettersArgs<ExtArgs>
+  attendanceDevices?: boolean | Prisma.School$attendanceDevicesArgs<ExtArgs>
+  attendanceSettings?: boolean | Prisma.School$attendanceSettingsArgs<ExtArgs>
+  attendanceUsers?: boolean | Prisma.School$attendanceUsersArgs<ExtArgs>
+  attendanceRecords?: boolean | Prisma.School$attendanceRecordsArgs<ExtArgs>
+  attendanceHolidays?: boolean | Prisma.School$attendanceHolidaysArgs<ExtArgs>
   _count?: boolean | Prisma.SchoolCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type SchoolIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -859,6 +1539,11 @@ export type $SchoolPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     pendingStudents: Prisma.$PendingStudentPayload<ExtArgs>[]
     documentRequestSettings: Prisma.$DocumentRequestSettingsPayload<ExtArgs> | null
     documentRequestLetters: Prisma.$DocumentRequestLetterPayload<ExtArgs>[]
+    attendanceDevices: Prisma.$AttendanceDevicePayload<ExtArgs>[]
+    attendanceSettings: Prisma.$AttendanceSettingsPayload<ExtArgs>[]
+    attendanceUsers: Prisma.$AttendanceUserPayload<ExtArgs>[]
+    attendanceRecords: Prisma.$AttendanceRecordPayload<ExtArgs>[]
+    attendanceHolidays: Prisma.$AttendanceHolidayPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1265,6 +1950,11 @@ export interface Prisma__SchoolClient<T, Null = never, ExtArgs extends runtime.T
   pendingStudents<T extends Prisma.School$pendingStudentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.School$pendingStudentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PendingStudentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   documentRequestSettings<T extends Prisma.School$documentRequestSettingsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.School$documentRequestSettingsArgs<ExtArgs>>): Prisma.Prisma__DocumentRequestSettingsClient<runtime.Types.Result.GetResult<Prisma.$DocumentRequestSettingsPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   documentRequestLetters<T extends Prisma.School$documentRequestLettersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.School$documentRequestLettersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DocumentRequestLetterPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  attendanceDevices<T extends Prisma.School$attendanceDevicesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.School$attendanceDevicesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AttendanceDevicePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  attendanceSettings<T extends Prisma.School$attendanceSettingsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.School$attendanceSettingsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AttendanceSettingsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  attendanceUsers<T extends Prisma.School$attendanceUsersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.School$attendanceUsersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AttendanceUserPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  attendanceRecords<T extends Prisma.School$attendanceRecordsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.School$attendanceRecordsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AttendanceRecordPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  attendanceHolidays<T extends Prisma.School$attendanceHolidaysArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.School$attendanceHolidaysArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AttendanceHolidayPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1804,6 +2494,126 @@ export type School$documentRequestLettersArgs<ExtArgs extends runtime.Types.Exte
   take?: number
   skip?: number
   distinct?: Prisma.DocumentRequestLetterScalarFieldEnum | Prisma.DocumentRequestLetterScalarFieldEnum[]
+}
+
+/**
+ * School.attendanceDevices
+ */
+export type School$attendanceDevicesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the AttendanceDevice
+   */
+  select?: Prisma.AttendanceDeviceSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the AttendanceDevice
+   */
+  omit?: Prisma.AttendanceDeviceOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AttendanceDeviceInclude<ExtArgs> | null
+  where?: Prisma.AttendanceDeviceWhereInput
+  orderBy?: Prisma.AttendanceDeviceOrderByWithRelationInput | Prisma.AttendanceDeviceOrderByWithRelationInput[]
+  cursor?: Prisma.AttendanceDeviceWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.AttendanceDeviceScalarFieldEnum | Prisma.AttendanceDeviceScalarFieldEnum[]
+}
+
+/**
+ * School.attendanceSettings
+ */
+export type School$attendanceSettingsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the AttendanceSettings
+   */
+  select?: Prisma.AttendanceSettingsSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the AttendanceSettings
+   */
+  omit?: Prisma.AttendanceSettingsOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AttendanceSettingsInclude<ExtArgs> | null
+  where?: Prisma.AttendanceSettingsWhereInput
+  orderBy?: Prisma.AttendanceSettingsOrderByWithRelationInput | Prisma.AttendanceSettingsOrderByWithRelationInput[]
+  cursor?: Prisma.AttendanceSettingsWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.AttendanceSettingsScalarFieldEnum | Prisma.AttendanceSettingsScalarFieldEnum[]
+}
+
+/**
+ * School.attendanceUsers
+ */
+export type School$attendanceUsersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the AttendanceUser
+   */
+  select?: Prisma.AttendanceUserSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the AttendanceUser
+   */
+  omit?: Prisma.AttendanceUserOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AttendanceUserInclude<ExtArgs> | null
+  where?: Prisma.AttendanceUserWhereInput
+  orderBy?: Prisma.AttendanceUserOrderByWithRelationInput | Prisma.AttendanceUserOrderByWithRelationInput[]
+  cursor?: Prisma.AttendanceUserWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.AttendanceUserScalarFieldEnum | Prisma.AttendanceUserScalarFieldEnum[]
+}
+
+/**
+ * School.attendanceRecords
+ */
+export type School$attendanceRecordsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the AttendanceRecord
+   */
+  select?: Prisma.AttendanceRecordSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the AttendanceRecord
+   */
+  omit?: Prisma.AttendanceRecordOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AttendanceRecordInclude<ExtArgs> | null
+  where?: Prisma.AttendanceRecordWhereInput
+  orderBy?: Prisma.AttendanceRecordOrderByWithRelationInput | Prisma.AttendanceRecordOrderByWithRelationInput[]
+  cursor?: Prisma.AttendanceRecordWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.AttendanceRecordScalarFieldEnum | Prisma.AttendanceRecordScalarFieldEnum[]
+}
+
+/**
+ * School.attendanceHolidays
+ */
+export type School$attendanceHolidaysArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the AttendanceHoliday
+   */
+  select?: Prisma.AttendanceHolidaySelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the AttendanceHoliday
+   */
+  omit?: Prisma.AttendanceHolidayOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AttendanceHolidayInclude<ExtArgs> | null
+  where?: Prisma.AttendanceHolidayWhereInput
+  orderBy?: Prisma.AttendanceHolidayOrderByWithRelationInput | Prisma.AttendanceHolidayOrderByWithRelationInput[]
+  cursor?: Prisma.AttendanceHolidayWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.AttendanceHolidayScalarFieldEnum | Prisma.AttendanceHolidayScalarFieldEnum[]
 }
 
 /**

@@ -58,7 +58,15 @@ export const ModelName = {
   BackupSettings: 'BackupSettings',
   DocumentRequestLetter: 'DocumentRequestLetter',
   User: 'User',
-  RefreshToken: 'RefreshToken'
+  RefreshToken: 'RefreshToken',
+  AttendanceDevice: 'AttendanceDevice',
+  AttendanceUser: 'AttendanceUser',
+  AttendanceRecord: 'AttendanceRecord',
+  AttendanceSettings: 'AttendanceSettings',
+  AttendanceHoliday: 'AttendanceHoliday',
+  TimeLeaveUsage: 'TimeLeaveUsage',
+  EmployeeLeaveBalance: 'EmployeeLeaveBalance',
+  EmployeeHoliday: 'EmployeeHoliday'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -227,6 +235,103 @@ export const RefreshTokenScalarFieldEnum = {
 } as const
 
 export type RefreshTokenScalarFieldEnum = (typeof RefreshTokenScalarFieldEnum)[keyof typeof RefreshTokenScalarFieldEnum]
+
+
+export const AttendanceDeviceScalarFieldEnum = {
+  id: 'id',
+  schoolId: 'schoolId',
+  serialNumber: 'serialNumber',
+  name: 'name',
+  lastSeenAt: 'lastSeenAt',
+  isActive: 'isActive'
+} as const
+
+export type AttendanceDeviceScalarFieldEnum = (typeof AttendanceDeviceScalarFieldEnum)[keyof typeof AttendanceDeviceScalarFieldEnum]
+
+
+export const AttendanceUserScalarFieldEnum = {
+  id: 'id',
+  schoolId: 'schoolId',
+  deviceUserId: 'deviceUserId',
+  name: 'name',
+  workingDays: 'workingDays',
+  shiftStartTime: 'shiftStartTime',
+  shiftEndTime: 'shiftEndTime',
+  entryZoneStart: 'entryZoneStart',
+  entryZoneEnd: 'entryZoneEnd',
+  exitZoneStart: 'exitZoneStart',
+  exitZoneEnd: 'exitZoneEnd',
+  lateZoneStartTime: 'lateZoneStartTime',
+  lateZoneEndTime: 'lateZoneEndTime',
+  earlyLeftZoneStartTime: 'earlyLeftZoneStartTime',
+  earlyLeftZoneEndTime: 'earlyLeftZoneEndTime',
+  linkedUserId: 'linkedUserId'
+} as const
+
+export type AttendanceUserScalarFieldEnum = (typeof AttendanceUserScalarFieldEnum)[keyof typeof AttendanceUserScalarFieldEnum]
+
+
+export const AttendanceRecordScalarFieldEnum = {
+  id: 'id',
+  schoolId: 'schoolId',
+  deviceUserId: 'deviceUserId',
+  timestamp: 'timestamp',
+  verifyType: 'verifyType',
+  deviceSerial: 'deviceSerial',
+  createdAt: 'createdAt'
+} as const
+
+export type AttendanceRecordScalarFieldEnum = (typeof AttendanceRecordScalarFieldEnum)[keyof typeof AttendanceRecordScalarFieldEnum]
+
+
+export const AttendanceSettingsScalarFieldEnum = {
+  schoolId: 'schoolId',
+  key: 'key',
+  value: 'value'
+} as const
+
+export type AttendanceSettingsScalarFieldEnum = (typeof AttendanceSettingsScalarFieldEnum)[keyof typeof AttendanceSettingsScalarFieldEnum]
+
+
+export const AttendanceHolidayScalarFieldEnum = {
+  id: 'id',
+  schoolId: 'schoolId',
+  date: 'date',
+  type: 'type'
+} as const
+
+export type AttendanceHolidayScalarFieldEnum = (typeof AttendanceHolidayScalarFieldEnum)[keyof typeof AttendanceHolidayScalarFieldEnum]
+
+
+export const TimeLeaveUsageScalarFieldEnum = {
+  id: 'id',
+  schoolId: 'schoolId',
+  deviceUserId: 'deviceUserId',
+  date: 'date',
+  timestamp: 'timestamp',
+  type: 'type'
+} as const
+
+export type TimeLeaveUsageScalarFieldEnum = (typeof TimeLeaveUsageScalarFieldEnum)[keyof typeof TimeLeaveUsageScalarFieldEnum]
+
+
+export const EmployeeLeaveBalanceScalarFieldEnum = {
+  schoolId: 'schoolId',
+  deviceUserId: 'deviceUserId',
+  balanceDays: 'balanceDays'
+} as const
+
+export type EmployeeLeaveBalanceScalarFieldEnum = (typeof EmployeeLeaveBalanceScalarFieldEnum)[keyof typeof EmployeeLeaveBalanceScalarFieldEnum]
+
+
+export const EmployeeHolidayScalarFieldEnum = {
+  id: 'id',
+  schoolId: 'schoolId',
+  deviceUserId: 'deviceUserId',
+  date: 'date'
+} as const
+
+export type EmployeeHolidayScalarFieldEnum = (typeof EmployeeHolidayScalarFieldEnum)[keyof typeof EmployeeHolidayScalarFieldEnum]
 
 
 export const SortOrder = {

@@ -1,9 +1,9 @@
 import { redirect } from '@/i18n/navigation';
 
-export default function StudentsIndexPage({
+export default function LegacyStudentsRedirect({
   params: { locale },
 }: {
   params: { locale: string };
 }) {
-  redirect({ href: '/dashboard/students/pending', locale });
+  redirect({ href: '/dashboard/registration/students/pending', locale });
 }

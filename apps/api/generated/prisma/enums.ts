@@ -32,3 +32,20 @@ export const UserStatus = {
 } as const
 
 export type UserStatus = (typeof UserStatus)[keyof typeof UserStatus]
+
+
+export const AttendanceHolidayType = {
+  EARLY_EXIT: 'EARLY_EXIT',
+  ENTRY_LATE: 'ENTRY_LATE',
+  DAY_OFF: 'DAY_OFF'
+} as const
+
+export type AttendanceHolidayType = (typeof AttendanceHolidayType)[keyof typeof AttendanceHolidayType]
+
+
+export const TimeLeaveUsageType = {
+  LATE_ARRIVAL: 'LATE_ARRIVAL',
+  EARLY_EXIT: 'EARLY_EXIT'
+} as const
+
+export type TimeLeaveUsageType = (typeof TimeLeaveUsageType)[keyof typeof TimeLeaveUsageType]

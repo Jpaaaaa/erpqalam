@@ -209,6 +209,67 @@ export type EnumUserStatusWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumUserStatusFilter<$PrismaModel>
 }
 
+export type EnumAttendanceHolidayTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.AttendanceHolidayType | Prisma.EnumAttendanceHolidayTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.AttendanceHolidayType[] | Prisma.ListEnumAttendanceHolidayTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.AttendanceHolidayType[] | Prisma.ListEnumAttendanceHolidayTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumAttendanceHolidayTypeFilter<$PrismaModel> | $Enums.AttendanceHolidayType
+}
+
+export type EnumAttendanceHolidayTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.AttendanceHolidayType | Prisma.EnumAttendanceHolidayTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.AttendanceHolidayType[] | Prisma.ListEnumAttendanceHolidayTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.AttendanceHolidayType[] | Prisma.ListEnumAttendanceHolidayTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumAttendanceHolidayTypeWithAggregatesFilter<$PrismaModel> | $Enums.AttendanceHolidayType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumAttendanceHolidayTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumAttendanceHolidayTypeFilter<$PrismaModel>
+}
+
+export type EnumTimeLeaveUsageTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.TimeLeaveUsageType | Prisma.EnumTimeLeaveUsageTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.TimeLeaveUsageType[] | Prisma.ListEnumTimeLeaveUsageTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.TimeLeaveUsageType[] | Prisma.ListEnumTimeLeaveUsageTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumTimeLeaveUsageTypeFilter<$PrismaModel> | $Enums.TimeLeaveUsageType
+}
+
+export type EnumTimeLeaveUsageTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.TimeLeaveUsageType | Prisma.EnumTimeLeaveUsageTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.TimeLeaveUsageType[] | Prisma.ListEnumTimeLeaveUsageTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.TimeLeaveUsageType[] | Prisma.ListEnumTimeLeaveUsageTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumTimeLeaveUsageTypeWithAggregatesFilter<$PrismaModel> | $Enums.TimeLeaveUsageType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumTimeLeaveUsageTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumTimeLeaveUsageTypeFilter<$PrismaModel>
+}
+
+export type FloatFilter<$PrismaModel = never> = {
+  equals?: number | Prisma.FloatFieldRefInput<$PrismaModel>
+  in?: number[] | Prisma.ListFloatFieldRefInput<$PrismaModel>
+  notIn?: number[] | Prisma.ListFloatFieldRefInput<$PrismaModel>
+  lt?: number | Prisma.FloatFieldRefInput<$PrismaModel>
+  lte?: number | Prisma.FloatFieldRefInput<$PrismaModel>
+  gt?: number | Prisma.FloatFieldRefInput<$PrismaModel>
+  gte?: number | Prisma.FloatFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedFloatFilter<$PrismaModel> | number
+}
+
+export type FloatWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: number | Prisma.FloatFieldRefInput<$PrismaModel>
+  in?: number[] | Prisma.ListFloatFieldRefInput<$PrismaModel>
+  notIn?: number[] | Prisma.ListFloatFieldRefInput<$PrismaModel>
+  lt?: number | Prisma.FloatFieldRefInput<$PrismaModel>
+  lte?: number | Prisma.FloatFieldRefInput<$PrismaModel>
+  gt?: number | Prisma.FloatFieldRefInput<$PrismaModel>
+  gte?: number | Prisma.FloatFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedFloatWithAggregatesFilter<$PrismaModel> | number
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _avg?: Prisma.NestedFloatFilter<$PrismaModel>
+  _sum?: Prisma.NestedFloatFilter<$PrismaModel>
+  _min?: Prisma.NestedFloatFilter<$PrismaModel>
+  _max?: Prisma.NestedFloatFilter<$PrismaModel>
+}
+
 export type NestedStringFilter<$PrismaModel = never> = {
   equals?: string | Prisma.StringFieldRefInput<$PrismaModel>
   in?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
@@ -415,6 +476,56 @@ export type NestedEnumUserStatusWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumUserStatusFilter<$PrismaModel>
   _max?: Prisma.NestedEnumUserStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumAttendanceHolidayTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.AttendanceHolidayType | Prisma.EnumAttendanceHolidayTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.AttendanceHolidayType[] | Prisma.ListEnumAttendanceHolidayTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.AttendanceHolidayType[] | Prisma.ListEnumAttendanceHolidayTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumAttendanceHolidayTypeFilter<$PrismaModel> | $Enums.AttendanceHolidayType
+}
+
+export type NestedEnumAttendanceHolidayTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.AttendanceHolidayType | Prisma.EnumAttendanceHolidayTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.AttendanceHolidayType[] | Prisma.ListEnumAttendanceHolidayTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.AttendanceHolidayType[] | Prisma.ListEnumAttendanceHolidayTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumAttendanceHolidayTypeWithAggregatesFilter<$PrismaModel> | $Enums.AttendanceHolidayType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumAttendanceHolidayTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumAttendanceHolidayTypeFilter<$PrismaModel>
+}
+
+export type NestedEnumTimeLeaveUsageTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.TimeLeaveUsageType | Prisma.EnumTimeLeaveUsageTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.TimeLeaveUsageType[] | Prisma.ListEnumTimeLeaveUsageTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.TimeLeaveUsageType[] | Prisma.ListEnumTimeLeaveUsageTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumTimeLeaveUsageTypeFilter<$PrismaModel> | $Enums.TimeLeaveUsageType
+}
+
+export type NestedEnumTimeLeaveUsageTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.TimeLeaveUsageType | Prisma.EnumTimeLeaveUsageTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.TimeLeaveUsageType[] | Prisma.ListEnumTimeLeaveUsageTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.TimeLeaveUsageType[] | Prisma.ListEnumTimeLeaveUsageTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumTimeLeaveUsageTypeWithAggregatesFilter<$PrismaModel> | $Enums.TimeLeaveUsageType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumTimeLeaveUsageTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumTimeLeaveUsageTypeFilter<$PrismaModel>
+}
+
+export type NestedFloatWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: number | Prisma.FloatFieldRefInput<$PrismaModel>
+  in?: number[] | Prisma.ListFloatFieldRefInput<$PrismaModel>
+  notIn?: number[] | Prisma.ListFloatFieldRefInput<$PrismaModel>
+  lt?: number | Prisma.FloatFieldRefInput<$PrismaModel>
+  lte?: number | Prisma.FloatFieldRefInput<$PrismaModel>
+  gt?: number | Prisma.FloatFieldRefInput<$PrismaModel>
+  gte?: number | Prisma.FloatFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedFloatWithAggregatesFilter<$PrismaModel> | number
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _avg?: Prisma.NestedFloatFilter<$PrismaModel>
+  _sum?: Prisma.NestedFloatFilter<$PrismaModel>
+  _min?: Prisma.NestedFloatFilter<$PrismaModel>
+  _max?: Prisma.NestedFloatFilter<$PrismaModel>
 }
 
 

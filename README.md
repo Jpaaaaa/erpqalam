@@ -155,7 +155,7 @@ Swagger: http://localhost:3000/api/docs
 | GET | `/api/v1/students?status=PENDING` | Manager | List students (filter by status) |
 | PATCH | `/api/v1/students/:id/register` | Manager | Move pending → registered |
 
-**Web:** check-in `/{locale}/student-check-in` · manager module `/{locale}/dashboard/students` (pending + registered subtabs)
+**Web:** check-in `/{locale}/student-check-in` · registration module `/{locale}/dashboard/registration/students` (pending + registered subtabs) · HR module `/{locale}/dashboard/hr`
 
 ### Health
 

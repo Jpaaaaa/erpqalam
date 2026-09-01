@@ -8,10 +8,14 @@ import {
   canAccessUserManagement,
 } from '@/lib/permissions';
 import {
+  getDashboardNavContext,
+} from '@/lib/navigation/dashboardModules';
+import {
+  DocumentIcon,
   HomeIcon,
+  HrIcon,
   StudentsIcon,
   UsersIcon,
-  DocumentIcon,
   type NavIconComponent,
 } from '@/components/layout/NavIcons';
 
@@ -24,35 +28,62 @@ export type DashboardNavItem = {
 
 export function useDashboardNav(user: AuthUser): DashboardNavItem[] {
   const tDashboard = useTranslations('dashboard');
+  const pathname = usePathname();
+  const context = getDashboardNavContext(pathname);
 
-  const items: DashboardNavItem[] = [
-    { href: '/dashboard', label: tDashboard('overview'), icon: HomeIcon },
-  ];
+  const home: DashboardNavItem = {
+    href: '/dashboard',
+    label: tDashboard('overview'),
+    icon: HomeIcon,
+  };
 
-  if (canAccessUserManagement(user.role, user.permissions)) {
-    items.push({
-      href: '/dashboard/users',
-      label: tDashboard('users'),
-      icon: UsersIcon,
-    });
+  if (context === 'registration') {
+    const items: DashboardNavItem[] = [home];
+
+    if (canAccessStudentRegistration(user.role, user.permissions)) {
+      items.push(
+        {
+          href: '/dashboard/registration/students/pending',
+          label: tDashboard('studentsRegister'),
+          icon: StudentsIcon,
+          matchPrefix: '/dashboard/registration/students',
+        },
+        {
+          href: '/dashboard/registration/document-requests',
+          label: tDashboard('documentRequests'),
+          icon: DocumentIcon,
+          matchPrefix: '/dashboard/registration/document-requests',
+        },
+      );
+    }
+
+    return items;
   }
 
-  if (canAccessStudentRegistration(user.role, user.permissions)) {
-    items.push({
-      href: '/dashboard/students/pending',
-      label: tDashboard('studentsRegister'),
-      icon: StudentsIcon,
-      matchPrefix: '/dashboard/students',
-    });
-    items.push({
-      href: '/dashboard/document-requests',
-      label: tDashboard('documentRequests'),
-      icon: DocumentIcon,
-      matchPrefix: '/dashboard/document-requests',
-    });
+  if (context === 'hr') {
+    const items: DashboardNavItem[] = [
+      home,
+      {
+        href: '/dashboard/hr',
+        label: tDashboard('modules.hr'),
+        icon: HrIcon,
+        matchPrefix: '/dashboard/hr',
+      },
+    ];
+
+    if (canAccessUserManagement(user.role, user.permissions)) {
+      items.push({
+        href: '/dashboard/hr/users',
+        label: tDashboard('users'),
+        icon: UsersIcon,
+        matchPrefix: '/dashboard/hr/users',
+      });
+    }
+
+    return items;
   }
 
-  return items;
+  return [home];
 }
 
 export function isNavItemActive(
@@ -60,6 +91,12 @@ export function isNavItemActive(
   item: DashboardNavItem,
 ): boolean {
   if (item.matchPrefix) {
+    if (item.href === '/dashboard/hr') {
+      return (
+        pathname.startsWith('/dashboard/hr') &&
+        !pathname.startsWith('/dashboard/hr/users')
+      );
+    }
     return pathname.startsWith(item.matchPrefix);
   }
   return pathname === item.href;

@@ -49,7 +49,19 @@
     "usersTitle": "User management",
     "usersDescription": "User listing, approvals, and CRUD will be wired to the API here.",
     "studentsRegister": "Student registration",
-    "documentRequests": "Document requests"
+    "documentRequests": "Document requests",
+    "modulesTitle": "School modules",
+    "modulesDescription": "Choose a module to get started",
+    "noModules": "No modules are available for your account.",
+    "modules": {
+      "registration": "Registration",
+      "hr": "Human resources"
+    }
+  },
+  "hr": {
+    "moduleTitle": "Human resources",
+    "comingSoon": "Coming soon — attendance, leave, and staff management",
+    "accessDenied": "You do not have access to this module."
   },
   "students": {
     "moduleTitle": "Student registration",

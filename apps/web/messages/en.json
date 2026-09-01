@@ -57,7 +57,19 @@
     "pendingStudents": "Pending students",
     "registeredStudents": "Registered students",
     "needsReview": "Needs review",
-    "enrolled": "enrolled"
+    "enrolled": "enrolled",
+    "modulesTitle": "School modules",
+    "modulesDescription": "Choose a module to get started",
+    "noModules": "No modules are available for your account.",
+    "modules": {
+      "registration": "Registration",
+      "hr": "Human resources"
+    }
+  },
+  "hr": {
+    "moduleTitle": "Human resources",
+    "comingSoon": "Coming soon — attendance, leave, and staff management",
+    "accessDenied": "You do not have access to this module."
   },
   "users": {
     "title": "User management",

@@ -1,20 +1,12 @@
-import { getTranslations } from 'next-intl/server';
-import { DocumentRequestsPanel } from '@/components/document-requests/DocumentRequestsPanel';
-import { PageCard } from '@/components/ui/PageCard';
+import { redirect } from '@/i18n/navigation';
 
-export async function generateMetadata({
+export default function LegacyDocumentRequestsSettingsRedirect({
   params: { locale },
 }: {
   params: { locale: string };
 }) {
-  const t = await getTranslations({ locale, namespace: 'metadata' });
-  return { title: t('documentRequestsSettingsTitle') };
-}
-
-export default async function DocumentRequestSettingsPage() {
-  return (
-    <PageCard>
-      <DocumentRequestsPanel />
-    </PageCard>
-  );
+  redirect({
+    href: '/dashboard/registration/document-requests/settings',
+    locale,
+  });
 }

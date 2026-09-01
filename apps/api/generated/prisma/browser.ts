@@ -57,3 +57,43 @@ export type User = Prisma.UserModel
  * 
  */
 export type RefreshToken = Prisma.RefreshTokenModel
+/**
+ * Model AttendanceDevice
+ * 
+ */
+export type AttendanceDevice = Prisma.AttendanceDeviceModel
+/**
+ * Model AttendanceUser
+ * 
+ */
+export type AttendanceUser = Prisma.AttendanceUserModel
+/**
+ * Model AttendanceRecord
+ * 
+ */
+export type AttendanceRecord = Prisma.AttendanceRecordModel
+/**
+ * Model AttendanceSettings
+ * 
+ */
+export type AttendanceSettings = Prisma.AttendanceSettingsModel
+/**
+ * Model AttendanceHoliday
+ * 
+ */
+export type AttendanceHoliday = Prisma.AttendanceHolidayModel
+/**
+ * Model TimeLeaveUsage
+ * 
+ */
+export type TimeLeaveUsage = Prisma.TimeLeaveUsageModel
+/**
+ * Model EmployeeLeaveBalance
+ * 
+ */
+export type EmployeeLeaveBalance = Prisma.EmployeeLeaveBalanceModel
+/**
+ * Model EmployeeHoliday
+ * 
+ */
+export type EmployeeHoliday = Prisma.EmployeeHolidayModel

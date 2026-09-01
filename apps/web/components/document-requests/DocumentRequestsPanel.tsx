@@ -4,7 +4,7 @@ import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { usePathname } from '@/i18n/navigation';
 import { useAuth } from '@/lib/auth/context';
-import { canAccessStudentRegistration } from '@/lib/permissions';
+import { canAccessDocuments } from '@/lib/permissions';
 import { BackupSettingsForm } from '@/components/document-requests/BackupSettingsForm';
 import { DocumentRequestHistoryList } from '@/components/document-requests/DocumentRequestHistoryList';
 import { DocumentRequestSettingsForm } from '@/components/document-requests/DocumentRequestSettingsForm';
@@ -17,7 +17,7 @@ export function DocumentRequestsPanel() {
   const { user } = useAuth();
   const pathname = usePathname();
 
-  if (!user || !canAccessStudentRegistration(user.role, user.permissions)) {
+  if (!user || !canAccessDocuments(user.role, user.permissions)) {
     return <Alert variant="error">{t('accessDenied')}</Alert>;
   }
 

@@ -17,11 +17,11 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { UserPermission } from '@generated/prisma/client';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
-import { Permissions } from '../common/decorators/permissions.decorator';
+import { RequirePermission } from '../common/decorators/require-permission.decorator';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../common/guards/permissions.guard';
+import { PERMISSIONS } from '../common/permissions/permissions';
 import { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
 import { StudentsService, toStudentResponse } from './students.service';
 import { PendingStudentsService } from './pending-students.service';
@@ -61,7 +61,7 @@ export class StudentsController {
   @Post('pending-students')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, PermissionsGuard)
-  @Permissions(UserPermission.STUDENT_REGISTRATION)
+  @RequirePermission(PERMISSIONS.REGISTRATION_MANAGE)
   @ApiOperation({ summary: 'Staff: register a pending student with full details' })
   @ApiResponse({ status: 201, type: PendingStudentResponseDto })
   createPending(
@@ -74,7 +74,7 @@ export class StudentsController {
   @Get('pending-students')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, PermissionsGuard)
-  @Permissions(UserPermission.STUDENT_REGISTRATION)
+  @RequirePermission(PERMISSIONS.REGISTRATION_VIEW)
   @ApiOperation({ summary: 'List pending students for the school' })
   @ApiResponse({ status: 200, type: PaginatedPendingStudentsResponseDto })
   listPending(
@@ -87,7 +87,7 @@ export class StudentsController {
   @Patch('pending-students/:id')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, PermissionsGuard)
-  @Permissions(UserPermission.STUDENT_REGISTRATION)
+  @RequirePermission(PERMISSIONS.REGISTRATION_MANAGE)
   @ApiOperation({ summary: 'Update a pending student (e.g. complete check-in)' })
   @ApiResponse({ status: 200, type: PendingStudentResponseDto })
   updatePending(
@@ -101,7 +101,7 @@ export class StudentsController {
   @Patch('pending-students/:id/details')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, PermissionsGuard)
-  @Permissions(UserPermission.STUDENT_REGISTRATION)
+  @RequirePermission(PERMISSIONS.REGISTRATION_MANAGE)
   @ApiOperation({ summary: 'Save optional registration details for a pending student' })
   @ApiResponse({ status: 200, type: PendingStudentResponseDto })
   updatePendingDetails(
@@ -115,7 +115,7 @@ export class StudentsController {
   @Patch('pending-students/:id/approve')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, PermissionsGuard)
-  @Permissions(UserPermission.STUDENT_REGISTRATION)
+  @RequirePermission(PERMISSIONS.REGISTRATION_APPROVE)
   @ApiOperation({ summary: 'Approve pending student → enrolled Student record' })
   @ApiResponse({ status: 200, type: StudentResponseDto })
   async approvePending(
@@ -129,7 +129,7 @@ export class StudentsController {
   @Delete('pending-students/:id')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, PermissionsGuard)
-  @Permissions(UserPermission.STUDENT_REGISTRATION)
+  @RequirePermission(PERMISSIONS.REGISTRATION_MANAGE)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete a pending student' })
   @ApiResponse({ status: 204, description: 'Pending student deleted' })
@@ -143,7 +143,7 @@ export class StudentsController {
   @Get('students')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, PermissionsGuard)
-  @Permissions(UserPermission.STUDENT_REGISTRATION)
+  @RequirePermission(PERMISSIONS.REGISTRATION_VIEW)
   @ApiOperation({ summary: 'List registered (enrolled) students' })
   @ApiResponse({ status: 200, type: PaginatedStudentsResponseDto })
   findAll(
@@ -156,7 +156,7 @@ export class StudentsController {
   @Patch('students/:id/details')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, PermissionsGuard)
-  @Permissions(UserPermission.STUDENT_REGISTRATION)
+  @RequirePermission(PERMISSIONS.REGISTRATION_MANAGE)
   @ApiOperation({ summary: 'Save optional registration details for an enrolled student' })
   @ApiResponse({ status: 200, type: StudentResponseDto })
   async updateStudentDetails(
@@ -170,7 +170,7 @@ export class StudentsController {
   @Patch('students/:id')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, PermissionsGuard)
-  @Permissions(UserPermission.STUDENT_REGISTRATION)
+  @RequirePermission(PERMISSIONS.REGISTRATION_MANAGE)
   @ApiOperation({ summary: 'Update enrolled student fields (e.g. section)' })
   @ApiResponse({ status: 200, type: StudentResponseDto })
   async updateStudent(
@@ -184,7 +184,7 @@ export class StudentsController {
   @Delete('students/:id')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, PermissionsGuard)
-  @Permissions(UserPermission.STUDENT_REGISTRATION)
+  @RequirePermission(PERMISSIONS.REGISTRATION_MANAGE)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete a registered student' })
   @ApiResponse({ status: 204, description: 'Student deleted' })

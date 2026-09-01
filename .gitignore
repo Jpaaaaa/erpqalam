@@ -3,3 +3,5 @@ apps/web/.next/
 apps/api/dist/
 apps/api/uploads/
 apps/api/.env
+apps/web/.env.local
+*.csv

@@ -1,36 +1,20 @@
-import { UserPermission, UserRole } from '@generated/prisma/client';
+export {
+  ALL_PERMISSIONS,
+  PERMISSIONS,
+  hasAnyPermission,
+  hasPermission,
+  isPermission,
+  resolvePermissions,
+  sanitizePermissions,
+  type Permission,
+} from './permissions';
 
-export { UserPermission };
-
-export const ALL_USER_PERMISSIONS: UserPermission[] = [
-  UserPermission.USER_MANAGEMENT,
-  UserPermission.STUDENT_REGISTRATION,
-];
-
-export function hasPermission(
-  role: UserRole,
-  permissions: UserPermission[] | undefined,
-  required: UserPermission,
-): boolean {
-  if (role === UserRole.MANAGER) {
-    return true;
-  }
-
-  return permissions?.includes(required) ?? false;
-}
-
-export function hasAnyPermission(
-  role: UserRole,
-  permissions: UserPermission[] | undefined,
-  required: UserPermission[],
-): boolean {
-  if (role === UserRole.MANAGER) {
-    return true;
-  }
-
-  if (!required.length) {
-    return true;
-  }
-
-  return required.some((permission) => permissions?.includes(permission));
-}
+export {
+  PERMISSION_MODULES,
+  mergePermissionsFromModuleLevels,
+  moduleLevelFromPermissions,
+  permissionsForModuleLevel,
+  replaceModulePermissions,
+  type ModuleAccessLevel,
+  type PermissionModule,
+} from './permission-modules';

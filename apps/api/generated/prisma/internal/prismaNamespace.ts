@@ -1985,20 +1985,6 @@ export type ListEnumUserRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$Pri
 
 
 /**
- * Reference to a field of type 'UserPermission[]'
- */
-export type ListEnumUserPermissionFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'UserPermission[]'>
-    
-
-
-/**
- * Reference to a field of type 'UserPermission'
- */
-export type EnumUserPermissionFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'UserPermission'>
-    
-
-
-/**
  * Reference to a field of type 'UserStatus'
  */
 export type EnumUserStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'UserStatus'>

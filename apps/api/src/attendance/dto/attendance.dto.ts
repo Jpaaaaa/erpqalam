@@ -1,13 +1,16 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsArray,
+  IsBoolean,
   IsEnum,
+  IsIn,
   IsInt,
   IsNumber,
   IsOptional,
   IsString,
   Matches,
   Min,
+  ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -124,6 +127,35 @@ export class AttendanceUserResponseDto {
   linkedUserId?: string | null;
 }
 
+export class AttendanceDeviceResponseDto {
+  @ApiProperty()
+  id!: string;
+
+  @ApiProperty()
+  serialNumber!: string;
+
+  @ApiProperty()
+  name!: string;
+
+  @ApiPropertyOptional()
+  lastSeenAt?: string | null;
+
+  @ApiProperty()
+  isActive!: boolean;
+}
+
+export class UpdateAttendanceDeviceDto {
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  name?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  isActive?: boolean;
+}
+
 export class CreateAttendanceUserDto {
   @ApiProperty()
   @IsString()
@@ -133,6 +165,36 @@ export class CreateAttendanceUserDto {
   @IsOptional()
   @IsString()
   name?: string;
+}
+
+export class BulkImportUserRowDto {
+  @ApiProperty()
+  @IsString()
+  deviceUserId!: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  name?: string;
+}
+
+export class BulkImportUsersDto {
+  @ApiProperty({ type: [BulkImportUserRowDto] })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => BulkImportUserRowDto)
+  users!: BulkImportUserRowDto[];
+}
+
+export class BulkImportUsersResponseDto {
+  @ApiProperty()
+  created!: number;
+
+  @ApiProperty()
+  updated!: number;
+
+  @ApiProperty()
+  skipped!: number;
 }
 
 export class UpdateAttendanceUserDto {
@@ -465,6 +527,37 @@ export class EmployeeReportQueryDto {
   @IsString()
   @Matches(DATE_PATTERN)
   toDate?: string;
+}
+
+export const EMPLOYEE_REPORT_PDF_TYPES = [
+  'performance',
+  'per-employee',
+  'summary',
+] as const;
+
+export type EmployeeReportPdfType = (typeof EMPLOYEE_REPORT_PDF_TYPES)[number];
+
+export class EmployeeReportPdfQueryDto {
+  @ApiProperty({ enum: EMPLOYEE_REPORT_PDF_TYPES })
+  @IsIn(EMPLOYEE_REPORT_PDF_TYPES)
+  type!: EmployeeReportPdfType;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @Matches(DATE_PATTERN)
+  fromDate?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @Matches(DATE_PATTERN)
+  toDate?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  deviceUserId?: string;
 }
 
 export class EmployeeReportRowDto {

@@ -1,9 +1,9 @@
-import { UserPermission, UserRole } from '@generated/prisma/client';
+import { UserRole } from '@generated/prisma/client';
 
 export interface JwtPayload {
   sub: string;
   email: string;
   role: UserRole;
-  permissions: UserPermission[];
+  permissions: string[];
   schoolId: string;
 }

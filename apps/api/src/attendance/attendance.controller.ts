@@ -7,22 +7,25 @@ import {
   Patch,
   Post,
   Query,
+  Res,
   UseGuards,
 } from '@nestjs/common';
+import { Response } from 'express';
 import {
   ApiBearerAuth,
   ApiOperation,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { UserRole } from '@generated/prisma/client';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
-import { Roles } from '../common/decorators/roles.decorator';
+import { RequirePermission } from '../common/decorators/require-permission.decorator';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
-import { RolesGuard } from '../common/guards/roles.guard';
+import { PermissionsGuard } from '../common/guards/permissions.guard';
+import { PERMISSIONS } from '../common/permissions/permissions';
 import { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
 import { AttendanceService } from './attendance.service';
 import {
+  AttendanceDeviceResponseDto,
   AttendanceHolidayResponseDto,
   AttendanceRecordResponseDto,
   AttendanceSettingsResponseDto,
@@ -30,12 +33,15 @@ import {
   CreateAttendanceHolidayDto,
   CreateAttendanceHolidayRangeDto,
   CreateAttendanceUserDto,
+  BulkImportUsersDto,
+  BulkImportUsersResponseDto,
   CreateEmployeeHolidayDto,
   CreateEmployeeHolidayRangeDto,
   CreateTimeLeaveUsageDto,
   DeleteAttendanceHolidaysDto,
   DeleteEmployeeHolidaysDto,
   EmployeeHolidayResponseDto,
+  EmployeeReportPdfQueryDto,
   EmployeeReportQueryDto,
   EmployeeReportResponseDto,
   LeaveBalanceResponseDto,
@@ -44,19 +50,20 @@ import {
   SetLeaveBalanceDto,
   SuccessResponseDto,
   TimeLeaveUsageResponseDto,
+  UpdateAttendanceDeviceDto,
   UpdateAttendanceSettingsDto,
   UpdateAttendanceUserDto,
 } from './dto/attendance.dto';
 
 @ApiTags('attendance')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(UserRole.MANAGER)
+@UseGuards(JwtAuthGuard, PermissionsGuard)
 @Controller('attendance')
 export class AttendanceController {
   constructor(private readonly attendanceService: AttendanceService) {}
 
   @Get('records')
+  @RequirePermission(PERMISSIONS.ATTENDANCE_VIEW)
   @ApiOperation({ summary: 'List attendance records (date range + user filter)' })
   @ApiResponse({ status: 200, type: [AttendanceRecordResponseDto] })
   listRecords(
@@ -67,6 +74,7 @@ export class AttendanceController {
   }
 
   @Post('records/manual')
+  @RequirePermission(PERMISSIONS.ATTENDANCE_MANAGE)
   @ApiOperation({ summary: 'Add a manual punch' })
   @ApiResponse({ status: 201, type: SuccessResponseDto })
   addManualPunch(
@@ -77,6 +85,7 @@ export class AttendanceController {
   }
 
   @Get('users')
+  @RequirePermission(PERMISSIONS.ATTENDANCE_VIEW)
   @ApiOperation({ summary: 'List attendance device users' })
   @ApiResponse({ status: 200, type: [AttendanceUserResponseDto] })
   listUsers(
@@ -86,6 +95,7 @@ export class AttendanceController {
   }
 
   @Post('users')
+  @RequirePermission(PERMISSIONS.ATTENDANCE_MANAGE)
   @ApiOperation({ summary: 'Create attendance device user' })
   @ApiResponse({ status: 201, type: AttendanceUserResponseDto })
   createUser(
@@ -95,7 +105,19 @@ export class AttendanceController {
     return this.attendanceService.createUser(user, dto);
   }
 
+  @Post('users/bulk')
+  @RequirePermission(PERMISSIONS.ATTENDANCE_MANAGE)
+  @ApiOperation({ summary: 'Bulk import or update device user names' })
+  @ApiResponse({ status: 201, type: BulkImportUsersResponseDto })
+  bulkUpsertUsers(
+    @Body() dto: BulkImportUsersDto,
+    @CurrentUser() user: JwtPayload,
+  ): Promise<BulkImportUsersResponseDto> {
+    return this.attendanceService.bulkUpsertUsers(user, dto);
+  }
+
   @Patch('users/:deviceUserId')
+  @RequirePermission(PERMISSIONS.ATTENDANCE_MANAGE)
   @ApiOperation({ summary: 'Update user name and schedule overrides' })
   @ApiResponse({ status: 200, type: AttendanceUserResponseDto })
   updateUser(
@@ -107,6 +129,7 @@ export class AttendanceController {
   }
 
   @Delete('users/:deviceUserId')
+  @RequirePermission(PERMISSIONS.ATTENDANCE_MANAGE)
   @ApiOperation({ summary: 'Delete attendance device user' })
   @ApiResponse({ status: 200, type: SuccessResponseDto })
   deleteUser(
@@ -116,7 +139,30 @@ export class AttendanceController {
     return this.attendanceService.deleteUser(user, deviceUserId);
   }
 
+  @Get('devices')
+  @RequirePermission(PERMISSIONS.ATTENDANCE_VIEW)
+  @ApiOperation({ summary: 'List ZKTeco attendance devices' })
+  @ApiResponse({ status: 200, type: [AttendanceDeviceResponseDto] })
+  listDevices(
+    @CurrentUser() user: JwtPayload,
+  ): Promise<AttendanceDeviceResponseDto[]> {
+    return this.attendanceService.listDevices(user);
+  }
+
+  @Patch('devices/:serialNumber')
+  @RequirePermission(PERMISSIONS.ATTENDANCE_MANAGE)
+  @ApiOperation({ summary: 'Update device display name' })
+  @ApiResponse({ status: 200, type: AttendanceDeviceResponseDto })
+  updateDevice(
+    @Param('serialNumber') serialNumber: string,
+    @Body() dto: UpdateAttendanceDeviceDto,
+    @CurrentUser() user: JwtPayload,
+  ): Promise<AttendanceDeviceResponseDto> {
+    return this.attendanceService.updateDevice(user, serialNumber, dto);
+  }
+
   @Get('settings')
+  @RequirePermission(PERMISSIONS.ATTENDANCE_VIEW)
   @ApiOperation({ summary: 'Get school attendance settings' })
   @ApiResponse({ status: 200, type: AttendanceSettingsResponseDto })
   getSettings(
@@ -126,6 +172,7 @@ export class AttendanceController {
   }
 
   @Patch('settings')
+  @RequirePermission(PERMISSIONS.ATTENDANCE_MANAGE)
   @ApiOperation({ summary: 'Update school attendance settings' })
   @ApiResponse({ status: 200, type: AttendanceSettingsResponseDto })
   updateSettings(
@@ -136,6 +183,7 @@ export class AttendanceController {
   }
 
   @Get('holidays')
+  @RequirePermission(PERMISSIONS.ATTENDANCE_VIEW)
   @ApiOperation({ summary: 'List org-wide attendance holidays' })
   @ApiResponse({ status: 200, type: [AttendanceHolidayResponseDto] })
   listHolidays(
@@ -145,6 +193,7 @@ export class AttendanceController {
   }
 
   @Post('holidays')
+  @RequirePermission(PERMISSIONS.ATTENDANCE_MANAGE)
   @ApiOperation({ summary: 'Add org-wide holiday' })
   @ApiResponse({ status: 201, type: SuccessResponseDto })
   addHoliday(
@@ -155,6 +204,7 @@ export class AttendanceController {
   }
 
   @Post('holidays/range')
+  @RequirePermission(PERMISSIONS.ATTENDANCE_MANAGE)
   @ApiOperation({ summary: 'Add org-wide holidays for date range' })
   @ApiResponse({ status: 201, type: SuccessResponseDto })
   addHolidayRange(
@@ -165,6 +215,7 @@ export class AttendanceController {
   }
 
   @Delete('holidays/:id')
+  @RequirePermission(PERMISSIONS.ATTENDANCE_MANAGE)
   @ApiOperation({ summary: 'Remove org-wide holiday' })
   @ApiResponse({ status: 200, type: SuccessResponseDto })
   removeHoliday(
@@ -175,6 +226,7 @@ export class AttendanceController {
   }
 
   @Delete('holidays')
+  @RequirePermission(PERMISSIONS.ATTENDANCE_MANAGE)
   @ApiOperation({ summary: 'Remove multiple org-wide holidays' })
   @ApiResponse({ status: 200, type: SuccessResponseDto })
   removeHolidays(
@@ -185,6 +237,7 @@ export class AttendanceController {
   }
 
   @Get('employee-holidays')
+  @RequirePermission(PERMISSIONS.ATTENDANCE_VIEW)
   @ApiOperation({ summary: 'List per-employee holidays' })
   @ApiResponse({ status: 200, type: [EmployeeHolidayResponseDto] })
   listEmployeeHolidays(
@@ -194,6 +247,7 @@ export class AttendanceController {
   }
 
   @Post('employee-holidays')
+  @RequirePermission(PERMISSIONS.ATTENDANCE_MANAGE)
   @ApiOperation({ summary: 'Add employee holiday (deducts balance)' })
   @ApiResponse({ status: 201, type: SuccessResponseDto })
   addEmployeeHoliday(
@@ -204,6 +258,7 @@ export class AttendanceController {
   }
 
   @Post('employee-holidays/range')
+  @RequirePermission(PERMISSIONS.ATTENDANCE_MANAGE)
   @ApiOperation({ summary: 'Add employee holidays for date range' })
   @ApiResponse({ status: 201, type: SuccessResponseDto })
   addEmployeeHolidayRange(
@@ -214,6 +269,7 @@ export class AttendanceController {
   }
 
   @Delete('employee-holidays/:id')
+  @RequirePermission(PERMISSIONS.ATTENDANCE_MANAGE)
   @ApiOperation({ summary: 'Remove employee holiday (restores balance)' })
   @ApiResponse({ status: 200, type: SuccessResponseDto })
   removeEmployeeHoliday(
@@ -224,6 +280,7 @@ export class AttendanceController {
   }
 
   @Delete('employee-holidays')
+  @RequirePermission(PERMISSIONS.ATTENDANCE_MANAGE)
   @ApiOperation({ summary: 'Remove multiple employee holidays' })
   @ApiResponse({ status: 200, type: SuccessResponseDto })
   removeEmployeeHolidays(
@@ -234,6 +291,7 @@ export class AttendanceController {
   }
 
   @Get('time-leave-usage')
+  @RequirePermission(PERMISSIONS.ATTENDANCE_VIEW)
   @ApiOperation({ summary: 'List time-leave coverage records' })
   @ApiResponse({ status: 200, type: [TimeLeaveUsageResponseDto] })
   listTimeLeaveUsage(
@@ -243,6 +301,7 @@ export class AttendanceController {
   }
 
   @Post('time-leave-usage')
+  @RequirePermission(PERMISSIONS.ATTENDANCE_MANAGE)
   @ApiOperation({ summary: 'Cover late/early with time-leave (may deduct balance)' })
   @ApiResponse({ status: 201, type: SuccessResponseDto })
   addTimeLeaveUsage(
@@ -253,6 +312,7 @@ export class AttendanceController {
   }
 
   @Delete('time-leave-usage/:id')
+  @RequirePermission(PERMISSIONS.ATTENDANCE_MANAGE)
   @ApiOperation({ summary: 'Remove time-leave usage (may restore balance)' })
   @ApiResponse({ status: 200, type: SuccessResponseDto })
   removeTimeLeaveUsage(
@@ -263,6 +323,7 @@ export class AttendanceController {
   }
 
   @Get('leave-balances')
+  @RequirePermission(PERMISSIONS.ATTENDANCE_VIEW)
   @ApiOperation({ summary: 'List employee leave balances' })
   @ApiResponse({ status: 200, type: [LeaveBalanceResponseDto] })
   listLeaveBalances(
@@ -272,6 +333,7 @@ export class AttendanceController {
   }
 
   @Patch('leave-balances/:deviceUserId')
+  @RequirePermission(PERMISSIONS.ATTENDANCE_MANAGE)
   @ApiOperation({ summary: 'Set employee leave balance' })
   @ApiResponse({ status: 200, type: LeaveBalanceResponseDto })
   setLeaveBalance(
@@ -283,6 +345,7 @@ export class AttendanceController {
   }
 
   @Get('employee-report')
+  @RequirePermission(PERMISSIONS.ATTENDANCE_VIEW)
   @ApiOperation({ summary: 'Employee attendance report with late/early occurrences' })
   @ApiResponse({ status: 200, type: EmployeeReportResponseDto })
   getEmployeeReport(
@@ -290,5 +353,24 @@ export class AttendanceController {
     @CurrentUser() user: JwtPayload,
   ): Promise<EmployeeReportResponseDto> {
     return this.attendanceService.getEmployeeReport(user, query);
+  }
+
+  @Get('employee-report/pdf')
+  @RequirePermission(PERMISSIONS.ATTENDANCE_VIEW)
+  @ApiOperation({ summary: 'Download employee attendance report as PDF' })
+  async getEmployeeReportPdf(
+    @Query() query: EmployeeReportPdfQueryDto,
+    @CurrentUser() user: JwtPayload,
+    @Res() res: Response,
+  ): Promise<void> {
+    const { buffer, fileName } =
+      await this.attendanceService.getEmployeeReportPdf(user, query);
+    const filename = encodeURIComponent(fileName);
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="${filename}"; filename*=UTF-8''${filename}`,
+    );
+    res.status(200).send(buffer);
   }
 }

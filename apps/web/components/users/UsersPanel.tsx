@@ -17,7 +17,7 @@ import { UserStatusBadge } from '@/components/users/UserStatusBadge';
 import { CreateUserForm } from '@/components/users/CreateUserForm';
 import { EditUserForm } from '@/components/users/EditUserForm';
 import { ApproveUserForm } from '@/components/users/ApproveUserForm';
-import type { UserPermission } from '@/lib/types/user';
+import { moduleLevelsFromPermissions, PERMISSION_MODULES } from '@/lib/permission-modules';
 import { canAccessUserManagement } from '@/lib/permissions';
 import { DetailRow, MobileCard } from '@/components/ui/MobileCard';
 
@@ -35,7 +35,7 @@ export function UsersPanel() {
   const tCommon = useTranslations('common');
   const tRoles = useTranslations('roles');
   const tStatus = useTranslations('userStatus');
-  const tPermissions = useTranslations('permissions');
+  const tModules = useTranslations('permissions.modules');
   const { user: currentUser } = useAuth();
 
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL');
@@ -136,8 +136,15 @@ export function UsersPanel() {
       return t('noPermissions');
     }
 
-    return user.permissions
-      .map((permission: UserPermission) => tPermissions(`${permission}.title`))
+    const levels = moduleLevelsFromPermissions(user.permissions);
+    return PERMISSION_MODULES.map((module) => {
+      const level = levels[module.key];
+      if (level === 'none') {
+        return null;
+      }
+      return `${tModules(module.key)}: ${level === 'manage' ? t('accessManage') : t('accessView')}`;
+    })
+      .filter(Boolean)
       .join(', ');
   }
 

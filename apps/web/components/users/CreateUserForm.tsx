@@ -3,13 +3,12 @@
 import { FormEvent, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { ApiClientError, createUser } from '@/lib/api/users';
-import type { UserRole, UserPermission } from '@/lib/types/user';
+import type { UserRole } from '@/lib/types/user';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Alert } from '@/components/ui/Alert';
 import { FormPanel } from '@/components/ui/FormPanel';
 import { SelectField } from '@/components/ui/SelectField';
-import { UserPermissionsEditor } from '@/components/users/UserPermissionsEditor';
 import { canGrantUserManagement } from '@/lib/permissions';
 
 interface CreateUserFormProps {
@@ -29,7 +28,6 @@ export function CreateUserForm({ actorRole, onCreated, onCancel }: CreateUserFor
   const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
   const [role, setRole] = useState<UserRole>('EMPLOYEE');
-  const [permissions, setPermissions] = useState<UserPermission[]>([]);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const canCreateManager = canGrantUserManagement(actorRole);
@@ -47,7 +45,6 @@ export function CreateUserForm({ actorRole, onCreated, onCancel }: CreateUserFor
         lastName,
         phone: phone || undefined,
         role,
-        permissions: role === 'EMPLOYEE' ? permissions : undefined,
       });
       onCreated();
     } catch (err) {
@@ -109,13 +106,7 @@ export function CreateUserForm({ actorRole, onCreated, onCancel }: CreateUserFor
         label={t('role')}
         id="role"
         value={role}
-        onChange={(e) => {
-          const nextRole = e.target.value as UserRole;
-          setRole(nextRole);
-          if (nextRole === 'MANAGER') {
-            setPermissions([]);
-          }
-        }}
+        onChange={(e) => setRole(e.target.value as UserRole)}
       >
         <option value="EMPLOYEE">{tRoles('EMPLOYEE')}</option>
         {canCreateManager && (
@@ -123,12 +114,7 @@ export function CreateUserForm({ actorRole, onCreated, onCancel }: CreateUserFor
         )}
       </SelectField>
 
-      <UserPermissionsEditor
-        role={role}
-        permissions={permissions}
-        actorRole={actorRole}
-        onChange={setPermissions}
-      />
+      <p className="text-sm text-slate-500">{t('permissionsManagedSeparately')}</p>
 
       <div className="flex flex-wrap gap-2">
         <Button type="submit" isLoading={isLoading} loadingLabel={tCommon('pleaseWait')}>

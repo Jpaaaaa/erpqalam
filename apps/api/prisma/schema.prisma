@@ -12,11 +12,6 @@ enum UserRole {
   EMPLOYEE
 }
 
-enum UserPermission {
-  USER_MANAGEMENT
-  STUDENT_REGISTRATION
-}
-
 enum UserStatus {
   ACTIVE
   INACTIVE
@@ -180,7 +175,7 @@ model User {
   lastName     String
   phone        String?
   role         UserRole
-  permissions  UserPermission[] @default([])
+  permissions  String[]         @default([])
   status       UserStatus       @default(PENDING)
   schoolId     String
   school       School           @relation(fields: [schoolId], references: [id])

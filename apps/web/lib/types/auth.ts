@@ -1,8 +1,4 @@
-export type UserPermission = 'USER_MANAGEMENT' | 'STUDENT_REGISTRATION';
-
-export type UserRole = 'MANAGER' | 'EMPLOYEE';
-
-export type UserStatus = 'ACTIVE' | 'INACTIVE' | 'PENDING';
+export type { UserRole, UserStatus } from '@/lib/types/user';
 
 export interface AuthUser {
   id: string;
@@ -10,9 +6,9 @@ export interface AuthUser {
   firstName: string;
   lastName: string;
   phone?: string | null;
-  role: UserRole;
-  permissions: UserPermission[];
-  status: UserStatus;
+  role: import('@/lib/types/user').UserRole;
+  permissions: string[];
+  status: import('@/lib/types/user').UserStatus;
   schoolId: string;
 }
 

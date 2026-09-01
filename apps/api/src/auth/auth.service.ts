@@ -10,7 +10,8 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { randomBytes } from 'crypto';
-import { UserPermission, UserRole, UserStatus } from '@generated/prisma/client';
+import { UserRole, UserStatus } from '@generated/prisma/client';
+import { resolvePermissions } from '../common/permissions/permissions';
 import { PrismaService } from '../database/prisma.service';
 import {
   LoginDto,
@@ -26,17 +27,6 @@ import {
 import { GoogleOAuthProfile } from './interfaces/google-profile.interface';
 
 const BCRYPT_ROUNDS = 12;
-
-function resolvePermissions(
-  role: UserRole,
-  permissions?: UserPermission[] | null,
-): UserPermission[] {
-  if (role === UserRole.MANAGER) {
-    return [];
-  }
-
-  return permissions ?? [];
-}
 
 @Injectable()
 export class AuthService {
@@ -274,7 +264,7 @@ export class AuthService {
     lastName: string;
     phone: string | null;
     role: UserRole;
-    permissions: UserPermission[];
+    permissions: string[];
     status: UserStatus;
     schoolId: string;
   }): Promise<AuthResponseDto> {
@@ -305,7 +295,7 @@ export class AuthService {
     lastName: string;
     phone: string | null;
     role: UserRole;
-    permissions?: UserPermission[] | null;
+    permissions?: string[] | null;
     status: UserStatus;
     schoolId: string;
   }): AuthUserDto {

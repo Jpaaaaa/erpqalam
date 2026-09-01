@@ -4,16 +4,18 @@ import { useTranslations } from 'next-intl';
 import { usePathname } from '@/i18n/navigation';
 import type { AuthUser } from '@/lib/types/auth';
 import {
-  canAccessStudentRegistration,
+  canAccessAttendance,
+  canAccessDocuments,
+  canAccessRegistration,
   canAccessUserManagement,
+  canManagePermissions,
 } from '@/lib/permissions';
+import { getDashboardNavContext } from '@/lib/navigation/dashboardModules';
 import {
-  getDashboardNavContext,
-} from '@/lib/navigation/dashboardModules';
-import {
+  AttendanceIcon,
   DocumentIcon,
   HomeIcon,
-  HrIcon,
+  SettingsIcon,
   StudentsIcon,
   UsersIcon,
   type NavIconComponent,
@@ -40,36 +42,38 @@ export function useDashboardNav(user: AuthUser): DashboardNavItem[] {
   if (context === 'registration') {
     const items: DashboardNavItem[] = [home];
 
-    if (canAccessStudentRegistration(user.role, user.permissions)) {
-      items.push(
-        {
-          href: '/dashboard/registration/students/pending',
-          label: tDashboard('studentsRegister'),
-          icon: StudentsIcon,
-          matchPrefix: '/dashboard/registration/students',
-        },
-        {
-          href: '/dashboard/registration/document-requests',
-          label: tDashboard('documentRequests'),
-          icon: DocumentIcon,
-          matchPrefix: '/dashboard/registration/document-requests',
-        },
-      );
+    if (canAccessRegistration(user.role, user.permissions)) {
+      items.push({
+        href: '/dashboard/registration/students/pending',
+        label: tDashboard('studentsRegister'),
+        icon: StudentsIcon,
+        matchPrefix: '/dashboard/registration/students',
+      });
+    }
+
+    if (canAccessDocuments(user.role, user.permissions)) {
+      items.push({
+        href: '/dashboard/registration/document-requests',
+        label: tDashboard('documentRequests'),
+        icon: DocumentIcon,
+        matchPrefix: '/dashboard/registration/document-requests',
+      });
     }
 
     return items;
   }
 
   if (context === 'hr') {
-    const items: DashboardNavItem[] = [
-      home,
-      {
-        href: '/dashboard/hr',
-        label: tDashboard('modules.hr'),
-        icon: HrIcon,
-        matchPrefix: '/dashboard/hr',
-      },
-    ];
+    const items: DashboardNavItem[] = [home];
+
+    if (canAccessAttendance(user.role, user.permissions)) {
+      items.push({
+        href: '/dashboard/hr/attendance/overview',
+        label: tDashboard('attendance'),
+        icon: AttendanceIcon,
+        matchPrefix: '/dashboard/hr/attendance',
+      });
+    }
 
     if (canAccessUserManagement(user.role, user.permissions)) {
       items.push({
@@ -83,7 +87,33 @@ export function useDashboardNav(user: AuthUser): DashboardNavItem[] {
     return items;
   }
 
-  return [home];
+  if (context === 'settings') {
+    const items: DashboardNavItem[] = [home];
+
+    if (canManagePermissions(user.role)) {
+      items.push({
+        href: '/dashboard/settings/permissions',
+        label: tDashboard('permissionsSettings'),
+        icon: SettingsIcon,
+        matchPrefix: '/dashboard/settings/permissions',
+      });
+    }
+
+    return items;
+  }
+
+  const items: DashboardNavItem[] = [home];
+
+  if (canManagePermissions(user.role)) {
+    items.push({
+      href: '/dashboard/settings/permissions',
+      label: tDashboard('permissionsSettings'),
+      icon: SettingsIcon,
+      matchPrefix: '/dashboard/settings',
+    });
+  }
+
+  return items;
 }
 
 export function isNavItemActive(
@@ -91,12 +121,6 @@ export function isNavItemActive(
   item: DashboardNavItem,
 ): boolean {
   if (item.matchPrefix) {
-    if (item.href === '/dashboard/hr') {
-      return (
-        pathname.startsWith('/dashboard/hr') &&
-        !pathname.startsWith('/dashboard/hr/users')
-      );
-    }
     return pathname.startsWith(item.matchPrefix);
   }
   return pathname === item.href;

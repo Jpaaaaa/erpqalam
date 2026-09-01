@@ -20,13 +20,14 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import type { Response } from 'express';
-import { UserPermission, UserRole } from '@generated/prisma/client';
+import { UserRole } from '@generated/prisma/client';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
-import { Permissions } from '../common/decorators/permissions.decorator';
+import { RequirePermission } from '../common/decorators/require-permission.decorator';
 import { Roles } from '../common/decorators/roles.decorator';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../common/guards/permissions.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
+import { PERMISSIONS } from '../common/permissions/permissions';
 import { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
 import { DocumentRequestsService } from './document-requests.service';
 import {
@@ -129,7 +130,7 @@ export class DocumentRequestsController {
   }
 
   @Get('defaults')
-  @Permissions(UserPermission.STUDENT_REGISTRATION)
+  @RequirePermission(PERMISSIONS.DOCUMENTS_VIEW)
   @ApiOperation({
     summary: 'Defaults for the create document request modal',
   })
@@ -141,7 +142,7 @@ export class DocumentRequestsController {
   }
 
   @Get('check-number')
-  @Permissions(UserPermission.STUDENT_REGISTRATION)
+  @RequirePermission(PERMISSIONS.DOCUMENTS_VIEW)
   @ApiOperation({ summary: 'Check whether a document number is already used' })
   @ApiResponse({ status: 200, type: CheckDocumentNumberResponseDto })
   checkDocumentNumber(
@@ -152,7 +153,7 @@ export class DocumentRequestsController {
   }
 
   @Get()
-  @Permissions(UserPermission.STUDENT_REGISTRATION)
+  @RequirePermission(PERMISSIONS.DOCUMENTS_VIEW)
   @ApiOperation({ summary: 'List generated document request letters' })
   @ApiResponse({ status: 200, type: PaginatedDocumentRequestsResponseDto })
   findAll(
@@ -163,7 +164,7 @@ export class DocumentRequestsController {
   }
 
   @Post()
-  @Permissions(UserPermission.STUDENT_REGISTRATION)
+  @RequirePermission(PERMISSIONS.DOCUMENTS_MANAGE)
   @ApiOperation({ summary: 'Generate a document request letter PDF' })
   @ApiResponse({ status: 201, type: DocumentRequestLetterResponseDto })
   async create(
@@ -191,7 +192,7 @@ export class DocumentRequestsController {
   }
 
   @Get(':id/pdf')
-  @Permissions(UserPermission.STUDENT_REGISTRATION)
+  @RequirePermission(PERMISSIONS.DOCUMENTS_VIEW)
   @ApiOperation({ summary: 'Download a previously generated document request PDF' })
   async getPdf(
     @Param('id') id: string,

@@ -1,16 +1,15 @@
 import type { NavIconComponent } from '@/components/layout/NavIcons';
 import { HrIcon, StudentsIcon } from '@/components/layout/NavIcons';
-import { hasPermission } from '@/lib/permissions';
+import { hasPermission, PERMISSIONS } from '@/lib/permissions';
+import type { Permission } from '@/lib/permissions/constants';
 import type { AuthUser } from '@/lib/types/auth';
-import type { UserPermission, UserRole } from '@/lib/types/user';
 
 export type DashboardModule = {
   key: string;
   labelKey: `modules.${string}`;
   icon: NavIconComponent;
   href: string;
-  allowedRoles: UserRole[];
-  permission?: UserPermission;
+  requiredPermission: Permission;
 };
 
 export const DASHBOARD_MODULES: DashboardModule[] = [
@@ -19,15 +18,14 @@ export const DASHBOARD_MODULES: DashboardModule[] = [
     labelKey: 'modules.registration',
     icon: StudentsIcon,
     href: '/dashboard/registration/students/pending',
-    allowedRoles: ['MANAGER', 'EMPLOYEE'],
-    permission: 'STUDENT_REGISTRATION',
+    requiredPermission: PERMISSIONS.REGISTRATION_VIEW,
   },
   {
     key: 'hr',
     labelKey: 'modules.hr',
     icon: HrIcon,
-    href: '/dashboard/hr',
-    allowedRoles: ['MANAGER'],
+    href: '/dashboard/hr/attendance/overview',
+    requiredPermission: PERMISSIONS.ATTENDANCE_VIEW,
   },
 ];
 
@@ -35,22 +33,14 @@ export function canAccessModule(
   user: AuthUser,
   module: DashboardModule,
 ): boolean {
-  if (!module.allowedRoles.includes(user.role)) {
-    return false;
-  }
-
-  if (module.permission) {
-    return hasPermission(user.role, user.permissions, module.permission);
-  }
-
-  return true;
+  return hasPermission(user.role, user.permissions, module.requiredPermission);
 }
 
 export function getAccessibleModules(user: AuthUser): DashboardModule[] {
   return DASHBOARD_MODULES.filter((module) => canAccessModule(user, module));
 }
 
-export type DashboardNavContext = 'launcher' | 'registration' | 'hr';
+export type DashboardNavContext = 'launcher' | 'registration' | 'hr' | 'settings';
 
 export function getDashboardNavContext(pathname: string): DashboardNavContext {
   if (pathname.startsWith('/dashboard/registration')) {
@@ -58,6 +48,9 @@ export function getDashboardNavContext(pathname: string): DashboardNavContext {
   }
   if (pathname.startsWith('/dashboard/hr')) {
     return 'hr';
+  }
+  if (pathname.startsWith('/dashboard/settings')) {
+    return 'settings';
   }
   return 'launcher';
 }

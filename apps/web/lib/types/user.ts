@@ -1,10 +1,3 @@
-export type UserPermission = 'USER_MANAGEMENT' | 'STUDENT_REGISTRATION';
-
-export const ALL_USER_PERMISSIONS: UserPermission[] = [
-  'USER_MANAGEMENT',
-  'STUDENT_REGISTRATION',
-];
-
 export type UserRole = 'MANAGER' | 'EMPLOYEE';
 export type UserStatus = 'ACTIVE' | 'INACTIVE' | 'PENDING';
 
@@ -15,7 +8,7 @@ export interface UserRecord {
   lastName: string;
   phone?: string | null;
   role: UserRole;
-  permissions: UserPermission[];
+  permissions: string[];
   status: UserStatus;
   schoolId: string;
   createdAt: string;
@@ -37,7 +30,6 @@ export interface CreateUserPayload {
   lastName: string;
   phone?: string;
   role: UserRole;
-  permissions?: UserPermission[];
 }
 
 export interface UpdateUserPayload {
@@ -45,6 +37,14 @@ export interface UpdateUserPayload {
   lastName?: string;
   phone?: string;
   role?: UserRole;
-  permissions?: UserPermission[];
   status?: UserStatus;
+}
+
+export interface UserPermissionsRecord {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: UserRole;
+  permissions: string[];
 }

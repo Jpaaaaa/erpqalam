@@ -193,7 +193,7 @@ export type UserGroupByOutputType = {
   lastName: string
   phone: string | null
   role: $Enums.UserRole
-  permissions: $Enums.UserPermission[]
+  permissions: string[]
   status: $Enums.UserStatus
   schoolId: string
   createdAt: Date
@@ -229,7 +229,7 @@ export type UserWhereInput = {
   lastName?: Prisma.StringFilter<"User"> | string
   phone?: Prisma.StringNullableFilter<"User"> | string | null
   role?: Prisma.EnumUserRoleFilter<"User"> | $Enums.UserRole
-  permissions?: Prisma.EnumUserPermissionNullableListFilter<"User">
+  permissions?: Prisma.StringNullableListFilter<"User">
   status?: Prisma.EnumUserStatusFilter<"User"> | $Enums.UserStatus
   schoolId?: Prisma.StringFilter<"User"> | string
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
@@ -272,7 +272,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   lastName?: Prisma.StringFilter<"User"> | string
   phone?: Prisma.StringNullableFilter<"User"> | string | null
   role?: Prisma.EnumUserRoleFilter<"User"> | $Enums.UserRole
-  permissions?: Prisma.EnumUserPermissionNullableListFilter<"User">
+  permissions?: Prisma.StringNullableListFilter<"User">
   status?: Prisma.EnumUserStatusFilter<"User"> | $Enums.UserStatus
   schoolId?: Prisma.StringFilter<"User"> | string
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
@@ -313,7 +313,7 @@ export type UserScalarWhereWithAggregatesInput = {
   lastName?: Prisma.StringWithAggregatesFilter<"User"> | string
   phone?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   role?: Prisma.EnumUserRoleWithAggregatesFilter<"User"> | $Enums.UserRole
-  permissions?: Prisma.EnumUserPermissionNullableListFilter<"User">
+  permissions?: Prisma.StringNullableListFilter<"User">
   status?: Prisma.EnumUserStatusWithAggregatesFilter<"User"> | $Enums.UserStatus
   schoolId?: Prisma.StringWithAggregatesFilter<"User"> | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
@@ -328,7 +328,7 @@ export type UserCreateInput = {
   lastName: string
   phone?: string | null
   role: $Enums.UserRole
-  permissions?: Prisma.UserCreatepermissionsInput | $Enums.UserPermission[]
+  permissions?: Prisma.UserCreatepermissionsInput | string[]
   status?: $Enums.UserStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -347,7 +347,7 @@ export type UserUncheckedCreateInput = {
   lastName: string
   phone?: string | null
   role: $Enums.UserRole
-  permissions?: Prisma.UserCreatepermissionsInput | $Enums.UserPermission[]
+  permissions?: Prisma.UserCreatepermissionsInput | string[]
   status?: $Enums.UserStatus
   schoolId: string
   createdAt?: Date | string
@@ -366,7 +366,7 @@ export type UserUpdateInput = {
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
-  permissions?: Prisma.UserUpdatepermissionsInput | $Enums.UserPermission[]
+  permissions?: Prisma.UserUpdatepermissionsInput | string[]
   status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -385,7 +385,7 @@ export type UserUncheckedUpdateInput = {
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
-  permissions?: Prisma.UserUpdatepermissionsInput | $Enums.UserPermission[]
+  permissions?: Prisma.UserUpdatepermissionsInput | string[]
   status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   schoolId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -404,7 +404,7 @@ export type UserCreateManyInput = {
   lastName: string
   phone?: string | null
   role: $Enums.UserRole
-  permissions?: Prisma.UserCreatepermissionsInput | $Enums.UserPermission[]
+  permissions?: Prisma.UserCreatepermissionsInput | string[]
   status?: $Enums.UserStatus
   schoolId: string
   createdAt?: Date | string
@@ -419,7 +419,7 @@ export type UserUpdateManyMutationInput = {
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
-  permissions?: Prisma.UserUpdatepermissionsInput | $Enums.UserPermission[]
+  permissions?: Prisma.UserUpdatepermissionsInput | string[]
   status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -433,7 +433,7 @@ export type UserUncheckedUpdateManyInput = {
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
-  permissions?: Prisma.UserUpdatepermissionsInput | $Enums.UserPermission[]
+  permissions?: Prisma.UserUpdatepermissionsInput | string[]
   status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   schoolId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -458,14 +458,6 @@ export type UserNullableScalarRelationFilter = {
 export type UserScalarRelationFilter = {
   is?: Prisma.UserWhereInput
   isNot?: Prisma.UserWhereInput
-}
-
-export type EnumUserPermissionNullableListFilter<$PrismaModel = never> = {
-  equals?: $Enums.UserPermission[] | Prisma.ListEnumUserPermissionFieldRefInput<$PrismaModel> | null
-  has?: $Enums.UserPermission | Prisma.EnumUserPermissionFieldRefInput<$PrismaModel> | null
-  hasEvery?: $Enums.UserPermission[] | Prisma.ListEnumUserPermissionFieldRefInput<$PrismaModel>
-  hasSome?: $Enums.UserPermission[] | Prisma.ListEnumUserPermissionFieldRefInput<$PrismaModel>
-  isEmpty?: boolean
 }
 
 export type UserCountOrderByAggregateInput = {
@@ -600,7 +592,7 @@ export type UserUpdateOneRequiredWithoutDocumentRequestLettersNestedInput = {
 }
 
 export type UserCreatepermissionsInput = {
-  set: $Enums.UserPermission[]
+  set: string[]
 }
 
 export type EnumUserRoleFieldUpdateOperationsInput = {
@@ -608,8 +600,8 @@ export type EnumUserRoleFieldUpdateOperationsInput = {
 }
 
 export type UserUpdatepermissionsInput = {
-  set?: $Enums.UserPermission[]
-  push?: $Enums.UserPermission | $Enums.UserPermission[]
+  set?: string[]
+  push?: string | string[]
 }
 
 export type EnumUserStatusFieldUpdateOperationsInput = {
@@ -638,7 +630,7 @@ export type UserCreateWithoutSchoolInput = {
   lastName: string
   phone?: string | null
   role: $Enums.UserRole
-  permissions?: Prisma.UserCreatepermissionsInput | $Enums.UserPermission[]
+  permissions?: Prisma.UserCreatepermissionsInput | string[]
   status?: $Enums.UserStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -656,7 +648,7 @@ export type UserUncheckedCreateWithoutSchoolInput = {
   lastName: string
   phone?: string | null
   role: $Enums.UserRole
-  permissions?: Prisma.UserCreatepermissionsInput | $Enums.UserPermission[]
+  permissions?: Prisma.UserCreatepermissionsInput | string[]
   status?: $Enums.UserStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -703,7 +695,7 @@ export type UserScalarWhereInput = {
   lastName?: Prisma.StringFilter<"User"> | string
   phone?: Prisma.StringNullableFilter<"User"> | string | null
   role?: Prisma.EnumUserRoleFilter<"User"> | $Enums.UserRole
-  permissions?: Prisma.EnumUserPermissionNullableListFilter<"User">
+  permissions?: Prisma.StringNullableListFilter<"User">
   status?: Prisma.EnumUserStatusFilter<"User"> | $Enums.UserStatus
   schoolId?: Prisma.StringFilter<"User"> | string
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
@@ -718,7 +710,7 @@ export type UserCreateWithoutPendingSubmissionsInput = {
   lastName: string
   phone?: string | null
   role: $Enums.UserRole
-  permissions?: Prisma.UserCreatepermissionsInput | $Enums.UserPermission[]
+  permissions?: Prisma.UserCreatepermissionsInput | string[]
   status?: $Enums.UserStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -736,7 +728,7 @@ export type UserUncheckedCreateWithoutPendingSubmissionsInput = {
   lastName: string
   phone?: string | null
   role: $Enums.UserRole
-  permissions?: Prisma.UserCreatepermissionsInput | $Enums.UserPermission[]
+  permissions?: Prisma.UserCreatepermissionsInput | string[]
   status?: $Enums.UserStatus
   schoolId: string
   createdAt?: Date | string
@@ -770,7 +762,7 @@ export type UserUpdateWithoutPendingSubmissionsInput = {
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
-  permissions?: Prisma.UserUpdatepermissionsInput | $Enums.UserPermission[]
+  permissions?: Prisma.UserUpdatepermissionsInput | string[]
   status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -788,7 +780,7 @@ export type UserUncheckedUpdateWithoutPendingSubmissionsInput = {
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
-  permissions?: Prisma.UserUpdatepermissionsInput | $Enums.UserPermission[]
+  permissions?: Prisma.UserUpdatepermissionsInput | string[]
   status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   schoolId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -806,7 +798,7 @@ export type UserCreateWithoutRegisteredStudentsInput = {
   lastName: string
   phone?: string | null
   role: $Enums.UserRole
-  permissions?: Prisma.UserCreatepermissionsInput | $Enums.UserPermission[]
+  permissions?: Prisma.UserCreatepermissionsInput | string[]
   status?: $Enums.UserStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -824,7 +816,7 @@ export type UserUncheckedCreateWithoutRegisteredStudentsInput = {
   lastName: string
   phone?: string | null
   role: $Enums.UserRole
-  permissions?: Prisma.UserCreatepermissionsInput | $Enums.UserPermission[]
+  permissions?: Prisma.UserCreatepermissionsInput | string[]
   status?: $Enums.UserStatus
   schoolId: string
   createdAt?: Date | string
@@ -858,7 +850,7 @@ export type UserUpdateWithoutRegisteredStudentsInput = {
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
-  permissions?: Prisma.UserUpdatepermissionsInput | $Enums.UserPermission[]
+  permissions?: Prisma.UserUpdatepermissionsInput | string[]
   status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -876,7 +868,7 @@ export type UserUncheckedUpdateWithoutRegisteredStudentsInput = {
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
-  permissions?: Prisma.UserUpdatepermissionsInput | $Enums.UserPermission[]
+  permissions?: Prisma.UserUpdatepermissionsInput | string[]
   status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   schoolId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -894,7 +886,7 @@ export type UserCreateWithoutDocumentRequestLettersInput = {
   lastName: string
   phone?: string | null
   role: $Enums.UserRole
-  permissions?: Prisma.UserCreatepermissionsInput | $Enums.UserPermission[]
+  permissions?: Prisma.UserCreatepermissionsInput | string[]
   status?: $Enums.UserStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -912,7 +904,7 @@ export type UserUncheckedCreateWithoutDocumentRequestLettersInput = {
   lastName: string
   phone?: string | null
   role: $Enums.UserRole
-  permissions?: Prisma.UserCreatepermissionsInput | $Enums.UserPermission[]
+  permissions?: Prisma.UserCreatepermissionsInput | string[]
   status?: $Enums.UserStatus
   schoolId: string
   createdAt?: Date | string
@@ -946,7 +938,7 @@ export type UserUpdateWithoutDocumentRequestLettersInput = {
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
-  permissions?: Prisma.UserUpdatepermissionsInput | $Enums.UserPermission[]
+  permissions?: Prisma.UserUpdatepermissionsInput | string[]
   status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -964,7 +956,7 @@ export type UserUncheckedUpdateWithoutDocumentRequestLettersInput = {
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
-  permissions?: Prisma.UserUpdatepermissionsInput | $Enums.UserPermission[]
+  permissions?: Prisma.UserUpdatepermissionsInput | string[]
   status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   schoolId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -982,7 +974,7 @@ export type UserCreateWithoutRefreshTokensInput = {
   lastName: string
   phone?: string | null
   role: $Enums.UserRole
-  permissions?: Prisma.UserCreatepermissionsInput | $Enums.UserPermission[]
+  permissions?: Prisma.UserCreatepermissionsInput | string[]
   status?: $Enums.UserStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1000,7 +992,7 @@ export type UserUncheckedCreateWithoutRefreshTokensInput = {
   lastName: string
   phone?: string | null
   role: $Enums.UserRole
-  permissions?: Prisma.UserCreatepermissionsInput | $Enums.UserPermission[]
+  permissions?: Prisma.UserCreatepermissionsInput | string[]
   status?: $Enums.UserStatus
   schoolId: string
   createdAt?: Date | string
@@ -1034,7 +1026,7 @@ export type UserUpdateWithoutRefreshTokensInput = {
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
-  permissions?: Prisma.UserUpdatepermissionsInput | $Enums.UserPermission[]
+  permissions?: Prisma.UserUpdatepermissionsInput | string[]
   status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1052,7 +1044,7 @@ export type UserUncheckedUpdateWithoutRefreshTokensInput = {
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
-  permissions?: Prisma.UserUpdatepermissionsInput | $Enums.UserPermission[]
+  permissions?: Prisma.UserUpdatepermissionsInput | string[]
   status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   schoolId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1070,7 +1062,7 @@ export type UserCreateManySchoolInput = {
   lastName: string
   phone?: string | null
   role: $Enums.UserRole
-  permissions?: Prisma.UserCreatepermissionsInput | $Enums.UserPermission[]
+  permissions?: Prisma.UserCreatepermissionsInput | string[]
   status?: $Enums.UserStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1084,7 +1076,7 @@ export type UserUpdateWithoutSchoolInput = {
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
-  permissions?: Prisma.UserUpdatepermissionsInput | $Enums.UserPermission[]
+  permissions?: Prisma.UserUpdatepermissionsInput | string[]
   status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1102,7 +1094,7 @@ export type UserUncheckedUpdateWithoutSchoolInput = {
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
-  permissions?: Prisma.UserUpdatepermissionsInput | $Enums.UserPermission[]
+  permissions?: Prisma.UserUpdatepermissionsInput | string[]
   status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1120,7 +1112,7 @@ export type UserUncheckedUpdateManyWithoutSchoolInput = {
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
-  permissions?: Prisma.UserUpdatepermissionsInput | $Enums.UserPermission[]
+  permissions?: Prisma.UserUpdatepermissionsInput | string[]
   status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1285,7 +1277,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     lastName: string
     phone: string | null
     role: $Enums.UserRole
-    permissions: $Enums.UserPermission[]
+    permissions: string[]
     status: $Enums.UserStatus
     schoolId: string
     createdAt: Date
@@ -1725,7 +1717,7 @@ export interface UserFieldRefs {
   readonly lastName: Prisma.FieldRef<"User", 'String'>
   readonly phone: Prisma.FieldRef<"User", 'String'>
   readonly role: Prisma.FieldRef<"User", 'UserRole'>
-  readonly permissions: Prisma.FieldRef<"User", 'UserPermission[]'>
+  readonly permissions: Prisma.FieldRef<"User", 'String[]'>
   readonly status: Prisma.FieldRef<"User", 'UserStatus'>
   readonly schoolId: Prisma.FieldRef<"User", 'String'>
   readonly createdAt: Prisma.FieldRef<"User", 'DateTime'>

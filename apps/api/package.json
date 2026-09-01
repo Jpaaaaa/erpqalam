@@ -21,6 +21,7 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:seed": "prisma db seed",
+    "import:hrat-users": "ts-node prisma/import-hrat-users.ts",
     "postinstall": "prisma generate"
   },
   "prisma": {

@@ -3,13 +3,12 @@
 import { FormEvent, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { ApiClientError, updateUser } from '@/lib/api/users';
-import type { UserRecord, UserRole, UserStatus, UserPermission } from '@/lib/types/user';
+import type { UserRecord, UserRole, UserStatus } from '@/lib/types/user';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Alert } from '@/components/ui/Alert';
 import { FormPanel } from '@/components/ui/FormPanel';
 import { SelectField } from '@/components/ui/SelectField';
-import { UserPermissionsEditor } from '@/components/users/UserPermissionsEditor';
 import { canGrantUserManagement } from '@/lib/permissions';
 
 interface EditUserFormProps {
@@ -29,7 +28,6 @@ export function EditUserForm({ user, actorRole, onSaved, onCancel }: EditUserFor
   const [lastName, setLastName] = useState(user.lastName);
   const [phone, setPhone] = useState(user.phone ?? '');
   const [role, setRole] = useState<UserRole>(user.role);
-  const [permissions, setPermissions] = useState<UserPermission[]>(user.permissions ?? []);
   const [status, setStatus] = useState<UserStatus>(user.status);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -47,7 +45,6 @@ export function EditUserForm({ user, actorRole, onSaved, onCancel }: EditUserFor
         lastName,
         phone: phone || undefined,
         role,
-        permissions: role === 'EMPLOYEE' ? permissions : [],
         status,
       });
       onSaved(updated);
@@ -93,13 +90,7 @@ export function EditUserForm({ user, actorRole, onSaved, onCancel }: EditUserFor
             id="edit-role"
             value={role}
             disabled={isTargetManager && !canEditManagerFields}
-            onChange={(e) => {
-              const nextRole = e.target.value as UserRole;
-              setRole(nextRole);
-              if (nextRole === 'MANAGER') {
-                setPermissions([]);
-              }
-            }}
+            onChange={(e) => setRole(e.target.value as UserRole)}
           >
             <option value="EMPLOYEE">{tRoles('EMPLOYEE')}</option>
             {canEditManagerFields && (
@@ -118,13 +109,6 @@ export function EditUserForm({ user, actorRole, onSaved, onCancel }: EditUserFor
             <option value="INACTIVE">{tStatus('INACTIVE')}</option>
           </SelectField>
         </div>
-
-        <UserPermissionsEditor
-          role={role}
-          permissions={permissions}
-          actorRole={actorRole}
-          onChange={setPermissions}
-        />
 
         <div className="flex flex-wrap gap-2">
           <Button type="submit" isLoading={isLoading} loadingLabel={tCommon('pleaseWait')}>

@@ -837,3 +837,133 @@ export function dateRangeBounds(fromDate?: string, toDate?: string): {
   }
   return { from: from ?? undefined, to: to ?? undefined };
 }
+
+export interface EmployeeDayRow {
+  date: string;
+  entryTime: string | null;
+  exitTime: string | null;
+  entryType: PunchType | null;
+  exitType: PunchType | null;
+  isHoliday?: boolean;
+  isNotComing?: boolean;
+}
+
+export function buildEmployeeDayRows(input: {
+  deviceUserId: string;
+  records: AttendanceRecordInput[];
+  settings: AttendanceSettingsMap;
+  user?: AttendanceUserScheduleInput;
+  usersById?: Map<string, AttendanceUserScheduleInput>;
+  dayOffDates: { date: string }[];
+  employeeHolidayDates: string[];
+  earlyExitDates: Set<string>;
+  lateEntryDates: Set<string>;
+  fromDate: string;
+  toDate: string;
+}): EmployeeDayRow[] {
+  const {
+    deviceUserId,
+    records,
+    settings,
+    user,
+    usersById,
+    dayOffDates,
+    employeeHolidayDates,
+    earlyExitDates,
+    lateEntryDates,
+  } = input;
+
+  let fromDate = input.fromDate;
+  let toDate = input.toDate;
+  if (!fromDate || !toDate) {
+    const keys = records
+      .filter((record) => record.deviceUserId === deviceUserId)
+      .map((record) => getDateKeyFromTimestamp(record.timestamp));
+    if (keys.length > 0) {
+      fromDate = fromDate || keys.reduce((a, b) => (a < b ? a : b));
+      toDate = toDate || keys.reduce((a, b) => (a > b ? a : b));
+    }
+  }
+
+  const sched = getEffectiveSchedule(user, settings);
+  const expected = getExpectedWorkingDates(
+    fromDate,
+    toDate,
+    sched.working_days,
+    dayOffDates,
+  );
+  const holidaySet = new Set(employeeHolidayDates);
+  const ctx: ClassifyPunchContext = {
+    settings,
+    usersById: usersById ?? new Map(user ? [[user.deviceUserId, user]] : []),
+    earlyExitDates,
+    lateEntryDates,
+  };
+
+  const byDate = new Map<string, AttendanceRecordInput[]>();
+  for (const record of records) {
+    if (record.deviceUserId !== deviceUserId) continue;
+    if (!isRecordInDateRange(record, fromDate, toDate)) continue;
+    const dateKey = getDateKeyFromTimestamp(record.timestamp);
+    const list = byDate.get(dateKey) ?? [];
+    list.push(record);
+    byDate.set(dateKey, list);
+  }
+
+  const rows: EmployeeDayRow[] = [];
+  for (const dateKey of expected) {
+    if (holidaySet.has(dateKey)) {
+      rows.push({
+        date: dateKey,
+        entryTime: null,
+        exitTime: null,
+        entryType: null,
+        exitType: null,
+        isHoliday: true,
+      });
+      continue;
+    }
+
+    const punches = [...(byDate.get(dateKey) ?? [])].sort(
+      (a, b) => a.timestamp.getTime() - b.timestamp.getTime(),
+    );
+    const types = punches.map((punch) => classifyPunch(punch, ctx));
+    const allOutOfShift =
+      punches.length > 0 &&
+      types.every((type) => type === 'out_of_shift' || type == null);
+
+    if (punches.length === 0 || allOutOfShift) {
+      rows.push({
+        date: dateKey,
+        entryTime: null,
+        exitTime: null,
+        entryType: null,
+        exitType: null,
+        isNotComing: true,
+      });
+      continue;
+    }
+
+    const entryPunches = punches.filter((_, index) => {
+      const type = types[index];
+      return type === 'entry_on_time' || type === 'entry_late';
+    });
+    const exitPunches = punches.filter((_, index) => {
+      const type = types[index];
+      return type === 'exit' || type === 'early_exit';
+    });
+    const entry = entryPunches[0] ?? null;
+    const exit =
+      exitPunches.length > 0 ? exitPunches[exitPunches.length - 1] : null;
+
+    rows.push({
+      date: dateKey,
+      entryTime: entry ? formatLocalTimestamp(entry.timestamp) : null,
+      exitTime: exit ? formatLocalTimestamp(exit.timestamp) : null,
+      entryType: entry ? classifyPunch(entry, ctx) : null,
+      exitType: exit ? classifyPunch(exit, ctx) : null,
+    });
+  }
+
+  return rows;
+}

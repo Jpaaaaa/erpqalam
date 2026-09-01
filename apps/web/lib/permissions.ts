@@ -1,9 +1,12 @@
-import type { UserPermission, UserRole } from '@/lib/types/user';
+import type { UserRole } from '@/lib/types/user';
+import { PERMISSIONS, type Permission } from '@/lib/permissions/constants';
+
+export { PERMISSIONS, ALL_PERMISSIONS, type Permission } from '@/lib/permissions/constants';
 
 export function hasPermission(
   role: UserRole,
-  permissions: UserPermission[] | undefined,
-  required: UserPermission,
+  permissions: string[] | undefined,
+  required: Permission,
 ): boolean {
   if (role === 'MANAGER') {
     return true;
@@ -12,20 +15,36 @@ export function hasPermission(
   return permissions?.includes(required) ?? false;
 }
 
+export function canAccessRegistration(
+  role: UserRole,
+  permissions: string[] | undefined,
+): boolean {
+  return hasPermission(role, permissions, PERMISSIONS.REGISTRATION_VIEW);
+}
+
+export function canAccessDocuments(
+  role: UserRole,
+  permissions: string[] | undefined,
+): boolean {
+  return hasPermission(role, permissions, PERMISSIONS.DOCUMENTS_VIEW);
+}
+
 export function canAccessUserManagement(
   role: UserRole,
-  permissions: UserPermission[] | undefined,
+  permissions: string[] | undefined,
 ): boolean {
-  return hasPermission(role, permissions, 'USER_MANAGEMENT');
+  return hasPermission(role, permissions, PERMISSIONS.USERS_MANAGE);
 }
 
-export function canAccessStudentRegistration(
+export function canAccessAttendance(
   role: UserRole,
-  permissions: UserPermission[] | undefined,
+  permissions: string[] | undefined,
 ): boolean {
-  return hasPermission(role, permissions, 'STUDENT_REGISTRATION');
+  return hasPermission(role, permissions, PERMISSIONS.ATTENDANCE_VIEW);
 }
 
-export function canGrantUserManagement(role: UserRole): boolean {
+export function canManagePermissions(role: UserRole): boolean {
   return role === 'MANAGER';
 }
+
+export const canGrantUserManagement = canManagePermissions;

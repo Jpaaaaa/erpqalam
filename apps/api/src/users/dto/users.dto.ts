@@ -9,7 +9,8 @@ import {
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { UserPermission, UserRole, UserStatus } from '@generated/prisma/client';
+import { UserRole, UserStatus } from '@generated/prisma/client';
+import { ALL_PERMISSIONS } from '../../common/permissions/permissions';
 
 export class CreateUserDto {
   @ApiProperty({ example: 'employee@school.com' })
@@ -39,12 +40,6 @@ export class CreateUserDto {
   @ApiProperty({ enum: UserRole, example: UserRole.EMPLOYEE })
   @IsEnum(UserRole)
   role: UserRole;
-
-  @ApiPropertyOptional({ enum: UserPermission, isArray: true })
-  @IsOptional()
-  @IsArray()
-  @IsEnum(UserPermission, { each: true })
-  permissions?: UserPermission[];
 }
 
 export class UpdateUserDto {
@@ -70,24 +65,39 @@ export class UpdateUserDto {
   @IsEnum(UserRole)
   role?: UserRole;
 
-  @ApiPropertyOptional({ enum: UserPermission, isArray: true })
-  @IsOptional()
-  @IsArray()
-  @IsEnum(UserPermission, { each: true })
-  permissions?: UserPermission[];
-
   @ApiPropertyOptional({ enum: UserStatus })
   @IsOptional()
   @IsEnum(UserStatus)
   status?: UserStatus;
 }
 
-export class ApproveUserDto {
-  @ApiPropertyOptional({ enum: UserPermission, isArray: true })
-  @IsOptional()
+export class ApproveUserDto {}
+
+export class UpdateUserPermissionsDto {
+  @ApiProperty({ type: [String], example: ['registration.view'] })
   @IsArray()
-  @IsEnum(UserPermission, { each: true })
-  permissions?: UserPermission[];
+  @IsString({ each: true })
+  permissions: string[];
+}
+
+export class UserPermissionsResponseDto {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  email: string;
+
+  @ApiProperty()
+  firstName: string;
+
+  @ApiProperty()
+  lastName: string;
+
+  @ApiProperty({ enum: UserRole })
+  role: UserRole;
+
+  @ApiProperty({ type: [String] })
+  permissions: string[];
 }
 
 export class ListUsersQueryDto {
@@ -131,8 +141,8 @@ export class UserResponseDto {
   @ApiProperty({ enum: UserRole })
   role: UserRole;
 
-  @ApiProperty({ enum: UserPermission, isArray: true })
-  permissions: UserPermission[];
+  @ApiProperty({ type: [String], enum: ALL_PERMISSIONS })
+  permissions: string[];
 
   @ApiProperty({ enum: UserStatus })
   status: UserStatus;

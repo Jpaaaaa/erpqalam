@@ -17,14 +17,6 @@ export const UserRole = {
 export type UserRole = (typeof UserRole)[keyof typeof UserRole]
 
 
-export const UserPermission = {
-  USER_MANAGEMENT: 'USER_MANAGEMENT',
-  STUDENT_REGISTRATION: 'STUDENT_REGISTRATION'
-} as const
-
-export type UserPermission = (typeof UserPermission)[keyof typeof UserPermission]
-
-
 export const UserStatus = {
   ACTIVE: 'ACTIVE',
   INACTIVE: 'INACTIVE',

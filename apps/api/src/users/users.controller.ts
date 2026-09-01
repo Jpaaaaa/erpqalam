@@ -15,11 +15,14 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { UserPermission } from '@generated/prisma/client';
+import { UserRole } from '@generated/prisma/client';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
-import { Permissions } from '../common/decorators/permissions.decorator';
+import { RequirePermission } from '../common/decorators/require-permission.decorator';
+import { Roles } from '../common/decorators/roles.decorator';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../common/guards/permissions.guard';
+import { RolesGuard } from '../common/guards/roles.guard';
+import { PERMISSIONS } from '../common/permissions/permissions';
 import { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
 import { UsersService } from './users.service';
 import {
@@ -28,18 +31,20 @@ import {
   PaginatedUsersResponseDto,
   UpdateUserDto,
   ApproveUserDto,
+  UpdateUserPermissionsDto,
+  UserPermissionsResponseDto,
   UserResponseDto,
 } from './dto/users.dto';
 
 @ApiTags('users')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard, PermissionsGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard, RolesGuard)
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
-  @Permissions(UserPermission.USER_MANAGEMENT)
+  @RequirePermission(PERMISSIONS.USERS_MANAGE)
   @ApiOperation({ summary: 'Create a user' })
   @ApiResponse({ status: 201, type: UserResponseDto })
   create(
@@ -50,7 +55,7 @@ export class UsersController {
   }
 
   @Get()
-  @Permissions(UserPermission.USER_MANAGEMENT)
+  @RequirePermission(PERMISSIONS.USERS_MANAGE)
   @ApiOperation({ summary: 'List users in school' })
   @ApiResponse({ status: 200, type: PaginatedUsersResponseDto })
   findAll(
@@ -58,6 +63,29 @@ export class UsersController {
     @CurrentUser() user: JwtPayload,
   ): Promise<PaginatedUsersResponseDto> {
     return this.usersService.findAll(user, query);
+  }
+
+  @Get(':id/permissions')
+  @Roles(UserRole.MANAGER)
+  @ApiOperation({ summary: 'Get user permissions (manager only)' })
+  @ApiResponse({ status: 200, type: UserPermissionsResponseDto })
+  getPermissions(
+    @Param('id') id: string,
+    @CurrentUser() user: JwtPayload,
+  ): Promise<UserPermissionsResponseDto> {
+    return this.usersService.getPermissions(id, user);
+  }
+
+  @Patch(':id/permissions')
+  @Roles(UserRole.MANAGER)
+  @ApiOperation({ summary: 'Update user permissions (manager only)' })
+  @ApiResponse({ status: 200, type: UserPermissionsResponseDto })
+  updatePermissions(
+    @Param('id') id: string,
+    @Body() dto: UpdateUserPermissionsDto,
+    @CurrentUser() user: JwtPayload,
+  ): Promise<UserPermissionsResponseDto> {
+    return this.usersService.updatePermissions(id, dto, user);
   }
 
   @Get(':id')
@@ -82,7 +110,7 @@ export class UsersController {
   }
 
   @Patch(':id/approve')
-  @Permissions(UserPermission.USER_MANAGEMENT)
+  @RequirePermission(PERMISSIONS.USERS_MANAGE)
   @ApiOperation({ summary: 'Approve pending employee' })
   @ApiResponse({ status: 200, type: UserResponseDto })
   approve(
@@ -94,7 +122,7 @@ export class UsersController {
   }
 
   @Delete(':id')
-  @Permissions(UserPermission.USER_MANAGEMENT)
+  @RequirePermission(PERMISSIONS.USERS_MANAGE)
   @ApiOperation({ summary: 'Deactivate user' })
   @ApiResponse({ status: 200, type: UserResponseDto })
   deactivate(

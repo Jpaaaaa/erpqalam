@@ -4,10 +4,9 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { UserPermission } from '@generated/prisma/client';
 import { PrismaService } from '../database/prisma.service';
 import { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
-import { hasPermission } from '../common/permissions/user-permissions';
+import { hasPermission, PERMISSIONS } from '../common/permissions/permissions';
 import {
   CreatePendingStudentCheckInDto,
   CreatePendingStudentDto,
@@ -133,7 +132,7 @@ export class PendingStudentsService {
     dto: CreatePendingStudentDto,
     actor: JwtPayload,
   ): Promise<PendingStudentResponseDto> {
-    if (!hasPermission(actor.role, actor.permissions, UserPermission.STUDENT_REGISTRATION)) {
+    if (!hasPermission(actor.role, actor.permissions, PERMISSIONS.REGISTRATION_MANAGE)) {
       throw new ForbiddenException('You do not have permission to add pending students');
     }
 
@@ -160,7 +159,7 @@ export class PendingStudentsService {
     actor: JwtPayload,
     query: ListPendingStudentsQueryDto,
   ): Promise<PaginatedPendingStudentsResponseDto> {
-    if (!hasPermission(actor.role, actor.permissions, UserPermission.STUDENT_REGISTRATION)) {
+    if (!hasPermission(actor.role, actor.permissions, PERMISSIONS.REGISTRATION_VIEW)) {
       throw new ForbiddenException('You do not have permission to list pending students');
     }
 
@@ -196,7 +195,7 @@ export class PendingStudentsService {
     dto: UpdatePendingStudentDto,
     actor: JwtPayload,
   ): Promise<PendingStudentResponseDto> {
-    if (!hasPermission(actor.role, actor.permissions, UserPermission.STUDENT_REGISTRATION)) {
+    if (!hasPermission(actor.role, actor.permissions, PERMISSIONS.REGISTRATION_MANAGE)) {
       throw new ForbiddenException('You do not have permission to update pending students');
     }
 
@@ -237,7 +236,7 @@ export class PendingStudentsService {
     dto: UpdateStudentDetailsDto,
     actor: JwtPayload,
   ): Promise<PendingStudentResponseDto> {
-    if (!hasPermission(actor.role, actor.permissions, UserPermission.STUDENT_REGISTRATION)) {
+    if (!hasPermission(actor.role, actor.permissions, PERMISSIONS.REGISTRATION_MANAGE)) {
       throw new ForbiddenException('You do not have permission to update pending students');
     }
 
@@ -279,7 +278,7 @@ export class PendingStudentsService {
   }
 
   async approve(id: string, actor: JwtPayload) {
-    if (!hasPermission(actor.role, actor.permissions, UserPermission.STUDENT_REGISTRATION)) {
+    if (!hasPermission(actor.role, actor.permissions, PERMISSIONS.REGISTRATION_APPROVE)) {
       throw new ForbiddenException('You do not have permission to approve students');
     }
 
@@ -322,7 +321,7 @@ export class PendingStudentsService {
   }
 
   async remove(id: string, actor: JwtPayload): Promise<void> {
-    if (!hasPermission(actor.role, actor.permissions, UserPermission.STUDENT_REGISTRATION)) {
+    if (!hasPermission(actor.role, actor.permissions, PERMISSIONS.REGISTRATION_MANAGE)) {
       throw new ForbiddenException('You do not have permission to delete students');
     }
 

@@ -37,12 +37,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException('User not found or inactive');
     }
 
-    if (user.schoolId !== payload.schoolId || user.role !== payload.role) {
+    if (user.schoolId !== payload.schoolId) {
       throw new UnauthorizedException('Invalid token');
     }
 
     return {
       ...payload,
+      role: user.role,
       permissions: user.permissions,
     };
   }

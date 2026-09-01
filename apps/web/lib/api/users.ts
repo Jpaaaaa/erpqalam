@@ -3,7 +3,7 @@ import type {
   CreateUserPayload,
   PaginatedUsers,
   UpdateUserPayload,
-  UserPermission,
+  UserPermissionsRecord,
   UserRecord,
   UserRole,
   UserStatus,
@@ -43,18 +43,29 @@ export async function updateUser(
   });
 }
 
-export async function approveUser(
-  id: string,
-  permissions?: UserPermission[],
-): Promise<UserRecord> {
+export async function approveUser(id: string): Promise<UserRecord> {
   return apiRequest<UserRecord>(`/users/${id}/approve`, {
     method: 'PATCH',
-    body: JSON.stringify({ permissions }),
+    body: JSON.stringify({}),
   });
 }
 
 export async function deactivateUser(id: string): Promise<UserRecord> {
   return apiRequest<UserRecord>(`/users/${id}`, {
     method: 'DELETE',
+  });
+}
+
+export async function getUserPermissions(id: string): Promise<UserPermissionsRecord> {
+  return apiRequest<UserPermissionsRecord>(`/users/${id}/permissions`);
+}
+
+export async function updateUserPermissions(
+  id: string,
+  permissions: string[],
+): Promise<UserPermissionsRecord> {
+  return apiRequest<UserPermissionsRecord>(`/users/${id}/permissions`, {
+    method: 'PATCH',
+    body: JSON.stringify({ permissions }),
   });
 }

@@ -14,6 +14,7 @@ import { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
 import {
   AttendanceSettingsMap,
   AttendanceUserScheduleInput,
+  buildEmployeeDayRows,
   buildEmployeeReport,
   classifyPunch,
   dateRangeBounds,
@@ -26,7 +27,9 @@ import {
   parseLocalDateToDbDate,
   parseLocalTimestamp,
 } from './attendance-rules';
+import { AttendanceReportPdfService } from './attendance-report-pdf.service';
 import {
+  AttendanceDeviceResponseDto,
   AttendanceHolidayResponseDto,
   AttendanceRecordResponseDto,
   AttendanceSettingsResponseDto,
@@ -34,10 +37,13 @@ import {
   CreateAttendanceHolidayDto,
   CreateAttendanceHolidayRangeDto,
   CreateAttendanceUserDto,
+  BulkImportUsersDto,
+  BulkImportUsersResponseDto,
   CreateEmployeeHolidayDto,
   CreateEmployeeHolidayRangeDto,
   CreateTimeLeaveUsageDto,
   EmployeeHolidayResponseDto,
+  EmployeeReportPdfQueryDto,
   EmployeeReportQueryDto,
   EmployeeReportResponseDto,
   LeaveBalanceResponseDto,
@@ -46,6 +52,7 @@ import {
   SetLeaveBalanceDto,
   SuccessResponseDto,
   TimeLeaveUsageResponseDto,
+  UpdateAttendanceDeviceDto,
   UpdateAttendanceSettingsDto,
   UpdateAttendanceUserDto,
 } from './dto/attendance.dto';
@@ -125,9 +132,28 @@ function toUserResponse(row: {
   return { ...row };
 }
 
+function toDeviceResponse(row: {
+  id: string;
+  serialNumber: string;
+  name: string;
+  lastSeenAt: Date | null;
+  isActive: boolean;
+}): AttendanceDeviceResponseDto {
+  return {
+    id: row.id,
+    serialNumber: row.serialNumber,
+    name: row.name,
+    lastSeenAt: row.lastSeenAt ? formatLocalTimestamp(row.lastSeenAt) : null,
+    isActive: row.isActive,
+  };
+}
+
 @Injectable()
 export class AttendanceService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly reportPdf: AttendanceReportPdfService,
+  ) {}
 
   private schoolId(user: JwtPayload): string {
     return user.schoolId;
@@ -362,6 +388,39 @@ export class AttendanceService {
     return rows.map(toUserResponse);
   }
 
+  async listDevices(user: JwtPayload): Promise<AttendanceDeviceResponseDto[]> {
+    const rows = await this.prisma.attendanceDevice.findMany({
+      where: { schoolId: this.schoolId(user) },
+      orderBy: { serialNumber: 'asc' },
+    });
+    return rows.map(toDeviceResponse);
+  }
+
+  async updateDevice(
+    user: JwtPayload,
+    serialNumber: string,
+    dto: UpdateAttendanceDeviceDto,
+  ): Promise<AttendanceDeviceResponseDto> {
+    const schoolId = this.schoolId(user);
+    const sn = serialNumber.trim();
+    const existing = await this.prisma.attendanceDevice.findFirst({
+      where: { schoolId, serialNumber: sn },
+    });
+    if (!existing) {
+      throw new NotFoundException('Attendance device not found');
+    }
+
+    const data: Prisma.AttendanceDeviceUpdateInput = {};
+    if (dto.name !== undefined) data.name = dto.name.trim();
+    if (dto.isActive !== undefined) data.isActive = dto.isActive;
+
+    const row = await this.prisma.attendanceDevice.update({
+      where: { id: existing.id },
+      data,
+    });
+    return toDeviceResponse(row);
+  }
+
   async createUser(
     user: JwtPayload,
     dto: CreateAttendanceUserDto,
@@ -378,6 +437,53 @@ export class AttendanceService {
       },
     });
     return toUserResponse(row);
+  }
+
+  async bulkUpsertUsers(
+    user: JwtPayload,
+    dto: BulkImportUsersDto,
+  ): Promise<BulkImportUsersResponseDto> {
+    const schoolId = this.schoolId(user);
+    let created = 0;
+    let updated = 0;
+    let skipped = 0;
+
+    for (const row of dto.users) {
+      const deviceUserId = row.deviceUserId?.trim();
+      if (!deviceUserId) {
+        skipped++;
+        continue;
+      }
+
+      const name = (row.name ?? '').trim();
+      const existing = await this.prisma.attendanceUser.findUnique({
+        where: { schoolId_deviceUserId: { schoolId, deviceUserId } },
+      });
+
+      if (!existing) {
+        await this.prisma.attendanceUser.create({
+          data: {
+            schoolId,
+            deviceUserId,
+            name: name || deviceUserId,
+          },
+        });
+        created++;
+        continue;
+      }
+
+      if (name && name !== existing.name.trim()) {
+        await this.prisma.attendanceUser.update({
+          where: { schoolId_deviceUserId: { schoolId, deviceUserId } },
+          data: { name },
+        });
+        updated++;
+      } else {
+        skipped++;
+      }
+    }
+
+    return { created, updated, skipped };
   }
 
   async updateUser(
@@ -976,6 +1082,153 @@ export class AttendanceService {
       lateOccurrences,
       earlyExitOccurrences,
     };
+  }
+
+  async getEmployeeReportPdf(
+    user: JwtPayload,
+    query: EmployeeReportPdfQueryDto,
+  ): Promise<{ buffer: Buffer; fileName: string }> {
+    const schoolId = this.schoolId(user);
+    const fromDate = query.fromDate ?? '';
+    const toDate = query.toDate ?? '';
+    const deviceUserId = query.deviceUserId?.trim();
+
+    if (query.type === 'per-employee' && !deviceUserId) {
+      throw new BadRequestException(
+        'deviceUserId is required for per-employee reports',
+      );
+    }
+
+    const report = await this.getEmployeeReport(user, { fromDate, toDate });
+    const [users, balances, holidays, employeeHolidays, records, settings] =
+      await Promise.all([
+        this.prisma.attendanceUser.findMany({ where: { schoolId } }),
+        this.prisma.employeeLeaveBalance.findMany({ where: { schoolId } }),
+        this.prisma.attendanceHoliday.findMany({ where: { schoolId } }),
+        this.prisma.employeeHoliday.findMany({ where: { schoolId } }),
+        query.type === 'per-employee'
+          ? this.prisma.attendanceRecord.findMany({
+              where: {
+                schoolId,
+                ...(deviceUserId ? { deviceUserId } : {}),
+              },
+              orderBy: { timestamp: 'asc' },
+            })
+          : Promise.resolve([]),
+        this.loadSettingsMap(schoolId),
+      ]);
+
+    const nameMap = new Map(users.map((row) => [row.deviceUserId, row.name]));
+    const balanceMap = new Map(
+      balances.map((row) => [row.deviceUserId, row.balanceDays]),
+    );
+
+    const rows = report.rows.map((row) => ({
+      deviceUserId: row.deviceUserId,
+      name: nameMap.get(row.deviceUserId) || row.deviceUserId,
+      workingDaysPresent: row.workingDaysPresent,
+      expectedWorkingDays: row.expectedWorkingDays,
+      daysAbsent: row.daysAbsent,
+      lateCount: row.lateCount,
+      leaveBalance: balanceMap.get(row.deviceUserId) ?? 0,
+    }));
+
+    const totals = rows.reduce(
+      (acc, row) => ({
+        empCount: acc.empCount + 1,
+        totalPresent: acc.totalPresent + row.workingDaysPresent,
+        totalExpected: acc.totalExpected + row.expectedWorkingDays,
+        totalAbsent: acc.totalAbsent + row.daysAbsent,
+        totalLate: acc.totalLate + row.lateCount,
+      }),
+      {
+        empCount: 0,
+        totalPresent: 0,
+        totalExpected: 0,
+        totalAbsent: 0,
+        totalLate: 0,
+      },
+    );
+    const avgRate =
+      totals.totalExpected > 0
+        ? (totals.totalPresent / totals.totalExpected) * 100
+        : 0;
+
+    let selectedEmployee:
+      | {
+          deviceUserId: string;
+          name: string;
+          present: number;
+          expected: number;
+          absent: number;
+          leaveBalance: number;
+          notComing: number;
+          days: ReturnType<typeof buildEmployeeDayRows>;
+        }
+      | undefined;
+
+    if (query.type === 'per-employee' && deviceUserId) {
+      const userInputs = users.map(toUserScheduleInput);
+      const usersById = new Map(
+        userInputs.map((item) => [item.deviceUserId, item]),
+      );
+      const dayOffDates = holidays
+        .filter((h) => h.type === AttendanceHolidayType.DAY_OFF)
+        .map((h) => ({ date: formatDateLocal(h.date) }));
+      const earlyExitDates = new Set(
+        holidays
+          .filter((h) => h.type === AttendanceHolidayType.EARLY_EXIT)
+          .map((h) => formatDateLocal(h.date)),
+      );
+      const lateEntryDates = new Set(
+        holidays
+          .filter((h) => h.type === AttendanceHolidayType.ENTRY_LATE)
+          .map((h) => formatDateLocal(h.date)),
+      );
+      const employeeHolidayDates = employeeHolidays
+        .filter((h) => h.deviceUserId === deviceUserId)
+        .map((h) => formatDateLocal(h.date));
+      const selectedRow = report.rows.find(
+        (row) => row.deviceUserId === deviceUserId,
+      );
+      const days = buildEmployeeDayRows({
+        deviceUserId,
+        records: records.map((r) => ({
+          deviceUserId: r.deviceUserId,
+          timestamp: r.timestamp,
+          verifyType: r.verifyType,
+        })),
+        settings,
+        user: usersById.get(deviceUserId),
+        usersById,
+        dayOffDates,
+        employeeHolidayDates,
+        earlyExitDates,
+        lateEntryDates,
+        fromDate,
+        toDate,
+      });
+      selectedEmployee = {
+        deviceUserId,
+        name: nameMap.get(deviceUserId) || deviceUserId,
+        present: selectedRow?.workingDaysPresent ?? 0,
+        expected: selectedRow?.expectedWorkingDays ?? 0,
+        absent: selectedRow?.daysAbsent ?? 0,
+        leaveBalance: balanceMap.get(deviceUserId) ?? 0,
+        notComing: days.filter((day) => day.isNotComing).length,
+        days,
+      };
+    }
+
+    return this.reportPdf.render({
+      type: query.type,
+      fromDate,
+      toDate,
+      generatedAt: formatLocalTimestamp(new Date()).slice(0, 16).replace('T', ' '),
+      rows,
+      totals: { ...totals, avgRate },
+      selectedEmployee,
+    });
   }
 
   private async ensureAttendanceUser(

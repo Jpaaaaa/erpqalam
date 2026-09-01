@@ -1,8 +1,7 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import { UserPermission } from '@generated/prisma/client';
 import { PrismaService } from '../database/prisma.service';
 import { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
-import { hasPermission } from '../common/permissions/user-permissions';
+import { hasPermission, PERMISSIONS } from '../common/permissions/permissions';
 import {
   ListStudentsQueryDto,
   PaginatedStudentsResponseDto,
@@ -92,7 +91,7 @@ export class StudentsService {
     actor: JwtPayload,
     query: ListStudentsQueryDto,
   ): Promise<PaginatedStudentsResponseDto> {
-    if (!hasPermission(actor.role, actor.permissions, UserPermission.STUDENT_REGISTRATION)) {
+    if (!hasPermission(actor.role, actor.permissions, PERMISSIONS.REGISTRATION_VIEW)) {
       throw new ForbiddenException('You do not have permission to list students');
     }
 
@@ -128,7 +127,7 @@ export class StudentsService {
     dto: UpdateStudentDetailsDto,
     actor: JwtPayload,
   ): Promise<StudentResponseDto> {
-    if (!hasPermission(actor.role, actor.permissions, UserPermission.STUDENT_REGISTRATION)) {
+    if (!hasPermission(actor.role, actor.permissions, PERMISSIONS.REGISTRATION_MANAGE)) {
       throw new ForbiddenException('You do not have permission to update students');
     }
 
@@ -159,7 +158,7 @@ export class StudentsService {
     dto: UpdateStudentDto,
     actor: JwtPayload,
   ): Promise<StudentResponseDto> {
-    if (!hasPermission(actor.role, actor.permissions, UserPermission.STUDENT_REGISTRATION)) {
+    if (!hasPermission(actor.role, actor.permissions, PERMISSIONS.REGISTRATION_MANAGE)) {
       throw new ForbiddenException('You do not have permission to update students');
     }
 
@@ -209,7 +208,7 @@ export class StudentsService {
   }
 
   async remove(id: string, actor: JwtPayload): Promise<void> {
-    if (!hasPermission(actor.role, actor.permissions, UserPermission.STUDENT_REGISTRATION)) {
+    if (!hasPermission(actor.role, actor.permissions, PERMISSIONS.REGISTRATION_MANAGE)) {
       throw new ForbiddenException('You do not have permission to delete students');
     }
 

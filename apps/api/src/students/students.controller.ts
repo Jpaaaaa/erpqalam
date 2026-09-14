@@ -29,6 +29,7 @@ import {
   ListStudentsQueryDto,
   PaginatedStudentsResponseDto,
   RestoreStudentToPendingDto,
+  StudentCountsResponseDto,
   StudentResponseDto,
   UpdateStudentDto,
 } from './dto/students.dto';
@@ -139,6 +140,16 @@ export class StudentsController {
     @CurrentUser() user: JwtPayload,
   ): Promise<void> {
     await this.pendingStudentsService.remove(id, user);
+  }
+
+  @Get('students/counts')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @RequirePermission(PERMISSIONS.REGISTRATION_VIEW)
+  @ApiOperation({ summary: 'Unfiltered pending and registered student counts' })
+  @ApiResponse({ status: 200, type: StudentCountsResponseDto })
+  getCounts(@CurrentUser() user: JwtPayload): Promise<StudentCountsResponseDto> {
+    return this.studentsService.getCounts(user);
   }
 
   @Get('students')

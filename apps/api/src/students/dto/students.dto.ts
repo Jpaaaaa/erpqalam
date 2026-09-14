@@ -45,6 +45,14 @@ export class ListStudentsQueryDto {
   stage?: string;
 }
 
+export class StudentCountsResponseDto {
+  @ApiProperty()
+  pending: number;
+
+  @ApiProperty()
+  registered: number;
+}
+
 export class StudentRegistrarDto {
   @ApiProperty()
   id: string;

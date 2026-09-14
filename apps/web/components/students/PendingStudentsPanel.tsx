@@ -5,30 +5,43 @@ import { useTranslations } from 'next-intl';
 import { PendingStudentForm } from '@/components/students/PendingStudentForm';
 import { PendingStudentsList } from '@/components/students/PendingStudentsList';
 import { StudentDetailsModal } from '@/components/students/StudentDetailsModal';
-import { FormPanel } from '@/components/ui/FormPanel';
+import { Modal } from '@/components/ui/Modal';
+import { useAuth } from '@/lib/auth/context';
+import { hasPermission, PERMISSIONS } from '@/lib/permissions';
 import type { PendingStudent } from '@/lib/types/student';
 
 export function PendingStudentsPanel() {
   const t = useTranslations('students');
+  const { user } = useAuth();
   const [refreshKey, setRefreshKey] = useState(0);
+  const [formOpen, setFormOpen] = useState(false);
   const [detailsTarget, setDetailsTarget] = useState<PendingStudent | null>(null);
 
+  const canAdd =
+    user != null &&
+    hasPermission(user.role, user.permissions, PERMISSIONS.REGISTRATION_MANAGE);
+
   return (
-    <div className="space-y-6">
-      <FormPanel title={t('pendingFormTitle')}>
+    <div className="space-y-4">
+      <PendingStudentsList
+        refreshKey={refreshKey}
+        onAdd={canAdd ? () => setFormOpen(true) : undefined}
+      />
+
+      <Modal
+        open={formOpen}
+        title={t('pendingFormTitle')}
+        size="lg"
+        onClose={() => setFormOpen(false)}
+      >
         <PendingStudentForm
           onSubmitted={(record) => {
+            setFormOpen(false);
             setRefreshKey((k) => k + 1);
             setDetailsTarget(record);
           }}
         />
-      </FormPanel>
-      <div>
-        <h3 className="mb-4 text-sm font-semibold text-slate-900">
-          {t('pendingListTitle')}
-        </h3>
-        <PendingStudentsList refreshKey={refreshKey} />
-      </div>
+      </Modal>
 
       {detailsTarget && (
         <StudentDetailsModal

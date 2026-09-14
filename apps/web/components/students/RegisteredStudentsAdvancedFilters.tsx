@@ -14,9 +14,9 @@ import type {
   DetailsStatusFilter,
   RegisteredStudentFilters,
 } from '@/lib/students/registered-filters';
-import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { SelectField } from '@/components/ui/SelectField';
+import { StudentsAdvancedFilterPanel } from '@/components/students/StudentsListFilters';
 
 interface RegisteredStudentsAdvancedFiltersProps {
   open: boolean;
@@ -35,10 +35,6 @@ export function RegisteredStudentsAdvancedFilters({
 }: RegisteredStudentsAdvancedFiltersProps) {
   const t = useTranslations('students');
 
-  if (!open) {
-    return null;
-  }
-
   function update<K extends keyof RegisteredStudentFilters>(
     key: K,
     value: RegisteredStudentFilters[K],
@@ -47,7 +43,7 @@ export function RegisteredStudentsAdvancedFilters({
   }
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4 sm:p-5">
+    <StudentsAdvancedFilterPanel open={open} onApply={onApply} onClear={onClear}>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <Input
           label={t('filters.searchName')}
@@ -120,38 +116,6 @@ export function RegisteredStudentsAdvancedFilters({
           placeholder={t('filters.stagePlaceholder')}
         />
       </div>
-
-      <div className="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-        <Button type="button" variant="ghost" onClick={onClear}>
-          {t('filters.clear')}
-        </Button>
-        <Button type="button" onClick={onApply}>
-          {t('filters.apply')}
-        </Button>
-      </div>
-    </div>
-  );
-}
-
-export function RegisteredStudentsFilterToggle({
-  open,
-  activeCount,
-  onToggle,
-}: {
-  open: boolean;
-  activeCount: number;
-  onToggle: () => void;
-}) {
-  const t = useTranslations('students');
-
-  return (
-    <Button type="button" variant="secondary" onClick={onToggle}>
-      {open ? t('filters.hideAdvanced') : t('filters.showAdvanced')}
-      {!open && activeCount > 0 && (
-        <span className="ms-2 rounded-full bg-teal-100 px-2 py-0.5 text-xs font-semibold text-teal-800">
-          {activeCount}
-        </span>
-      )}
-    </Button>
+    </StudentsAdvancedFilterPanel>
   );
 }

@@ -76,23 +76,23 @@ export interface DocumentRequestPdfInput {
 
 const ARABIC_FONT_CANDIDATES = [
 
+  join(__dirname, 'assets', 'fonts', 'Tajawal-Medium.ttf'),
+
+  join(process.cwd(), 'dist', 'src', 'document-requests', 'assets', 'fonts', 'Tajawal-Medium.ttf'),
+
+  join(process.cwd(), 'src', 'document-requests', 'assets', 'fonts', 'Tajawal-Medium.ttf'),
+
   join(__dirname, 'assets', 'fonts', 'Tajawal-Regular.ttf'),
 
   join(process.cwd(), 'dist', 'src', 'document-requests', 'assets', 'fonts', 'Tajawal-Regular.ttf'),
 
   join(process.cwd(), 'src', 'document-requests', 'assets', 'fonts', 'Tajawal-Regular.ttf'),
 
-  join(__dirname, 'assets', 'fonts', 'Amiri-Regular.ttf'),
-
-  join(process.cwd(), 'dist', 'src', 'document-requests', 'assets', 'fonts', 'Amiri-Regular.ttf'),
-
-  join(process.cwd(), 'src', 'document-requests', 'assets', 'fonts', 'Amiri-Regular.ttf'),
-
 ];
 
 
 
-const KURDISH_FONT_CANDIDATES = [
+const RUDAW_FONT_CANDIDATES = [
 
   join(__dirname, 'assets', 'fonts', 'Rudaw-Regular.ttf'),
 
@@ -170,6 +170,20 @@ const LINE_GAP = 22;
 
 const BODY_LINE_HEIGHT = 18;
 
+const FOOTER_SIZE = 12;
+
+
+
+const ARABIC_BODY_SIZE = 14;
+
+const ARABIC_HEADER_FIELD_SIZE = 12;
+
+const ARABIC_LINE_GAP = 24;
+
+const ARABIC_BODY_LINE_HEIGHT = 20;
+
+const ARABIC_FOOTER_SIZE = 13;
+
 
 
 const ARABIC_MANAGER_NAME = 'هاوسر عزيز عبدالقادر';
@@ -210,7 +224,7 @@ const HEADER_DATE = {
 
   kurdish: {
 
-    x: 500,
+    x: 475,
 
     baselineFromTop: 180,
 
@@ -282,6 +296,8 @@ function drawHeaderFields(
 
   language: DocumentRequestLanguage,
 
+  headerFieldSize: number,
+
 ): void {
 
   const dateText = formatHeaderDate(documentDate);
@@ -300,7 +316,7 @@ function drawHeaderFields(
 
       HEADER_NUMBER.arabic.baselineFromTop,
 
-      HEADER_FIELD_SIZE,
+      headerFieldSize,
 
     );
 
@@ -314,7 +330,7 @@ function drawHeaderFields(
 
       HEADER_DATE.arabic.baselineFromTop,
 
-      HEADER_FIELD_SIZE,
+      headerFieldSize,
 
     );
 
@@ -334,7 +350,7 @@ function drawHeaderFields(
 
     HEADER_NUMBER.kurdish.baselineFromTop,
 
-    HEADER_FIELD_SIZE,
+    headerFieldSize,
 
     'ltr',
 
@@ -352,7 +368,7 @@ function drawHeaderFields(
 
     HEADER_DATE.kurdish.baselineFromTop,
 
-    HEADER_FIELD_SIZE,
+    headerFieldSize,
 
     'ltr',
 
@@ -381,8 +397,21 @@ export async function buildDocumentRequestPdf(
 
   const fontPath =
     input.language === 'ku'
-      ? resolveAssetPath(KURDISH_FONT_CANDIDATES, 'Rudaw font file')
+      ? resolveAssetPath(RUDAW_FONT_CANDIDATES, 'Rudaw font file')
       : resolveAssetPath(ARABIC_FONT_CANDIDATES, 'Arabic font file');
+
+  const bodySize =
+    input.language === 'ar' ? ARABIC_BODY_SIZE : BODY_SIZE;
+
+  const headerFieldSize =
+    input.language === 'ar' ? ARABIC_HEADER_FIELD_SIZE : HEADER_FIELD_SIZE;
+
+  const lineGap = input.language === 'ar' ? ARABIC_LINE_GAP : LINE_GAP;
+
+  const bodyLineHeight =
+    input.language === 'ar' ? ARABIC_BODY_LINE_HEIGHT : BODY_LINE_HEIGHT;
+
+  const footerSize = input.language === 'ar' ? ARABIC_FOOTER_SIZE : FOOTER_SIZE;
 
   const content = getDocumentRequestStaticContent(input.language);
 
@@ -425,7 +454,13 @@ export async function buildDocumentRequestPdf(
 
 
 
-  drawHeaderFields(ctx, input.documentNumber, input.documentDate, input.language);
+  drawHeaderFields(
+    ctx,
+    input.documentNumber,
+    input.documentDate,
+    input.language,
+    headerFieldSize,
+  );
 
 
 
@@ -443,19 +478,19 @@ export async function buildDocumentRequestPdf(
 
     y,
 
-    BODY_SIZE,
+    bodySize,
 
   );
 
-  y += LINE_GAP;
+  y += lineGap;
 
-  drawVisualCentered(ctx, pageWidth, content.subject, y, BODY_SIZE);
+  drawVisualCentered(ctx, pageWidth, content.subject, y, bodySize);
 
-  y += LINE_GAP;
+  y += lineGap;
 
-  drawVisualRtl(ctx, content.greeting, rightX, y, BODY_SIZE);
+  drawVisualRtl(ctx, content.greeting, rightX, y, bodySize);
 
-  y += LINE_GAP;
+  y += lineGap;
 
 
 
@@ -477,9 +512,9 @@ export async function buildDocumentRequestPdf(
 
     y,
 
-    BODY_SIZE,
+    bodySize,
 
-    BODY_LINE_HEIGHT,
+    bodyLineHeight,
 
     input.language,
 
@@ -487,20 +522,20 @@ export async function buildDocumentRequestPdf(
 
 
 
-  y += LINE_GAP;
+  y += lineGap;
 
-  drawVisualCentered(ctx, pageWidth, content.closing, y, BODY_SIZE);
+  drawVisualCentered(ctx, pageWidth, content.closing, y, bodySize);
 
 
 
   const signatureFromTop = pageHeight - MARGIN - 68;
 
-  drawCanvasTextLeft(ctx, content.directorTitle, leftX, signatureFromTop, BODY_SIZE);
+  drawCanvasTextLeft(ctx, content.directorTitle, leftX, signatureFromTop, bodySize);
 
   const titleWidth = measureCanvasTextWidth(
     ctx,
     content.directorTitle,
-    BODY_SIZE,
+    bodySize,
     'rtl',
   );
   const titleCenterX = leftX + titleWidth / 2;
@@ -510,7 +545,7 @@ export async function buildDocumentRequestPdf(
     signatureName,
     titleCenterX,
     signatureFromTop + 16,
-    BODY_SIZE,
+    bodySize,
     'rtl',
     'center',
   );
@@ -521,9 +556,9 @@ export async function buildDocumentRequestPdf(
 
     const footerY = pageHeight - MARGIN - 40;
 
-    drawVisualRtl(ctx, content.footerCopyLine, rightX, footerY, 12);
+    drawVisualRtl(ctx, content.footerCopyLine, rightX, footerY, footerSize);
 
-    drawVisualRtl(ctx, content.footerBullet, rightX, footerY + 18, 12);
+    drawVisualRtl(ctx, content.footerBullet, rightX, footerY + 18, footerSize);
 
   }
 

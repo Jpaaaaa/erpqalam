@@ -200,7 +200,7 @@ export class PendingStudentsService {
         phoneMatchIds = phoneRows.map((row) => row.id);
       }
 
-      const where = buildPendingListWhere(actor.schoolId, search, phoneMatchIds);
+      const where = buildPendingListWhere(actor.schoolId, query, phoneMatchIds);
 
       return Promise.all([
         this.prisma.pendingStudent.findMany({

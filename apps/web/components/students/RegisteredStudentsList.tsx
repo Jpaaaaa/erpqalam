@@ -25,10 +25,8 @@ import { StudentDetailsModal } from '@/components/students/StudentDetailsModal';
 import { StudentRowActions } from '@/components/students/StudentRowActions';
 import { RestoreStudentModal } from '@/components/students/RestoreStudentModal';
 import { DocumentRequestModal } from '@/components/document-requests/DocumentRequestModal';
-import {
-  RegisteredStudentsAdvancedFilters,
-  RegisteredStudentsFilterToggle,
-} from '@/components/students/RegisteredStudentsAdvancedFilters';
+import { RegisteredStudentsAdvancedFilters } from '@/components/students/RegisteredStudentsAdvancedFilters';
+import { StudentsFilterToggle } from '@/components/students/StudentsListFilters';
 
 function formatDate(value: string, locale: string) {
   return new Date(value).toLocaleString(locale);
@@ -154,7 +152,7 @@ export function RegisteredStudentsList({ refreshKey = 0 }: RegisteredStudentsLis
             </p>
           )}
         </div>
-        <RegisteredStudentsFilterToggle
+        <StudentsFilterToggle
           open={filtersOpen}
           activeCount={activeFilterCount}
           onToggle={() => setFiltersOpen((open) => !open)}
@@ -209,12 +207,15 @@ export function RegisteredStudentsList({ refreshKey = 0 }: RegisteredStudentsLis
       ) : (
         <>
           <div className="space-y-3 md:hidden">
-            {students.map((student) => (
+            {students.map((student, index) => (
               <MobileCard key={student.id}>
                 <div className="space-y-3">
-                  <p className="text-base font-semibold text-slate-900">
-                    {formatStudentName(student)}
-                  </p>
+                  <div>
+                    <p className="text-xs font-semibold text-slate-400">#{index + 1}</p>
+                    <p className="text-base font-semibold text-slate-900">
+                      {formatStudentName(student)}
+                    </p>
+                  </div>
                   <div className="grid gap-3">
                     <DetailRow label={t('section')}>
                       {formatSectionValue(student.section, t)}
@@ -264,6 +265,9 @@ export function RegisteredStudentsList({ refreshKey = 0 }: RegisteredStudentsLis
             <table className="min-w-full text-sm">
               <thead>
                 <tr className="border-b border-slate-100">
+                  <th className="w-12 px-4 py-3 text-start text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    {t('rowNumber')}
+                  </th>
                   <th className="px-4 py-3 text-start text-xs font-semibold uppercase tracking-wide text-slate-500">
                     {t('fullName')}
                   </th>
@@ -288,8 +292,9 @@ export function RegisteredStudentsList({ refreshKey = 0 }: RegisteredStudentsLis
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 bg-white">
-                {students.map((student) => (
+                {students.map((student, index) => (
                   <tr key={student.id} className="align-top transition hover:bg-slate-50/80">
+                    <td className="px-4 py-3.5 text-slate-400">{index + 1}</td>
                     <td className="px-4 py-3.5 font-medium text-slate-900">
                       {formatStudentName(student)}
                     </td>

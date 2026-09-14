@@ -6,10 +6,16 @@ import {
   ApiClientError,
   approvePendingStudent,
   deletePendingStudent,
+  getStudentCounts,
   listPendingStudents,
-  listStudents,
 } from '@/lib/api/students';
 import { useDebouncedValue } from '@/lib/hooks/useDebouncedValue';
+import {
+  emptyPendingStudentFilters,
+  hasActivePendingFilters,
+  pendingFiltersToQueryParams,
+  type PendingStudentFilters,
+} from '@/lib/students/pending-filters';
 import {
   formatCameViaValue,
   formatPhoneNumbers,
@@ -25,7 +31,9 @@ import { Input } from '@/components/ui/Input';
 import { DetailRow, MobileCard } from '@/components/ui/MobileCard';
 import { PendingStudentEditModal } from '@/components/students/PendingStudentEditModal';
 import { PendingStudentRowActions } from '@/components/students/PendingStudentRowActions';
+import { PendingStudentsAdvancedFilters } from '@/components/students/PendingStudentsAdvancedFilters';
 import { StudentDetailsModal } from '@/components/students/StudentDetailsModal';
+import { StudentsFilterToggle } from '@/components/students/StudentsListFilters';
 import { CloseIcon } from '@/components/students/StudentListActionIcons';
 
 const PAGE_SIZE = 25;
@@ -36,20 +44,32 @@ function formatDate(value: string, locale: string) {
 
 interface PendingStudentsListProps {
   refreshKey?: number;
+  onAdd?: () => void;
 }
 
-export function PendingStudentsList({ refreshKey = 0 }: PendingStudentsListProps) {
+export function PendingStudentsList({
+  refreshKey = 0,
+  onAdd,
+}: PendingStudentsListProps) {
   const locale = useLocale();
   const t = useTranslations('students');
   const tCommon = useTranslations('common');
   const { user } = useAuth();
   const [students, setStudents] = useState<PendingStudent[]>([]);
+  const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const [page, setPage] = useState(1);
   const [pendingCount, setPendingCount] = useState(0);
   const [registeredCount, setRegisteredCount] = useState(0);
   const [searchInput, setSearchInput] = useState('');
   const debouncedSearch = useDebouncedValue(searchInput, 300);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [draftFilters, setDraftFilters] = useState<PendingStudentFilters>(
+    emptyPendingStudentFilters(),
+  );
+  const [appliedFilters, setAppliedFilters] = useState<PendingStudentFilters>(
+    emptyPendingStudentFilters(),
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [actionId, setActionId] = useState<string | null>(null);
@@ -61,15 +81,20 @@ export function PendingStudentsList({ refreshKey = 0 }: PendingStudentsListProps
     setError('');
     try {
       const search = debouncedSearch.trim();
-      const [result, unfilteredPending, registered] = await Promise.all([
-        listPendingStudents({ page, limit: PAGE_SIZE, search }),
-        search ? listPendingStudents({ limit: 1 }) : Promise.resolve(null),
-        listStudents({ limit: 1 }),
+      const [result, counts] = await Promise.all([
+        listPendingStudents({
+          page,
+          limit: PAGE_SIZE,
+          search,
+          ...appliedFilters,
+        }),
+        getStudentCounts(),
       ]);
       setStudents(result.data);
+      setTotal(result.total);
       setTotalPages(result.totalPages);
-      setPendingCount(unfilteredPending?.total ?? result.total);
-      setRegisteredCount(registered.total);
+      setPendingCount(counts.pending);
+      setRegisteredCount(counts.registered);
     } catch (err) {
       const message =
         err instanceof ApiClientError ? err.message : t('loadError');
@@ -77,14 +102,33 @@ export function PendingStudentsList({ refreshKey = 0 }: PendingStudentsListProps
     } finally {
       setLoading(false);
     }
-  }, [debouncedSearch, page, t]);
+  }, [appliedFilters, debouncedSearch, page, t]);
 
   useEffect(() => {
     load();
   }, [load, refreshKey]);
 
+  const activeFilterCount = Object.keys(
+    pendingFiltersToQueryParams(appliedFilters),
+  ).length;
+  const hasSearch = Boolean(debouncedSearch.trim());
+  const hasFilters = hasSearch || hasActivePendingFilters(appliedFilters);
+  const emptyMessage = hasFilters ? t('filters.noResults') : t('noPending');
+
   function handleSearchChange(value: string) {
     setSearchInput(value);
+    setPage(1);
+  }
+
+  function handleApplyFilters() {
+    setAppliedFilters({ ...draftFilters });
+    setPage(1);
+  }
+
+  function handleClearFilters() {
+    const empty = emptyPendingStudentFilters();
+    setDraftFilters(empty);
+    setAppliedFilters(empty);
     setPage(1);
   }
 
@@ -126,42 +170,71 @@ export function PendingStudentsList({ refreshKey = 0 }: PendingStudentsListProps
     setStudents((prev) => prev.map((s) => (s.id === updated.id ? updated : s)));
   }
 
-  const hasSearch = Boolean(debouncedSearch.trim());
-  const emptyMessage = hasSearch ? t('noPendingMatch') : t('noPending');
-
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="inline-flex rounded-full bg-orange-100 px-2.5 py-0.5 text-xs font-semibold text-orange-700">
-          {t('pendingCount', { count: pendingCount })}
-        </span>
-        <span className="inline-flex rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-700">
-          {t('registeredCount', { count: registeredCount })}
-        </span>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h3 className="text-sm font-semibold text-slate-900">{t('pendingListTitle')}</h3>
+          <div className="mt-1.5 flex flex-wrap items-center gap-2">
+            <span className="inline-flex rounded-full bg-orange-100 px-2.5 py-0.5 text-xs font-semibold text-orange-700">
+              {t('pendingCount', { count: pendingCount })}
+            </span>
+            <span className="inline-flex rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-700">
+              {t('registeredCount', { count: registeredCount })}
+            </span>
+          </div>
+        </div>
+        {onAdd && (
+          <Button type="button" onClick={onAdd}>
+            {t('pendingFormTitle')}
+          </Button>
+        )}
       </div>
 
-      <div className="relative">
-        <Input
-          label={t('searchPending')}
-          name="pending-search"
-          value={searchInput}
-          onChange={(e) => handleSearchChange(e.target.value)}
-          placeholder={t('searchPendingPlaceholder')}
-          className="pe-10"
-          autoComplete="off"
-        />
-        {searchInput ? (
-          <button
-            type="button"
-            className="absolute end-2 top-9 inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600"
-            onClick={() => handleSearchChange('')}
-            aria-label={t('clearSearch')}
-            title={t('clearSearch')}
-          >
-            <CloseIcon className="h-4 w-4" />
-          </button>
-        ) : null}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+        <div className="relative min-w-0 flex-1">
+          <Input
+            label={t('searchPending')}
+            name="pending-search"
+            value={searchInput}
+            onChange={(e) => handleSearchChange(e.target.value)}
+            placeholder={t('searchPendingPlaceholder')}
+            className="pe-10"
+            autoComplete="off"
+          />
+          {searchInput ? (
+            <button
+              type="button"
+              className="absolute end-2 top-9 inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+              onClick={() => handleSearchChange('')}
+              aria-label={t('clearSearch')}
+              title={t('clearSearch')}
+            >
+              <CloseIcon className="h-4 w-4" />
+            </button>
+          ) : null}
+        </div>
+        <div className="flex flex-wrap items-center gap-2 sm:pb-0.5">
+          {hasFilters && !loading && (
+            <span className="text-xs font-medium text-slate-500">
+              {t('filters.matchingCount', { count: total })}
+            </span>
+          )}
+          <StudentsFilterToggle
+            open={filtersOpen}
+            activeCount={activeFilterCount}
+            onToggle={() => setFiltersOpen((open) => !open)}
+          />
+        </div>
       </div>
+
+      <PendingStudentsAdvancedFilters
+        open={filtersOpen}
+        filters={draftFilters}
+        onChange={setDraftFilters}
+        onApply={handleApplyFilters}
+        onClear={handleClearFilters}
+      />
 
       {error && <Alert variant="error">{error}</Alert>}
 

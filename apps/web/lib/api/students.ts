@@ -10,6 +10,8 @@ import type {
 } from '@/lib/types/student';
 import type { UpdateStudentDetailsPayload } from '@/lib/types/student-details';
 import type { ApiError } from '@/lib/types/auth';
+import type { PendingStudentFilters } from '@/lib/students/pending-filters';
+import { pendingFiltersToQueryParams } from '@/lib/students/pending-filters';
 
 export { ApiClientError };
 
@@ -51,15 +53,33 @@ export async function listPendingStudents(params?: {
   page?: number;
   limit?: number;
   search?: string;
-}): Promise<PaginatedPendingStudents> {
+} & Partial<PendingStudentFilters>): Promise<PaginatedPendingStudents> {
   const search = new URLSearchParams();
   if (params?.page) search.set('page', String(params.page));
   if (params?.limit) search.set('limit', String(params.limit));
   if (params?.search?.trim()) search.set('search', params.search.trim());
+
+  const filterParams = pendingFiltersToQueryParams({
+    section: params?.section ?? '',
+    createdFrom: params?.createdFrom ?? '',
+    createdTo: params?.createdTo ?? '',
+    hasGuardianMobile: params?.hasGuardianMobile ?? '',
+  });
+  for (const [key, value] of Object.entries(filterParams)) {
+    search.set(key, value);
+  }
+
   const query = search.toString();
   return apiRequest<PaginatedPendingStudents>(
     `/pending-students${query ? `?${query}` : ''}`,
   );
+}
+
+export async function getStudentCounts(): Promise<{
+  pending: number;
+  registered: number;
+}> {
+  return apiRequest<{ pending: number; registered: number }>('/students/counts');
 }
 
 export async function updatePendingStudent(

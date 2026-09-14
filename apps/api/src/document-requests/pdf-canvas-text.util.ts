@@ -25,16 +25,17 @@ function resolveFontFamily(language: DocumentRequestLanguage): string {
   return language === 'ku' ? KURDISH_FONT_FAMILY : ARABIC_FONT_FAMILY;
 }
 
-export function registerCanvasFont(
-  fontPath: string,
-  family: string,
-): void {
+export function registerCanvasFont(fontPath: string, family: string): void {
   const key = `${family}:${fontPath}`;
   if (registeredFonts.has(key)) {
     return;
   }
 
-  GlobalFonts.registerFromPath(fontPath, family);
+  const registered = GlobalFonts.registerFromPath(fontPath, family);
+  if (!registered) {
+    throw new Error(`Failed to register PDF font "${family}" from ${fontPath}`);
+  }
+
   registeredFonts.add(key);
 }
 
@@ -59,7 +60,7 @@ export function createTextSurface(
 }
 
 function setFont(ctx: SKRSContext2D, size: number): void {
-  const family = ctxFontFamilies.get(ctx) ?? ARABIC_FONT_FAMILY;
+  const family = ctxFontFamilies.get(ctx) ?? KURDISH_FONT_FAMILY;
   ctx.font = `${size}px ${family}`;
   ctx.fillStyle = '#000000';
   ctx.textBaseline = 'alphabetic';

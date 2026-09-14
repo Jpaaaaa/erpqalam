@@ -2,12 +2,14 @@ import {
   ArrayMaxSize,
   ArrayMinSize,
   IsArray,
+  IsIn,
   IsNotEmpty,
   IsOptional,
   IsString,
+  Matches,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 
 export class CreatePendingStudentCheckInDto {
   @ApiProperty({ example: 'Ahmad' })
@@ -139,6 +141,11 @@ export class UpdatePendingStudentDto {
   comeViaWho?: string;
 }
 
+const emptyToUndefined = ({ value }: { value: unknown }) =>
+  value === '' || value === null || value === undefined ? undefined : value;
+
+const DATE_ONLY = /^\d{4}-\d{2}-\d{2}$/;
+
 export class ListPendingStudentsQueryDto {
   @ApiPropertyOptional({ default: 1 })
   @IsOptional()
@@ -156,6 +163,36 @@ export class ListPendingStudentsQueryDto {
   @IsOptional()
   @IsString()
   search?: string;
+
+  @ApiPropertyOptional({ description: 'Filter by section key' })
+  @Transform(emptyToUndefined)
+  @IsOptional()
+  @IsString()
+  section?: string;
+
+  @ApiPropertyOptional({
+    description: 'Inclusive submitted-from date (YYYY-MM-DD, local)',
+    example: '2026-09-01',
+  })
+  @Transform(emptyToUndefined)
+  @IsOptional()
+  @Matches(DATE_ONLY, { message: 'createdFrom must be YYYY-MM-DD' })
+  createdFrom?: string;
+
+  @ApiPropertyOptional({
+    description: 'Inclusive submitted-to date (YYYY-MM-DD, local)',
+    example: '2026-09-14',
+  })
+  @Transform(emptyToUndefined)
+  @IsOptional()
+  @Matches(DATE_ONLY, { message: 'createdTo must be YYYY-MM-DD' })
+  createdTo?: string;
+
+  @ApiPropertyOptional({ enum: ['true', 'false'] })
+  @Transform(emptyToUndefined)
+  @IsOptional()
+  @IsIn(['true', 'false'])
+  hasGuardianMobile?: 'true' | 'false';
 }
 
 export class StaffMemberDto {

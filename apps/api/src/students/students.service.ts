@@ -126,6 +126,23 @@ export class StudentsService {
     };
   }
 
+  async getCounts(
+    actor: JwtPayload,
+  ): Promise<{ pending: number; registered: number }> {
+    if (!hasPermission(actor.role, actor.permissions, PERMISSIONS.REGISTRATION_VIEW)) {
+      throw new ForbiddenException('You do not have permission to list students');
+    }
+
+    const [pending, registered] = await this.prisma.withConnectionRetry(() =>
+      Promise.all([
+        this.prisma.pendingStudent.count({ where: { schoolId: actor.schoolId } }),
+        this.prisma.student.count({ where: { schoolId: actor.schoolId } }),
+      ]),
+    );
+
+    return { pending, registered };
+  }
+
   async updateDetails(
     id: string,
     dto: UpdateStudentDetailsDto,

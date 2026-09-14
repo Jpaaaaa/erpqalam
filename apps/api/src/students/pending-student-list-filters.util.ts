@@ -1,13 +1,24 @@
 import type { Prisma } from '@generated/prisma/client';
+import type { ListPendingStudentsQueryDto } from './dto/pending-students.dto';
+
+function localDayStart(isoDate: string): Date {
+  const [year, month, day] = isoDate.split('-').map(Number);
+  return new Date(year, month - 1, day, 0, 0, 0, 0);
+}
+
+function localDayEnd(isoDate: string): Date {
+  const [year, month, day] = isoDate.split('-').map(Number);
+  return new Date(year, month - 1, day, 23, 59, 59, 999);
+}
 
 export function buildPendingListWhere(
   schoolId: string,
-  search?: string,
+  query: ListPendingStudentsQueryDto,
   phoneMatchIds: string[] = [],
 ): Prisma.PendingStudentWhereInput {
   const and: Prisma.PendingStudentWhereInput[] = [{ schoolId }];
 
-  const q = search?.trim();
+  const q = query.search?.trim();
   if (q) {
     const or: Prisma.PendingStudentWhereInput[] = [
       { firstName: { contains: q, mode: 'insensitive' } },
@@ -23,6 +34,32 @@ export function buildPendingListWhere(
     }
 
     and.push({ OR: or });
+  }
+
+  const section = query.section?.trim();
+  if (section) {
+    and.push({ section });
+  }
+
+  const createdAt: Prisma.DateTimeFilter = {};
+  if (query.createdFrom) {
+    createdAt.gte = localDayStart(query.createdFrom);
+  }
+  if (query.createdTo) {
+    createdAt.lte = localDayEnd(query.createdTo);
+  }
+  if (createdAt.gte || createdAt.lte) {
+    and.push({ createdAt });
+  }
+
+  if (query.hasGuardianMobile === 'true') {
+    and.push({
+      AND: [{ guardianMobile: { not: null } }, { guardianMobile: { not: '' } }],
+    });
+  } else if (query.hasGuardianMobile === 'false') {
+    and.push({
+      OR: [{ guardianMobile: null }, { guardianMobile: '' }],
+    });
   }
 
   return and.length === 1 ? and[0]! : { AND: and };

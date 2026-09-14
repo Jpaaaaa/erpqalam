@@ -24,6 +24,10 @@ import {
   copyStudentDetailsFromPending,
   syncPhoneNumbersFromDetails,
 } from './student-details.util';
+import {
+  buildPendingListWhere,
+  phoneIlikePattern,
+} from './pending-student-list-filters.util';
 
 const staffSelect = {
   id: true,
@@ -33,6 +37,9 @@ const staffSelect = {
 
 const pendingInclude = {
   submittedBy: {
+    select: staffSelect,
+  },
+  restoredBy: {
     select: staffSelect,
   },
 } as const;
@@ -72,9 +79,18 @@ function toPendingResponse(
     detailsCompletedAt: Date | null;
     schoolId: string;
     submittedByUserId: string | null;
+    restoredById: string | null;
+    restoredAt: Date | null;
+    restoreReason: string | null;
+    originalStudentId: string | null;
     createdAt: Date;
     updatedAt: Date;
     submittedBy?: {
+      id: string;
+      firstName: string;
+      lastName: string;
+    } | null;
+    restoredBy?: {
       id: string;
       firstName: string;
       lastName: string;
@@ -95,6 +111,11 @@ function toPendingResponse(
     schoolId: row.schoolId,
     submittedByUserId: row.submittedByUserId,
     submittedBy: row.submittedBy ?? null,
+    restoredById: row.restoredById,
+    restoredBy: row.restoredBy ?? null,
+    restoredAt: row.restoredAt,
+    restoreReason: row.restoreReason,
+    originalStudentId: row.originalStudentId,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   };
@@ -164,12 +185,24 @@ export class PendingStudentsService {
     }
 
     const page = query.page ?? 1;
-    const limit = Math.min(query.limit ?? 20, 100);
+    const limit = Math.min(query.limit ?? 25, 100);
     const skip = (page - 1) * limit;
-    const where = { schoolId: actor.schoolId };
+    const search = query.search?.trim();
 
-    const [data, total] = await this.prisma.withConnectionRetry(() =>
-      Promise.all([
+    const [data, total] = await this.prisma.withConnectionRetry(async () => {
+      let phoneMatchIds: string[] = [];
+      if (search) {
+        const phoneRows = await this.prisma.$queryRaw<{ id: string }[]>`
+          SELECT id FROM "PendingStudent"
+          WHERE "schoolId" = ${actor.schoolId}
+            AND array_to_string("phoneNumbers", ' ') ILIKE ${phoneIlikePattern(search)}
+        `;
+        phoneMatchIds = phoneRows.map((row) => row.id);
+      }
+
+      const where = buildPendingListWhere(actor.schoolId, search, phoneMatchIds);
+
+      return Promise.all([
         this.prisma.pendingStudent.findMany({
           where,
           include: pendingInclude,
@@ -178,8 +211,8 @@ export class PendingStudentsService {
           orderBy: { createdAt: 'desc' },
         }),
         this.prisma.pendingStudent.count({ where }),
-      ]),
-    );
+      ]);
+    });
 
     return {
       data: data.map(toPendingResponse),
@@ -337,3 +370,5 @@ export class PendingStudentsService {
     await this.prisma.pendingStudent.delete({ where: { id } });
   }
 }
+
+export { toPendingResponse, pendingInclude };

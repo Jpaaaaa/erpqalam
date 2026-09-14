@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { ApiClientError, deleteStudent, listStudents } from '@/lib/api/students';
+import { ApiClientError, deleteStudent, listStudents, restoreStudentToPending } from '@/lib/api/students';
 import {
   emptyRegisteredStudentFilters,
   filtersToQueryParams,
@@ -19,9 +19,11 @@ import {
 import type { Student } from '@/lib/types/student';
 import type { CreateDocumentRequestTarget } from '@/lib/types/document-request';
 import { Alert } from '@/components/ui/Alert';
+import { Toast } from '@/components/ui/Toast';
 import { DetailRow, MobileCard } from '@/components/ui/MobileCard';
 import { StudentDetailsModal } from '@/components/students/StudentDetailsModal';
 import { StudentRowActions } from '@/components/students/StudentRowActions';
+import { RestoreStudentModal } from '@/components/students/RestoreStudentModal';
 import { DocumentRequestModal } from '@/components/document-requests/DocumentRequestModal';
 import {
   RegisteredStudentsAdvancedFilters,
@@ -51,6 +53,8 @@ export function RegisteredStudentsList({ refreshKey = 0 }: RegisteredStudentsLis
   } | null>(null);
   const [docRequestTarget, setDocRequestTarget] =
     useState<CreateDocumentRequestTarget | null>(null);
+  const [restoreTarget, setRestoreTarget] = useState<Student | null>(null);
+  const [toastMessage, setToastMessage] = useState('');
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [draftFilters, setDraftFilters] = useState<RegisteredStudentFilters>(
     emptyRegisteredStudentFilters(),
@@ -112,6 +116,31 @@ export function RegisteredStudentsList({ refreshKey = 0 }: RegisteredStudentsLis
     }
   }
 
+  async function handleRestore(reason: string) {
+    if (!restoreTarget) return;
+
+    setActionId(`restore:${restoreTarget.id}`);
+    setError('');
+    try {
+      await restoreStudentToPending(
+        restoreTarget.id,
+        reason ? { reason } : {},
+      );
+      setRestoreTarget(null);
+      if (detailsModal?.student.id === restoreTarget.id) {
+        setDetailsModal(null);
+      }
+      setToastMessage(t('restoreSuccess'));
+      await load();
+    } catch (err) {
+      const message =
+        err instanceof ApiClientError ? err.message : t('restoreError');
+      setError(message);
+    } finally {
+      setActionId(null);
+    }
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -158,6 +187,18 @@ export function RegisteredStudentsList({ refreshKey = 0 }: RegisteredStudentsLis
         target={docRequestTarget}
         onClose={() => setDocRequestTarget(null)}
       />
+
+      <RestoreStudentModal
+        open={Boolean(restoreTarget)}
+        student={restoreTarget}
+        isSubmitting={Boolean(actionId?.startsWith('restore:'))}
+        onClose={() => setRestoreTarget(null)}
+        onConfirm={(reason) => void handleRestore(reason)}
+      />
+
+      {toastMessage && (
+        <Toast message={toastMessage} onDismiss={() => setToastMessage('')} />
+      )}
 
       {loading ? (
         <p className="text-sm text-slate-500">{tCommon('loading')}</p>
@@ -210,7 +251,9 @@ export function RegisteredStudentsList({ refreshKey = 0 }: RegisteredStudentsLis
                     }
                     onOpenDocumentRequest={setDocRequestTarget}
                     onDelete={() => void handleDelete(student.id)}
+                    onRestore={() => setRestoreTarget(student)}
                     isDeleting={actionId === student.id}
+                    isRestoring={actionId === `restore:${student.id}`}
                   />
                 </div>
               </MobileCard>
@@ -285,7 +328,9 @@ export function RegisteredStudentsList({ refreshKey = 0 }: RegisteredStudentsLis
                         }
                         onOpenDocumentRequest={setDocRequestTarget}
                         onDelete={() => void handleDelete(student.id)}
+                        onRestore={() => setRestoreTarget(student)}
                         isDeleting={actionId === student.id}
+                        isRestoring={actionId === `restore:${student.id}`}
                       />
                     </td>
                   </tr>

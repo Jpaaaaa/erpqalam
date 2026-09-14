@@ -136,6 +136,13 @@ export class StudentResponseDto {
   updatedAt: Date;
 }
 
+export class RestoreStudentToPendingDto {
+  @ApiPropertyOptional({ description: 'Optional reason for returning to pending' })
+  @IsOptional()
+  @IsString()
+  reason?: string;
+}
+
 export class UpdateStudentDto {
   @ApiPropertyOptional({ example: 'Ahmad' })
   @IsOptional()

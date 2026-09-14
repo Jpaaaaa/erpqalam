@@ -50,10 +50,12 @@ export async function createPendingStudent(
 export async function listPendingStudents(params?: {
   page?: number;
   limit?: number;
+  search?: string;
 }): Promise<PaginatedPendingStudents> {
   const search = new URLSearchParams();
   if (params?.page) search.set('page', String(params.page));
   if (params?.limit) search.set('limit', String(params.limit));
+  if (params?.search?.trim()) search.set('search', params.search.trim());
   const query = search.toString();
   return apiRequest<PaginatedPendingStudents>(
     `/pending-students${query ? `?${query}` : ''}`,
@@ -79,6 +81,16 @@ export async function approvePendingStudent(id: string): Promise<Student> {
 export async function deletePendingStudent(id: string): Promise<void> {
   await apiRequest<void>(`/pending-students/${id}`, {
     method: 'DELETE',
+  });
+}
+
+export async function restoreStudentToPending(
+  id: string,
+  payload?: { reason?: string },
+): Promise<PendingStudent> {
+  return apiRequest<PendingStudent>(`/students/${id}/restore-to-pending`, {
+    method: 'PATCH',
+    body: JSON.stringify(payload ?? {}),
   });
 }
 

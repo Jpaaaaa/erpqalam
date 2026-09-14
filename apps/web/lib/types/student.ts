@@ -19,6 +19,11 @@ export interface PendingStudent extends StudentDetailsFields {
   schoolId: string;
   submittedByUserId?: string | null;
   submittedBy?: StaffMember | null;
+  restoredById?: string | null;
+  restoredBy?: StaffMember | null;
+  restoredAt?: string | null;
+  restoreReason?: string | null;
+  originalStudentId?: string | null;
   createdAt: string;
   updatedAt: string;
 }

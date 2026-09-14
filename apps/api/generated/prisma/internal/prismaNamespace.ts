@@ -1675,6 +1675,10 @@ export const PendingStudentScalarFieldEnum = {
   detailsCompletedAt: 'detailsCompletedAt',
   schoolId: 'schoolId',
   submittedByUserId: 'submittedByUserId',
+  restoredById: 'restoredById',
+  restoredAt: 'restoredAt',
+  restoreReason: 'restoreReason',
+  originalStudentId: 'originalStudentId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

@@ -6,11 +6,14 @@ import {
   StudentDeleteIcon,
   StudentDetailsIcon,
   StudentEditIcon,
+  StudentRestoreIcon,
 } from '@/components/students/StudentListActionIcons';
 import { IconButton } from '@/components/ui/IconButton';
 import type { CreateDocumentRequestTarget } from '@/lib/types/document-request';
 import type { Student } from '@/lib/types/student';
 import { formatStudentName } from '@/lib/students/format';
+import { useAuth } from '@/lib/auth/context';
+import { hasPermission, PERMISSIONS } from '@/lib/permissions';
 
 interface StudentRowActionsProps {
   student: Student;
@@ -18,7 +21,9 @@ interface StudentRowActionsProps {
   onOpenEdit: () => void;
   onOpenDocumentRequest: (target: CreateDocumentRequestTarget) => void;
   onDelete: () => void;
+  onRestore?: () => void;
   isDeleting?: boolean;
+  isRestoring?: boolean;
   className?: string;
 }
 
@@ -28,11 +33,18 @@ export function StudentRowActions({
   onOpenEdit,
   onOpenDocumentRequest,
   onDelete,
+  onRestore,
   isDeleting = false,
+  isRestoring = false,
   className = '',
 }: StudentRowActionsProps) {
   const t = useTranslations('students');
   const tCommon = useTranslations('common');
+  const { user } = useAuth();
+  const canRestore =
+    Boolean(onRestore) &&
+    user != null &&
+    hasPermission(user.role, user.permissions, PERMISSIONS.REGISTRATION_MANAGE);
 
   return (
     <div className={`flex flex-wrap items-center gap-2 ${className}`}>
@@ -61,6 +73,17 @@ export function StudentRowActions({
       >
         <DocumentIcon className="h-5 w-5" />
       </IconButton>
+
+      {canRestore && (
+        <IconButton
+          label={t('restoreToPending')}
+          onClick={onRestore}
+          isLoading={isRestoring}
+          loadingLabel={tCommon('pleaseWait')}
+        >
+          <StudentRestoreIcon className="h-5 w-5" />
+        </IconButton>
+      )}
 
       <IconButton
         label={t('deleteButton')}

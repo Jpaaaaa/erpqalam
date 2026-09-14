@@ -145,10 +145,17 @@ export class ListPendingStudentsQueryDto {
   @Type(() => Number)
   page?: number = 1;
 
-  @ApiPropertyOptional({ default: 20 })
+  @ApiPropertyOptional({ default: 25 })
   @IsOptional()
   @Type(() => Number)
-  limit?: number = 20;
+  limit?: number = 25;
+
+  @ApiPropertyOptional({
+    description: 'Search name, phone, or national ID (case-insensitive)',
+  })
+  @IsOptional()
+  @IsString()
+  search?: string;
 }
 
 export class StaffMemberDto {
@@ -228,6 +235,21 @@ export class PendingStudentResponseDto {
 
   @ApiProperty({ required: false, type: StaffMemberDto })
   submittedBy?: StaffMemberDto | null;
+
+  @ApiProperty({ required: false })
+  restoredById?: string | null;
+
+  @ApiProperty({ required: false, type: StaffMemberDto })
+  restoredBy?: StaffMemberDto | null;
+
+  @ApiProperty({ required: false })
+  restoredAt?: Date | null;
+
+  @ApiProperty({ required: false })
+  restoreReason?: string | null;
+
+  @ApiProperty({ required: false })
+  originalStudentId?: string | null;
 
   @ApiProperty()
   createdAt: Date;

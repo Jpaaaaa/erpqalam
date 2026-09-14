@@ -28,6 +28,7 @@ import { PendingStudentsService } from './pending-students.service';
 import {
   ListStudentsQueryDto,
   PaginatedStudentsResponseDto,
+  RestoreStudentToPendingDto,
   StudentResponseDto,
   UpdateStudentDto,
 } from './dto/students.dto';
@@ -165,6 +166,20 @@ export class StudentsController {
     @CurrentUser() user: JwtPayload,
   ): Promise<StudentResponseDto> {
     return this.studentsService.updateDetails(id, dto, user);
+  }
+
+  @Patch('students/:id/restore-to-pending')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @RequirePermission(PERMISSIONS.REGISTRATION_MANAGE)
+  @ApiOperation({ summary: 'Return a registered student to the pending list' })
+  @ApiResponse({ status: 200, type: PendingStudentResponseDto })
+  restoreToPending(
+    @Param('id') id: string,
+    @Body() dto: RestoreStudentToPendingDto = {},
+    @CurrentUser() user: JwtPayload,
+  ): Promise<PendingStudentResponseDto> {
+    return this.studentsService.restoreToPending(id, dto, user);
   }
 
   @Patch('students/:id')

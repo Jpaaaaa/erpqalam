@@ -1,10 +1,12 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { Prisma } from '@generated/prisma/client';
 import { PrismaService } from '../database/prisma.service';
 import { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
 import { hasPermission, PERMISSIONS } from '../common/permissions/permissions';
 import {
   ListStudentsQueryDto,
   PaginatedStudentsResponseDto,
+  RestoreStudentToPendingDto,
   StudentResponseDto,
   UpdateStudentDto,
 } from './dto/students.dto';
@@ -13,8 +15,10 @@ import {
   buildDetailsUpdateData,
   toStudentDetailsFields,
 } from './dto/student-details.dto';
-import { syncPhoneNumbersFromDetails } from './student-details.util';
+import { PendingStudentResponseDto } from './dto/pending-students.dto';
+import { copyStudentDetailsFromPending, syncPhoneNumbersFromDetails } from './student-details.util';
 import { buildStudentListWhere } from './student-list-filters.util';
+import { pendingInclude, toPendingResponse } from './pending-students.service';
 
 const registeredBySelect = {
   id: true,
@@ -223,6 +227,111 @@ export class StudentsService {
 
     await this.prisma.student.delete({ where: { id } });
   }
+
+  async restoreToPending(
+    id: string,
+    dto: RestoreStudentToPendingDto,
+    actor: JwtPayload,
+  ): Promise<PendingStudentResponseDto> {
+    if (!hasPermission(actor.role, actor.permissions, PERMISSIONS.REGISTRATION_MANAGE)) {
+      throw new ForbiddenException('You do not have permission to restore students');
+    }
+
+    const student = await this.prisma.student.findFirst({
+      where: { id, schoolId: actor.schoolId },
+    });
+
+    if (!student) {
+      const alreadyPending = await this.prisma.pendingStudent.findFirst({
+        where: { id, schoolId: actor.schoolId },
+        select: { id: true },
+      });
+      if (alreadyPending) {
+        throw new BadRequestException('Student is already pending');
+      }
+      throw new NotFoundException('Student not found');
+    }
+
+    try {
+      const pending = await this.prisma.$transaction(async (tx) => {
+        const created = await tx.pendingStudent.create({
+          data: {
+            firstName: student.firstName,
+            secondName: student.secondName,
+            thirdName: student.thirdName,
+            fourthName: student.fourthName,
+            section: student.section,
+            phoneNumbers: student.phoneNumbers,
+            guardianInfo: student.guardianInfo,
+            comeViaWho: student.comeViaWho,
+            ...copyStudentDetailsFromPending(student),
+            detailsCompletedAt: null,
+            schoolId: student.schoolId,
+            submittedByUserId: student.registeredByUserId,
+            restoredById: actor.sub,
+            restoredAt: nowLocalWallClock(),
+            restoreReason: dto.reason?.trim() || null,
+            originalStudentId: student.id,
+          },
+          include: pendingInclude,
+        });
+
+        await tx.documentRequestLetter.updateMany({
+          where: { studentId: student.id },
+          data: {
+            pendingStudentId: created.id,
+            studentId: null,
+          },
+        });
+
+        try {
+          await tx.student.delete({ where: { id: student.id } });
+        } catch (err) {
+          throwIfForeignKeyConflict(err);
+          throw err;
+        }
+
+        return created;
+      });
+
+      return toPendingResponse(pending);
+    } catch (err) {
+      throwIfForeignKeyConflict(err);
+      throw err;
+    }
+  }
+}
+
+function nowLocalWallClock(): Date {
+  const now = new Date();
+  return new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+    now.getHours(),
+    now.getMinutes(),
+    now.getSeconds(),
+    now.getMilliseconds(),
+  );
+}
+
+function throwIfForeignKeyConflict(err: unknown): void {
+  if (
+    !(err instanceof Prisma.PrismaClientKnownRequestError) ||
+    err.code !== 'P2003'
+  ) {
+    return;
+  }
+
+  const meta = err.meta as
+    | { field_name?: string; model_name?: string; constraint?: string }
+    | undefined;
+  const model = meta?.model_name ?? 'related';
+  const constraint = meta?.constraint ?? meta?.field_name ?? 'unknown constraint';
+
+  throw new ConflictException(
+    `Cannot restore student: ${model} still references this student (${constraint})`,
+  );
 }
 
 export { toStudentResponse, studentInclude, registeredBySelect };

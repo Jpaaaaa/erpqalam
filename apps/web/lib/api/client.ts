@@ -57,9 +57,7 @@ function redirectToLogin(): void {
 
 function invalidateSession(): never {
   clearSession();
-  for (const listener of sessionInvalidatedListeners) {
-    listener();
-  }
+  sessionInvalidatedListeners.forEach((listener) => listener());
   redirectToLogin();
   throw new SessionExpiredError();
 }

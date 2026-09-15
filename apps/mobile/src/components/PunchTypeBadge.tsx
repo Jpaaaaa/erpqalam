@@ -1,6 +1,7 @@
-import { StyleSheet, Text, View } from 'react-native';
-import { copy } from '../copy/attendance';
+import { StyleSheet, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import type { PunchType } from '../types/attendance';
+import { AppText } from '../ui/AppText';
 
 const COLORS: Record<PunchType, { bg: string; fg: string }> = {
   entry_on_time: { bg: '#d1fae5', fg: '#065f46' },
@@ -11,12 +12,13 @@ const COLORS: Record<PunchType, { bg: string; fg: string }> = {
 };
 
 export function PunchTypeBadge({ punchType }: { punchType?: PunchType | null }) {
+  const { t } = useTranslation('attendance');
   const key = punchType && punchType in COLORS ? punchType : null;
-  const label = key ? copy.punchTypes[key] : copy.punchTypes.unknown;
+  const label = key ? t(`punchTypes.${key}`) : t('punchTypes.unknown');
   const colors = key ? COLORS[key] : { bg: '#f1f5f9', fg: '#64748b' };
   return (
     <View style={[styles.badge, { backgroundColor: colors.bg }]}>
-      <Text style={[styles.text, { color: colors.fg }]}>{label}</Text>
+      <AppText style={[styles.text, { color: colors.fg }]}>{label}</AppText>
     </View>
   );
 }

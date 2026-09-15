@@ -4,9 +4,9 @@ import {
   FlatList,
   RefreshControl,
   StyleSheet,
-  Text,
   View,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { ApiClientError } from '../api/client';
 import {
   listAttendanceDevices,
@@ -14,13 +14,15 @@ import {
 } from '../api/attendance';
 import { DateRangeChips } from '../components/DateRangeChips';
 import { PunchRow } from '../components/PunchRow';
-import { copy } from '../copy/attendance';
 import { getQuickRange } from '../attendance/formatters';
 import { buildDeviceNameLookup } from '../attendance/lookups';
 import type { AttendanceRecord, DateFilter } from '../types/attendance';
 import type { EmployeeDetailProps } from '../navigation/types';
+import { AppText } from '../ui/AppText';
+import { ltrText } from '../ui/ltr';
 
 export function EmployeeDetailScreen({ route }: EmployeeDetailProps) {
+  const { t } = useTranslation();
   const { deviceUserId, name } = route.params;
   const [filter, setFilter] = useState<DateFilter>(() => {
     const month = getQuickRange('month');
@@ -50,13 +52,15 @@ export function EmployeeDetailScreen({ route }: EmployeeDetailProps) {
       setDeviceNames(buildDeviceNameLookup(devices));
     } catch (err) {
       setError(
-        err instanceof ApiClientError ? err.message : copy.records.loadError,
+        err instanceof ApiClientError
+          ? err.message
+          : t('attendance:records.loadError'),
       );
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [deviceUserId, filter.fromDate, filter.toDate]);
+  }, [deviceUserId, filter.fromDate, filter.toDate, t]);
 
   useEffect(() => {
     void load();
@@ -64,13 +68,13 @@ export function EmployeeDetailScreen({ route }: EmployeeDetailProps) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.subtitle}>{deviceUserId}</Text>
+      <AppText style={[styles.subtitle, ltrText]}>{deviceUserId}</AppText>
       <DateRangeChips filter={filter} onChange={setFilter} />
-      {error ? <Text style={styles.error}>{error}</Text> : null}
+      {error ? <AppText style={styles.error}>{error}</AppText> : null}
       {loading && records.length === 0 ? (
         <View style={styles.centered}>
           <ActivityIndicator size="large" color="#0f766e" />
-          <Text style={styles.muted}>{copy.loading}</Text>
+          <AppText style={styles.muted}>{t('common:loading')}</AppText>
         </View>
       ) : (
         <FlatList
@@ -87,7 +91,9 @@ export function EmployeeDetailScreen({ route }: EmployeeDetailProps) {
             />
           }
           ListEmptyComponent={
-            <Text style={styles.empty}>{copy.records.empty}</Text>
+            <AppText style={styles.empty}>
+              {t('attendance:records.empty')}
+            </AppText>
           }
           renderItem={({ item }) => (
             <PunchRow

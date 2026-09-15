@@ -5,21 +5,23 @@ import {
   Pressable,
   RefreshControl,
   StyleSheet,
-  Text,
   View,
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useTranslation } from 'react-i18next';
 import { ApiClientError } from '../api/client';
 import { listAttendanceUsers } from '../api/attendance';
 import { SearchField } from '../components/SearchField';
-import { copy } from '../copy/attendance';
 import { displayName } from '../attendance/formatters';
 import type { AttendanceUser } from '../types/attendance';
 import type { EmployeesStackParamList } from '../navigation/types';
+import { AppText } from '../ui/AppText';
+import { ltrText } from '../ui/ltr';
 
 type Props = NativeStackScreenProps<EmployeesStackParamList, 'EmployeesList'>;
 
 export function EmployeesScreen({ navigation }: Props) {
+  const { t } = useTranslation();
   const [users, setUsers] = useState<AttendanceUser[]>([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
@@ -34,13 +36,15 @@ export function EmployeesScreen({ navigation }: Props) {
       setUsers(await listAttendanceUsers());
     } catch (err) {
       setError(
-        err instanceof ApiClientError ? err.message : copy.employees.loadError,
+        err instanceof ApiClientError
+          ? err.message
+          : t('attendance:employees.loadError'),
       );
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     void load();
@@ -60,7 +64,7 @@ export function EmployeesScreen({ navigation }: Props) {
     return (
       <View style={styles.centered}>
         <ActivityIndicator size="large" color="#0f766e" />
-        <Text style={styles.muted}>{copy.loading}</Text>
+        <AppText style={styles.muted}>{t('common:loading')}</AppText>
       </View>
     );
   }
@@ -70,9 +74,9 @@ export function EmployeesScreen({ navigation }: Props) {
       <SearchField
         value={search}
         onChangeText={setSearch}
-        placeholder={copy.employees.searchPlaceholder}
+        placeholder={t('attendance:employees.searchPlaceholder')}
       />
-      {error ? <Text style={styles.error}>{error}</Text> : null}
+      {error ? <AppText style={styles.error}>{error}</AppText> : null}
       <FlatList
         data={filtered}
         keyExtractor={(item) => item.deviceUserId}
@@ -87,7 +91,9 @@ export function EmployeesScreen({ navigation }: Props) {
           />
         }
         ListEmptyComponent={
-          <Text style={styles.empty}>{copy.employees.empty}</Text>
+          <AppText style={styles.empty}>
+            {t('attendance:employees.empty')}
+          </AppText>
         }
         renderItem={({ item }) => {
           const name = displayName(item.name, item.deviceUserId);
@@ -101,10 +107,11 @@ export function EmployeesScreen({ navigation }: Props) {
                 })
               }
             >
-              <Text style={styles.name}>{name}</Text>
-              <Text style={styles.id}>
-                {copy.employees.deviceUserId} {item.deviceUserId}
-              </Text>
+              <AppText style={styles.name}>{name}</AppText>
+              <AppText style={styles.id}>
+                {t('attendance:employees.deviceUserId')}{' '}
+                <AppText style={[styles.id, ltrText]}>{item.deviceUserId}</AppText>
+              </AppText>
             </Pressable>
           );
         }}

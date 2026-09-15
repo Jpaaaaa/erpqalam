@@ -5,19 +5,22 @@ import {
   RefreshControl,
   ScrollView,
   StyleSheet,
-  Text,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 import { ApiClientError } from '../api/client';
 import {
   getEmployeeReport,
   listAttendanceRecords,
   listAttendanceUsers,
 } from '../api/attendance';
-import { copy } from '../copy/attendance';
+import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { todayDateKey } from '../attendance/formatters';
 import { useAuth } from '../auth/context';
+import { useI18n } from '../i18n/I18nProvider';
+import { AppText } from '../ui/AppText';
+import { mirroredRow } from '../ui/rtlLayout';
 
 /**
  * Web overview counts `mergeEmployeesWithPunchIds(users, today's records)`,
@@ -27,6 +30,8 @@ import { useAuth } from '../auth/context';
  */
 export function OverviewScreen() {
   const { logout } = useAuth();
+  const { mirrorLayout } = useI18n();
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
@@ -75,13 +80,15 @@ export function OverviewScreen() {
       );
     } catch (err) {
       setError(
-        err instanceof ApiClientError ? err.message : copy.overview.loadError,
+        err instanceof ApiClientError
+          ? err.message
+          : t('attendance:overview.loadError'),
       );
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     void load();
@@ -91,52 +98,61 @@ export function OverviewScreen() {
     return (
       <View style={styles.centered}>
         <ActivityIndicator size="large" color="#0f766e" />
-        <Text style={styles.muted}>{copy.loading}</Text>
+        <AppText style={styles.muted}>{t('common:loading')}</AppText>
       </View>
     );
   }
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
-    <ScrollView
-      contentContainerStyle={styles.content}
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={() => {
-            setRefreshing(true);
-            void load();
-          }}
-          tintColor="#0f766e"
+      <ScrollView
+        contentContainerStyle={styles.content}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={() => {
+              setRefreshing(true);
+              void load();
+            }}
+            tintColor="#0f766e"
+          />
+        }
+      >
+        <View style={[styles.headerRow, mirroredRow(mirrorLayout)]}>
+          <AppText style={styles.title}>{t('attendance:tabs.overview')}</AppText>
+          <Pressable onPress={() => void logout()}>
+            <AppText style={styles.logout}>{t('auth:signOut')}</AppText>
+          </Pressable>
+        </View>
+
+        <View style={styles.switcher}>
+          <LanguageSwitcher />
+        </View>
+
+        {error ? <AppText style={styles.error}>{error}</AppText> : null}
+
+        <Metric
+          label={t('attendance:overview.employees')}
+          value={String(employeeCount)}
+          footer={t('attendance:overview.employeesFooter')}
         />
-      }
-    >
-      <View style={styles.headerRow}>
-        <Text style={styles.title}>{copy.tabs.overview}</Text>
-        <Pressable onPress={() => void logout()}>
-          <Text style={styles.logout}>{copy.logout}</Text>
-        </Pressable>
-      </View>
-
-      {error ? <Text style={styles.error}>{error}</Text> : null}
-
-      <Metric
-        label={copy.overview.employees}
-        value={String(employeeCount)}
-        footer={copy.overview.employeesFooter}
-      />
-      <Metric
-        label={copy.overview.todayPresent}
-        value={String(todayPresent)}
-        footer={copy.overview.todayPresentFooter(employeeCount)}
-      />
-      <Metric label={copy.overview.todayLate} value={String(lateToday)} />
-      <Metric
-        label={copy.overview.attendanceRate}
-        value={`${attendanceRate}%`}
-        footer={copy.overview.attendanceRateFooter}
-      />
-    </ScrollView>
+        <Metric
+          label={t('attendance:overview.todayPresent')}
+          value={String(todayPresent)}
+          footer={t('attendance:overview.todayPresentFooter', {
+            total: employeeCount,
+          })}
+        />
+        <Metric
+          label={t('attendance:overview.todayLate')}
+          value={String(lateToday)}
+        />
+        <Metric
+          label={t('attendance:overview.attendanceRate')}
+          value={`${attendanceRate}%`}
+          footer={t('attendance:overview.attendanceRateFooter')}
+        />
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -152,9 +168,9 @@ function Metric({
 }) {
   return (
     <View style={styles.card}>
-      <Text style={styles.cardLabel}>{label}</Text>
-      <Text style={styles.cardValue}>{value}</Text>
-      {footer ? <Text style={styles.cardFooter}>{footer}</Text> : null}
+      <AppText style={styles.cardLabel}>{label}</AppText>
+      <AppText style={styles.cardValue}>{value}</AppText>
+      {footer ? <AppText style={styles.cardFooter}>{footer}</AppText> : null}
     </View>
   );
 }
@@ -170,11 +186,11 @@ const styles = StyleSheet.create({
   },
   content: { padding: 16, paddingBottom: 32, backgroundColor: '#fff' },
   headerRow: {
-    flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 12,
   },
+  switcher: { marginBottom: 16 },
   title: { fontSize: 22, fontWeight: '600', color: '#0f172a' },
   logout: { fontSize: 15, fontWeight: '600', color: '#0f766e' },
   muted: { color: '#64748b' },

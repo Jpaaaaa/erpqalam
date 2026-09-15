@@ -6,6 +6,9 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
+    "extra": {
+      "supportsRTL": true
+    },
     "platforms": [
       "android"
     ],
@@ -20,7 +23,10 @@
       "predictiveBackGestureEnabled": false
     },
     "plugins": [
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-font",
+      "expo-splash-screen",
+      "expo-localization"
     ]
   }
 }

@@ -1,4 +1,5 @@
 import { StyleSheet, TextInput } from 'react-native';
+import { useI18n } from '../i18n/I18nProvider';
 
 export function SearchField({
   value,
@@ -9,9 +10,10 @@ export function SearchField({
   onChangeText: (text: string) => void;
   placeholder: string;
 }) {
+  const { fontFamily } = useI18n();
   return (
     <TextInput
-      style={styles.input}
+      style={[styles.input, fontFamily ? { fontFamily } : null]}
       value={value}
       onChangeText={onChangeText}
       placeholder={placeholder}

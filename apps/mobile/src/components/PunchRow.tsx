@@ -1,11 +1,15 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { PunchTypeBadge } from './PunchTypeBadge';
 import {
   formatDisplayDate,
   formatDisplayTime,
 } from '../attendance/formatters';
-import { copy } from '../copy/attendance';
 import type { AttendanceRecord } from '../types/attendance';
+import { useI18n } from '../i18n/I18nProvider';
+import { AppText } from '../ui/AppText';
+import { ltrText } from '../ui/ltr';
+import { mirroredRow } from '../ui/rtlLayout';
 
 export function PunchRow({
   record,
@@ -18,23 +22,34 @@ export function PunchRow({
   deviceName: string;
   onPress?: () => void;
 }) {
+  const { t } = useTranslation('attendance');
+  const { isRtl, mirrorLayout } = useI18n();
   const content = (
     <View style={styles.card}>
-      <Text style={styles.name}>{name}</Text>
-      <Text style={styles.id}>{record.deviceUserId}</Text>
-      <View style={styles.meta}>
-        <Text style={styles.metaText}>
-          {copy.records.date} {formatDisplayDate(record.timestamp.slice(0, 10))}
-        </Text>
-        <Text style={styles.metaText}>
-          {copy.records.time} {formatDisplayTime(record.timestamp)}
-        </Text>
+      <AppText style={styles.name}>{name}</AppText>
+      <AppText style={[styles.id, ltrText]}>{record.deviceUserId}</AppText>
+      <View style={[styles.meta, mirroredRow(mirrorLayout)]}>
+        <AppText style={styles.metaText}>
+          {t('records.date')}{' '}
+          <AppText style={[styles.metaText, ltrText]}>
+            {formatDisplayDate(record.timestamp.slice(0, 10))}
+          </AppText>
+        </AppText>
+        <AppText style={styles.metaText}>
+          {t('records.time')}{' '}
+          <AppText style={[styles.metaText, ltrText]}>
+            {formatDisplayTime(record.timestamp)}
+          </AppText>
+        </AppText>
       </View>
-      <View style={styles.footer}>
+      <View style={[styles.footer, mirroredRow(mirrorLayout)]}>
         <PunchTypeBadge punchType={record.punchType} />
-        <Text style={styles.device} numberOfLines={1}>
-          {copy.records.device} {deviceName}
-        </Text>
+        <AppText
+          style={[styles.device, { textAlign: isRtl ? 'left' : 'right' }]}
+          numberOfLines={1}
+        >
+          {t('records.device')} {deviceName}
+        </AppText>
       </View>
     </View>
   );
@@ -57,14 +72,13 @@ const styles = StyleSheet.create({
   },
   name: { fontSize: 16, fontWeight: '600', color: '#0f172a' },
   id: { fontSize: 13, color: '#64748b', marginTop: 2 },
-  meta: { flexDirection: 'row', gap: 12, marginTop: 8 },
+  meta: { gap: 12, marginTop: 8 },
   metaText: { fontSize: 13, color: '#475569' },
   footer: {
-    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginTop: 8,
     gap: 8,
   },
-  device: { flex: 1, textAlign: 'right', fontSize: 12, color: '#94a3b8' },
+  device: { flex: 1, fontSize: 12, color: '#94a3b8' },
 });

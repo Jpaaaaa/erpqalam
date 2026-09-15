@@ -4,10 +4,10 @@ import {
   FlatList,
   RefreshControl,
   StyleSheet,
-  Text,
   View,
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useTranslation } from 'react-i18next';
 import { ApiClientError } from '../api/client';
 import {
   listAttendanceDevices,
@@ -17,7 +17,6 @@ import {
 import { DateRangeChips } from '../components/DateRangeChips';
 import { PunchRow } from '../components/PunchRow';
 import { SearchField } from '../components/SearchField';
-import { copy } from '../copy/attendance';
 import { displayName, todayDateKey } from '../attendance/formatters';
 import {
   buildDeviceNameLookup,
@@ -25,10 +24,12 @@ import {
 } from '../attendance/lookups';
 import type { AttendanceRecord, DateFilter } from '../types/attendance';
 import type { RecordsStackParamList } from '../navigation/types';
+import { AppText } from '../ui/AppText';
 
 type Props = NativeStackScreenProps<RecordsStackParamList, 'RecordsList'>;
 
 export function RecordsScreen({ navigation }: Props) {
+  const { t } = useTranslation();
   const today = todayDateKey();
   const [filter, setFilter] = useState<DateFilter>({
     fromDate: today,
@@ -61,13 +62,15 @@ export function RecordsScreen({ navigation }: Props) {
       setRecords(rows);
     } catch (err) {
       setError(
-        err instanceof ApiClientError ? err.message : copy.records.loadError,
+        err instanceof ApiClientError
+          ? err.message
+          : t('attendance:records.loadError'),
       );
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [filter.fromDate, filter.toDate]);
+  }, [filter.fromDate, filter.toDate, t]);
 
   useEffect(() => {
     void load();
@@ -89,7 +92,7 @@ export function RecordsScreen({ navigation }: Props) {
     return (
       <View style={styles.centered}>
         <ActivityIndicator size="large" color="#0f766e" />
-        <Text style={styles.muted}>{copy.loading}</Text>
+        <AppText style={styles.muted}>{t('common:loading')}</AppText>
       </View>
     );
   }
@@ -100,9 +103,9 @@ export function RecordsScreen({ navigation }: Props) {
       <SearchField
         value={search}
         onChangeText={setSearch}
-        placeholder={copy.records.searchPlaceholder}
+        placeholder={t('attendance:records.searchPlaceholder')}
       />
-      {error ? <Text style={styles.error}>{error}</Text> : null}
+      {error ? <AppText style={styles.error}>{error}</AppText> : null}
       <FlatList
         data={filtered}
         keyExtractor={(item) => item.id}
@@ -117,7 +120,7 @@ export function RecordsScreen({ navigation }: Props) {
           />
         }
         ListEmptyComponent={
-          <Text style={styles.empty}>{copy.records.empty}</Text>
+          <AppText style={styles.empty}>{t('attendance:records.empty')}</AppText>
         }
         renderItem={({ item }) => {
           const name = displayName(

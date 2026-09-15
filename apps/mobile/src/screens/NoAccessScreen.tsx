@@ -1,22 +1,26 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../auth/context';
+import { LanguageSwitcher } from '../components/LanguageSwitcher';
+import { AppText } from '../ui/AppText';
+import { ltrText } from '../ui/ltr';
 
 export function NoAccessScreen() {
   const { logout, user } = useAuth();
+  const { t } = useTranslation();
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>No access</Text>
-      <Text style={styles.body}>
-        You don&apos;t have access to this module.
-      </Text>
+      <LanguageSwitcher />
+      <AppText style={styles.title}>{t('mobile:noAccessTitle')}</AppText>
+      <AppText style={styles.body}>{t('hr:accessDenied')}</AppText>
       {user ? (
-        <Text style={styles.meta}>
+        <AppText style={[styles.meta, ltrText]}>
           {user.email} · {user.role}
-        </Text>
+        </AppText>
       ) : null}
       <Pressable style={styles.button} onPress={() => void logout()}>
-        <Text style={styles.buttonText}>Log out</Text>
+        <AppText style={styles.buttonText}>{t('auth:signOut')}</AppText>
       </Pressable>
     </View>
   );
@@ -28,10 +32,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     justifyContent: 'center',
     paddingHorizontal: 24,
+    gap: 8,
   },
   title: {
     fontSize: 22,
     fontWeight: '600',
+    marginTop: 20,
     marginBottom: 8,
   },
   body: {

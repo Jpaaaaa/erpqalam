@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { copy } from '../copy/attendance';
+import { useTranslation } from 'react-i18next';
 import { EmployeeDetailScreen } from '../screens/EmployeeDetailScreen';
 import { EmployeesScreen } from '../screens/EmployeesScreen';
 import { OverviewScreen } from '../screens/OverviewScreen';
@@ -17,12 +17,13 @@ const EmployeesStack = createNativeStackNavigator<EmployeesStackParamList>();
 const RecordsStack = createNativeStackNavigator<RecordsStackParamList>();
 
 function EmployeesNavigator() {
+  const { t } = useTranslation('attendance');
   return (
     <EmployeesStack.Navigator>
       <EmployeesStack.Screen
         name="EmployeesList"
         component={EmployeesScreen}
-        options={{ title: copy.tabs.employees }}
+        options={{ title: t('tabs.employees') }}
       />
       <EmployeesStack.Screen
         name="EmployeeDetail"
@@ -34,12 +35,13 @@ function EmployeesNavigator() {
 }
 
 function RecordsNavigator() {
+  const { t } = useTranslation('attendance');
   return (
     <RecordsStack.Navigator>
       <RecordsStack.Screen
         name="RecordsList"
         component={RecordsScreen}
-        options={{ title: copy.tabs.records }}
+        options={{ title: t('tabs.records') }}
       />
       <RecordsStack.Screen
         name="EmployeeDetail"
@@ -51,6 +53,7 @@ function RecordsNavigator() {
 }
 
 export function MainTabs() {
+  const { t } = useTranslation('attendance');
   return (
     <Tab.Navigator
       screenOptions={{
@@ -63,7 +66,7 @@ export function MainTabs() {
         name="Overview"
         component={OverviewScreen}
         options={{
-          title: copy.tabs.overview,
+          title: t('tabs.overview'),
           headerShown: false,
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="grid-outline" size={size} color={color} />
@@ -74,7 +77,7 @@ export function MainTabs() {
         name="EmployeesTab"
         component={EmployeesNavigator}
         options={{
-          title: copy.tabs.employees,
+          title: t('tabs.employees'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="people-outline" size={size} color={color} />
           ),
@@ -84,7 +87,7 @@ export function MainTabs() {
         name="RecordsTab"
         component={RecordsNavigator}
         options={{
-          title: copy.tabs.records,
+          title: t('tabs.records'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="list-outline" size={size} color={color} />
           ),

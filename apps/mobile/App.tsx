@@ -3,6 +3,8 @@ import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { AuthProvider, useAuth } from './src/auth/context';
+import { I18nProvider, useI18n } from './src/i18n/I18nProvider';
+import './src/i18n/config';
 import { canAccessAttendance } from './src/permissions';
 import { MainTabs } from './src/navigation/MainTabs';
 import { LoginScreen } from './src/screens/LoginScreen';
@@ -10,6 +12,7 @@ import { NoAccessScreen } from './src/screens/NoAccessScreen';
 
 function Root() {
   const { user, isLoading } = useAuth();
+  const { isRtl } = useI18n();
 
   if (isLoading) {
     return (
@@ -28,7 +31,7 @@ function Root() {
   }
 
   return (
-    <NavigationContainer>
+    <NavigationContainer direction={isRtl ? 'rtl' : 'ltr'}>
       <MainTabs />
     </NavigationContainer>
   );
@@ -37,10 +40,12 @@ function Root() {
 export default function App() {
   return (
     <SafeAreaProvider>
-      <AuthProvider>
-        <StatusBar style="auto" />
-        <Root />
-      </AuthProvider>
+      <I18nProvider>
+        <AuthProvider>
+          <StatusBar style="dark" />
+          <Root />
+        </AuthProvider>
+      </I18nProvider>
     </SafeAreaProvider>
   );
 }

@@ -1,17 +1,23 @@
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { copy } from '../copy/attendance';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import {
   getQuickRange,
   isFilterActive,
 } from '../attendance/formatters';
 import type { DateFilter, QuickRangeKey } from '../types/attendance';
+import { useI18n } from '../i18n/I18nProvider';
+import { AppText } from '../ui/AppText';
+import { ltrText } from '../ui/ltr';
+import { inlineEndGap, mirroredRow } from '../ui/rtlLayout';
 
-const RANGES: { key: QuickRangeKey; label: string }[] = [
-  { key: 'today', label: copy.dateFilter.today },
-  { key: 'yesterday', label: copy.dateFilter.yesterday },
-  { key: 'week', label: copy.dateFilter.thisWeek },
-  { key: 'month', label: copy.dateFilter.thisMonth },
-];
+const RANGE_KEYS: QuickRangeKey[] = ['today', 'yesterday', 'week', 'month'];
+
+const RANGE_LABEL: Record<QuickRangeKey, string> = {
+  today: 'dateFilter.today',
+  yesterday: 'dateFilter.yesterday',
+  week: 'dateFilter.thisWeek',
+  month: 'dateFilter.thisMonth',
+};
 
 export function DateRangeChips({
   filter,
@@ -20,32 +26,45 @@ export function DateRangeChips({
   filter: DateFilter;
   onChange: (filter: DateFilter) => void;
 }) {
+  const { t } = useTranslation('attendance');
+  const { mirrorLayout } = useI18n();
   return (
     <View style={styles.wrap}>
-      <Text style={styles.label}>{copy.dateFilter.label}</Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        {RANGES.map((range) => {
-          const active = isFilterActive(filter, range.key);
+      <AppText style={styles.label}>{t('dateFilter.label')}</AppText>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={mirroredRow(mirrorLayout)}
+      >
+        {RANGE_KEYS.map((key) => {
+          const active = isFilterActive(filter, key);
           return (
             <Pressable
-              key={range.key}
+              key={key}
               onPress={() => {
-                const next = getQuickRange(range.key);
+                const next = getQuickRange(key);
                 onChange({ fromDate: next.from, toDate: next.to });
               }}
-              style={[styles.chip, active && styles.chipActive]}
+              style={[
+                styles.chip,
+                inlineEndGap(mirrorLayout),
+                active && styles.chipActive,
+              ]}
             >
-              <Text style={[styles.chipText, active && styles.chipTextActive]}>
-                {range.label}
-              </Text>
+              <AppText style={[styles.chipText, active && styles.chipTextActive]}>
+                {t(RANGE_LABEL[key])}
+              </AppText>
             </Pressable>
           );
         })}
       </ScrollView>
-      <Text style={styles.bounds}>
-        {copy.dateFilter.from} {filter.fromDate} · {copy.dateFilter.to}{' '}
-        {filter.toDate}
-      </Text>
+      <AppText style={styles.bounds}>
+        {t('dateFilter.from')}{' '}
+        <AppText style={[styles.bounds, ltrText]}>{filter.fromDate}</AppText>
+        {' · '}
+        {t('dateFilter.to')}{' '}
+        <AppText style={[styles.bounds, ltrText]}>{filter.toDate}</AppText>
+      </AppText>
     </View>
   );
 }
@@ -58,7 +77,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     backgroundColor: '#f1f5f9',
-    marginRight: 8,
   },
   chipActive: { backgroundColor: '#ffedd5' },
   chipText: { fontSize: 13, fontWeight: '600', color: '#475569' },

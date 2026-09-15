@@ -5,15 +5,21 @@ import {
   Platform,
   Pressable,
   StyleSheet,
-  Text,
   TextInput,
   View,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { API_BASE_URL, ApiClientError } from '../api/client';
 import { useAuth } from '../auth/context';
+import { LanguageSwitcher } from '../components/LanguageSwitcher';
+import { useI18n } from '../i18n/I18nProvider';
+import { AppText } from '../ui/AppText';
+import { ltrText } from '../ui/ltr';
 
 export function LoginScreen() {
   const { login } = useAuth();
+  const { fontFamily } = useI18n();
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -26,12 +32,14 @@ export function LoginScreen() {
       await login({ email: email.trim(), password });
     } catch (err) {
       setError(
-        err instanceof ApiClientError ? err.message : 'Sign in failed. Try again.',
+        err instanceof ApiClientError ? err.message : t('auth:loginError'),
       );
     } finally {
       setSubmitting(false);
     }
   }
+
+  const inputFont = fontFamily ? { fontFamily } : null;
 
   return (
     <KeyboardAvoidingView
@@ -39,27 +47,28 @@ export function LoginScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <View style={styles.container}>
-        <Text style={styles.title}>ERP Qalam</Text>
-        <Text style={styles.subtitle}>Sign in</Text>
+        <LanguageSwitcher />
+        <AppText style={styles.title}>{t('common:appName')}</AppText>
+        <AppText style={styles.subtitle}>{t('auth:signIn')}</AppText>
 
-        {error ? <Text style={styles.error}>{error}</Text> : null}
+        {error ? <AppText style={styles.error}>{error}</AppText> : null}
 
-        <Text style={styles.label}>Email</Text>
+        <AppText style={styles.label}>{t('auth:email')}</AppText>
         <TextInput
-          style={styles.input}
+          style={[styles.input, ltrText, inputFont]}
           autoCapitalize="none"
           autoComplete="email"
           keyboardType="email-address"
           textContentType="emailAddress"
           value={email}
           onChangeText={setEmail}
-          placeholder="manager@qalam.dev"
+          placeholder={t('auth:emailPlaceholder')}
           editable={!submitting}
         />
 
-        <Text style={styles.label}>Password</Text>
+        <AppText style={styles.label}>{t('auth:password')}</AppText>
         <TextInput
-          style={styles.input}
+          style={[styles.input, ltrText, inputFont]}
           autoCapitalize="none"
           autoComplete="password"
           textContentType="password"
@@ -77,11 +86,13 @@ export function LoginScreen() {
           {submitting ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.buttonText}>Sign in</Text>
+            <AppText style={styles.buttonText}>{t('auth:signIn')}</AppText>
           )}
         </Pressable>
 
-        <Text style={styles.url}>{API_BASE_URL}</Text>
+        <AppText style={[styles.url, { writingDirection: 'ltr' }]}>
+          {API_BASE_URL}
+        </AppText>
       </View>
     </KeyboardAvoidingView>
   );
@@ -97,6 +108,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 22,
     fontWeight: '600',
+    marginTop: 20,
     marginBottom: 4,
   },
   subtitle: {

@@ -5,10 +5,12 @@
   "main": "index.ts",
   "scripts": {
     "start": "expo start",
-    "android": "expo start --android"
+    "android": "expo start --android",
+    "test:single-flight": "npx tsx scripts/test-single-flight.ts"
   },
   "dependencies": {
     "expo": "~57.0.22",
+    "expo-secure-store": "~57.0.4",
     "expo-status-bar": "~57.0.1",
     "react": "19.2.3",
     "react-native": "0.86.3"

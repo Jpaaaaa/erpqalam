@@ -8,7 +8,8 @@
     "android": "expo start --android",
     "test:single-flight": "npx tsx scripts/test-single-flight.ts",
     "test:dated-requests": "npx tsx scripts/test-dated-requests.ts",
-    "test:rtl-reload": "npx tsx scripts/test-rtl-reload.ts"
+    "test:rtl-reload": "npx tsx scripts/test-rtl-reload.ts",
+    "build:preview": "eas build -p android --profile preview"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.2",

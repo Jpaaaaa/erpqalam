@@ -6,14 +6,29 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/d7ac1384-e044-4a61-ac1b-a91f9b823d10"
+    },
     "extra": {
-      "supportsRTL": true
+      "supportsRTL": true,
+      "eas": {
+        "projectId": "d7ac1384-e044-4a61-ac1b-a91f9b823d10"
+      }
     },
     "platforms": [
       "android"
     ],
     "android": {
       "package": "dev.erpqalam.mobile",
+      "versionCode": 1,
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -26,7 +41,9 @@
       "expo-secure-store",
       "expo-font",
       "expo-splash-screen",
-      "expo-localization"
-    ]
+      "expo-localization",
+      "expo-updates"
+    ],
+    "owner": "jpaa"
   }
 }

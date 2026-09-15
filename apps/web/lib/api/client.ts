@@ -27,7 +27,44 @@ export class ApiClientError extends Error {
   }
 }
 
-async function parseError(response: Response): Promise<ApiClientError> {
+export class SessionExpiredError extends Error {
+  constructor() {
+    super('Session expired');
+    this.name = 'SessionExpiredError';
+  }
+}
+
+type SessionInvalidatedListener = () => void;
+const sessionInvalidatedListeners = new Set<SessionInvalidatedListener>();
+
+export function onSessionInvalidated(
+  listener: SessionInvalidatedListener,
+): () => void {
+  sessionInvalidatedListeners.add(listener);
+  return () => {
+    sessionInvalidatedListeners.delete(listener);
+  };
+}
+
+function redirectToLogin(): void {
+  if (typeof window === 'undefined') return;
+  if (window.location.pathname.includes('/login')) return;
+
+  const match = window.location.pathname.match(/^\/(en|ar|ku)(\/|$)/);
+  const locale = match?.[1] ?? 'en';
+  window.location.replace(`/${locale}/login`);
+}
+
+function invalidateSession(): never {
+  clearSession();
+  for (const listener of sessionInvalidatedListeners) {
+    listener();
+  }
+  redirectToLogin();
+  throw new SessionExpiredError();
+}
+
+export async function parseApiError(response: Response): Promise<ApiClientError> {
   let message = response.statusText;
   try {
     const body = (await response.json()) as ApiError;
@@ -40,33 +77,54 @@ async function parseError(response: Response): Promise<ApiClientError> {
   return new ApiClientError(message, response.status);
 }
 
+let refreshPromise: Promise<boolean> | null = null;
+
 async function refreshAccessToken(): Promise<boolean> {
-  const refreshToken = getRefreshToken();
-  if (!refreshToken) return false;
-
-  const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ refreshToken }),
-  });
-
-  if (!response.ok) {
-    clearSession();
-    return false;
+  if (refreshPromise) {
+    return refreshPromise;
   }
 
-  const data = (await response.json()) as AuthResponse;
-  saveSession({ user: data.user, tokens: data.tokens });
-  return true;
+  refreshPromise = (async () => {
+    const refreshToken = getRefreshToken();
+    if (!refreshToken) return false;
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refreshToken }),
+      });
+
+      if (!response.ok) {
+        return false;
+      }
+
+      const data = (await response.json()) as AuthResponse;
+      saveSession({ user: data.user, tokens: data.tokens });
+      return true;
+    } catch {
+      return false;
+    }
+  })();
+
+  try {
+    return await refreshPromise;
+  } finally {
+    refreshPromise = null;
+  }
 }
 
-export async function apiRequest<T>(
+export async function apiFetch(
   path: string,
   options: RequestInit = {},
   retry = true,
-): Promise<T> {
+): Promise<Response> {
   const headers = new Headers(options.headers);
-  if (!headers.has('Content-Type') && options.body) {
+  if (
+    !headers.has('Content-Type') &&
+    options.body &&
+    !(options.body instanceof FormData)
+  ) {
     headers.set('Content-Type', 'application/json');
   }
 
@@ -84,12 +142,23 @@ export async function apiRequest<T>(
   if (response.status === 401 && retry) {
     const refreshed = await refreshAccessToken();
     if (refreshed) {
-      return apiRequest<T>(path, options, false);
+      return apiFetch(path, options, false);
     }
+    invalidateSession();
   }
 
+  return response;
+}
+
+export async function apiRequest<T>(
+  path: string,
+  options: RequestInit = {},
+  retry = true,
+): Promise<T> {
+  const response = await apiFetch(path, options, retry);
+
   if (!response.ok) {
-    throw await parseError(response);
+    throw await parseApiError(response);
   }
 
   if (response.status === 204) {

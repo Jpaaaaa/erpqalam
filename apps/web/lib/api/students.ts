@@ -1,4 +1,4 @@
-import { apiRequest, API_BASE_URL, ApiClientError } from '@/lib/api/client';
+import { apiRequest, ApiClientError } from '@/lib/api/client';
 import type {
   CreateStudentCheckInPayload,
   CreatePendingStudentPayload,
@@ -9,7 +9,6 @@ import type {
   UpdatePendingStudentPayload,
 } from '@/lib/types/student';
 import type { UpdateStudentDetailsPayload } from '@/lib/types/student-details';
-import type { ApiError } from '@/lib/types/auth';
 import type { PendingStudentFilters } from '@/lib/students/pending-filters';
 import { pendingFiltersToQueryParams } from '@/lib/students/pending-filters';
 
@@ -18,26 +17,10 @@ export { ApiClientError };
 export async function submitStudentCheckIn(
   payload: CreateStudentCheckInPayload,
 ): Promise<PendingStudent> {
-  const response = await fetch(`${API_BASE_URL}/students/pending`, {
+  return apiRequest<PendingStudent>('/students/pending', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
-  });
-
-  if (!response.ok) {
-    let message = response.statusText;
-    try {
-      const body = (await response.json()) as ApiError;
-      message = Array.isArray(body.message)
-        ? body.message.join(', ')
-        : body.message;
-    } catch {
-      // ignore
-    }
-    throw new ApiClientError(message, response.status);
-  }
-
-  return response.json() as Promise<PendingStudent>;
+  }, false);
 }
 
 export async function createPendingStudent(

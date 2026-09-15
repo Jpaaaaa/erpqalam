@@ -39,11 +39,8 @@ const prisma = new PrismaClient({ adapter });
 
 async function main() {
   const schoolCode = 'QALAM001';
-  const managerEmail = 'manager@qalam.dev';
-
-  const existing = await prisma.user.findUnique({
-    where: { email: managerEmail },
-  });
+  const adminEmail = process.env.SEED_ADMIN_EMAIL?.trim();
+  const adminPassword = process.env.SEED_ADMIN_PASSWORD;
 
   const school = await prisma.school.upsert({
     where: { code: schoolCode },
@@ -56,30 +53,38 @@ async function main() {
 
   await seedAttendanceSettings(school.id, prisma);
 
-  if (existing) {
-    console.log('Seed skipped — manager already exists (attendance settings ensured)');
+  if (!adminEmail || !adminPassword) {
+    console.log(
+      'Seed skipped admin — set SEED_ADMIN_EMAIL and SEED_ADMIN_PASSWORD to create one',
+    );
+    console.log(`  School code: ${schoolCode}`);
     return;
   }
 
-  const passwordHash = await bcrypt.hash('Manager123!', 12);
+  const passwordHash = await bcrypt.hash(adminPassword, 12);
 
-  await prisma.$transaction(async (tx) => {
-    await tx.user.create({
-      data: {
-        email: managerEmail,
-        passwordHash,
-        firstName: 'Demo',
-        lastName: 'Manager',
-        role: UserRole.MANAGER,
-        status: UserStatus.ACTIVE,
-        schoolId: school.id,
-      },
-    });
+  await prisma.user.upsert({
+    where: { email: adminEmail },
+    update: {
+      passwordHash,
+      role: UserRole.MANAGER,
+      status: UserStatus.ACTIVE,
+      schoolId: school.id,
+    },
+    create: {
+      email: adminEmail,
+      passwordHash,
+      firstName: 'Admin',
+      lastName: 'User',
+      role: UserRole.MANAGER,
+      status: UserStatus.ACTIVE,
+      schoolId: school.id,
+    },
   });
 
   console.log('Seed complete');
   console.log(`  School code: ${schoolCode}`);
-  console.log(`  Manager:     ${managerEmail} / Manager123!`);
+  console.log(`  Admin:       ${adminEmail}`);
 }
 
 main()

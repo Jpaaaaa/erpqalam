@@ -18,7 +18,7 @@ import { REFRESH_TOKEN_STORE } from './interfaces/refresh-token.store';
       useFactory: (config: ConfigService) => ({
         secret: config.getOrThrow<string>('jwt.secret'),
         signOptions: {
-          expiresIn: config.get<string>('jwt.expiresIn', '15m') as `${number}m`,
+          expiresIn: config.get<string>('jwt.expiresIn', '1h') as `${number}h`,
         },
       }),
     }),

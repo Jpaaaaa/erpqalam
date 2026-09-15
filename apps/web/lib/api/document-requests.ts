@@ -1,9 +1,9 @@
 import {
-  API_BASE_URL,
-  ApiClientError,
+  apiFetch,
   apiRequest,
+  ApiClientError,
+  parseApiError,
 } from '@/lib/api/client';
-import { getAccessToken } from '@/lib/auth/storage';
 import type {
   CreateDocumentRequestPayload,
   DocumentRequestCreateDefaults,
@@ -11,7 +11,6 @@ import type {
   PaginatedDocumentRequests,
   UpdateDocumentRequestSettingsPayload,
 } from '@/lib/types/document-request';
-import type { ApiError } from '@/lib/types/auth';
 
 export { ApiClientError };
 
@@ -47,65 +46,25 @@ export async function uploadDocumentRequestLetterheadTemplate(
   const formData = new FormData();
   formData.append('file', file);
 
-  const headers: HeadersInit = {};
-  const token = getAccessToken();
-  if (token) {
-    headers.Authorization = `Bearer ${token}`;
-  }
-
-  const response = await fetch(
-    `${API_BASE_URL}/document-requests/settings/template`,
-    {
-      method: 'POST',
-      headers,
-      body: formData,
-      cache: 'no-store',
-    },
-  );
+  const response = await apiFetch('/document-requests/settings/template', {
+    method: 'POST',
+    body: formData,
+  });
 
   if (!response.ok) {
-    let message = response.statusText;
-    try {
-      const body = (await response.json()) as ApiError;
-      message = Array.isArray(body.message)
-        ? body.message.join(', ')
-        : body.message;
-    } catch {
-      // ignore
-    }
-    throw new ApiClientError(message, response.status);
+    throw await parseApiError(response);
   }
 
   return response.json() as Promise<DocumentRequestSettings>;
 }
 
 export async function fetchDocumentRequestLetterheadTemplate(): Promise<Blob> {
-  const headers: HeadersInit = {};
-  const token = getAccessToken();
-  if (token) {
-    headers.Authorization = `Bearer ${token}`;
-  }
-
-  const response = await fetch(
-    `${API_BASE_URL}/document-requests/settings/template`,
-    {
-      method: 'GET',
-      headers,
-      cache: 'no-store',
-    },
-  );
+  const response = await apiFetch('/document-requests/settings/template', {
+    method: 'GET',
+  });
 
   if (!response.ok) {
-    let message = response.statusText;
-    try {
-      const body = (await response.json()) as ApiError;
-      message = Array.isArray(body.message)
-        ? body.message.join(', ')
-        : body.message;
-    } catch {
-      // ignore
-    }
-    throw new ApiClientError(message, response.status);
+    throw await parseApiError(response);
   }
 
   return response.blob();
@@ -140,29 +99,12 @@ export async function listDocumentRequests(params?: {
 async function fetchDocumentRequestPdfResponse(
   id: string,
 ): Promise<{ blob: Blob; documentNumber: string }> {
-  const headers: HeadersInit = {};
-  const token = getAccessToken();
-  if (token) {
-    headers.Authorization = `Bearer ${token}`;
-  }
-
-  const response = await fetch(`${API_BASE_URL}/document-requests/${id}/pdf`, {
+  const response = await apiFetch(`/document-requests/${id}/pdf`, {
     method: 'GET',
-    headers,
-    cache: 'no-store',
   });
 
   if (!response.ok) {
-    let message = response.statusText;
-    try {
-      const body = (await response.json()) as ApiError;
-      message = Array.isArray(body.message)
-        ? body.message.join(', ')
-        : body.message;
-    } catch {
-      // ignore
-    }
-    throw new ApiClientError(message, response.status);
+    throw await parseApiError(response);
   }
 
   const encodedNumber = response.headers.get('X-Document-Number');
@@ -196,33 +138,13 @@ export async function fetchLatestDocumentRequestPdf(params: {
 export async function generateDocumentRequest(
   payload: CreateDocumentRequestPayload,
 ): Promise<{ documentNumber: string; documentId: string; blob: Blob }> {
-  const headers: HeadersInit = {
-    'Content-Type': 'application/json',
-  };
-
-  const token = getAccessToken();
-  if (token) {
-    headers.Authorization = `Bearer ${token}`;
-  }
-
-  const response = await fetch(`${API_BASE_URL}/document-requests`, {
+  const response = await apiFetch('/document-requests', {
     method: 'POST',
-    headers,
     body: JSON.stringify(payload),
-    cache: 'no-store',
   });
 
   if (!response.ok) {
-    let message = response.statusText;
-    try {
-      const body = (await response.json()) as ApiError;
-      message = Array.isArray(body.message)
-        ? body.message.join(', ')
-        : body.message;
-    } catch {
-      // ignore
-    }
-    throw new ApiClientError(message, response.status);
+    throw await parseApiError(response);
   }
 
   const encodedNumber = response.headers.get('X-Document-Number');

@@ -1,10 +1,8 @@
 import {
-  API_BASE_URL,
-  ApiClientError,
+  apiFetch,
   apiRequest,
+  parseApiError,
 } from '@/lib/api/client';
-import { getAccessToken } from '@/lib/auth/storage';
-import type { ApiError } from '@/lib/types/auth';
 import type {
   BackupSettings,
   DetectedTelegramChat,
@@ -12,7 +10,7 @@ import type {
   UpsertBackupSettingsPayload,
 } from '@/lib/types/backup-settings';
 
-export { ApiClientError };
+export { ApiClientError } from '@/lib/api/client';
 
 export async function getBackupSettings(): Promise<BackupSettings> {
   return apiRequest<BackupSettings>('/backup-settings');
@@ -66,29 +64,10 @@ export async function downloadBackupNow(): Promise<{
   blob: Blob;
   fileName: string;
 }> {
-  const headers: HeadersInit = {};
-  const token = getAccessToken();
-  if (token) {
-    headers.Authorization = `Bearer ${token}`;
-  }
-
-  const response = await fetch(`${API_BASE_URL}/backup-settings/run-now`, {
-    method: 'POST',
-    headers,
-    cache: 'no-store',
-  });
+  const response = await apiFetch('/backup-settings/run-now', { method: 'POST' });
 
   if (!response.ok) {
-    let message = response.statusText;
-    try {
-      const body = (await response.json()) as ApiError;
-      message = Array.isArray(body.message)
-        ? body.message.join(', ')
-        : body.message;
-    } catch {
-      // ignore
-    }
-    throw new ApiClientError(message, response.status);
+    throw await parseApiError(response);
   }
 
   const disposition = response.headers.get('Content-Disposition') ?? '';
@@ -103,30 +82,13 @@ export async function restoreBackup(file: File): Promise<{ ok: boolean; message?
   formData.append('file', file);
   formData.append('confirm', 'true');
 
-  const headers: HeadersInit = {};
-  const token = getAccessToken();
-  if (token) {
-    headers.Authorization = `Bearer ${token}`;
-  }
-
-  const response = await fetch(`${API_BASE_URL}/backup-settings/restore`, {
+  const response = await apiFetch('/backup-settings/restore', {
     method: 'POST',
-    headers,
     body: formData,
-    cache: 'no-store',
   });
 
   if (!response.ok) {
-    let message = response.statusText;
-    try {
-      const body = (await response.json()) as ApiError;
-      message = Array.isArray(body.message)
-        ? body.message.join(', ')
-        : body.message;
-    } catch {
-      // ignore
-    }
-    throw new ApiClientError(message, response.status);
+    throw await parseApiError(response);
   }
 
   return response.json() as Promise<{ ok: boolean; message?: string }>;

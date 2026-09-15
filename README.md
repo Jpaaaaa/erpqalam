@@ -115,13 +115,16 @@ API: http://localhost:3000/api/v1
 Web: http://localhost:3001  
 Swagger: http://localhost:3000/api/docs
 
-## Seed credentials
+## Seed admin
 
-| Field | Value |
-|-------|-------|
-| School code | `QALAM001` |
-| Manager email | `manager@qalam.dev` |
-| Password | `Manager123!` |
+The seed always creates school `QALAM001` and default attendance settings. To also create a manager account, set both in `apps/api/.env`:
+
+| Variable | Description |
+|----------|-------------|
+| `SEED_ADMIN_EMAIL` | Manager email (upserted on re-run) |
+| `SEED_ADMIN_PASSWORD` | Manager password |
+
+If either is missing, no admin user is created. Run `npm run db:seed` from the repo root.
 
 ## API endpoints
 

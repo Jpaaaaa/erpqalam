@@ -58,10 +58,8 @@ apps/web/
 3. Add `tr` to middleware matcher in `middleware.ts`
 4. Remove `disabled` from Turkish option in `LanguageSwitcher`
 
-## Demo credentials
+## Seed admin
 
-| Email | Password |
-|-------|----------|
-| manager@qalam.dev | Manager123! |
+Set `SEED_ADMIN_EMAIL` and `SEED_ADMIN_PASSWORD` in `apps/api/.env`, then run `npm run db:seed`. Both are required; if either is missing, no admin is seeded.
 
-School code for registration: `QALAM001`
+School code: `QALAM001`

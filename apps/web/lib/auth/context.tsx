@@ -8,7 +8,13 @@ import {
   useMemo,
   useState,
 } from 'react';
-import { login as apiLogin, logout as apiLogout, register as apiRegister, getCurrentUser } from '@/lib/api/client';
+import {
+  login as apiLogin,
+  logout as apiLogout,
+  register as apiRegister,
+  getCurrentUser,
+  onSessionInvalidated,
+} from '@/lib/api/client';
 import { clearSession, getSession, saveSession } from '@/lib/auth/storage';
 import type {
   AuthUser,
@@ -34,6 +40,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    return onSessionInvalidated(() => {
+      setUser(null);
+    });
+  }, []);
+
+  useEffect(() => {
     async function bootstrap() {
       const session = getSession();
       if (!session) {
@@ -41,14 +53,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      setUser(session.user);
       try {
         const freshUser = await getCurrentUser();
-        const tokens = session.tokens;
-        saveSession({ user: freshUser, tokens });
+        saveSession({ user: freshUser, tokens: session.tokens });
         setUser(freshUser);
       } catch {
-        setUser(session.user);
+        clearSession();
+        setUser(null);
       } finally {
         setIsLoading(false);
       }
@@ -66,7 +77,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       saveSession({ user: freshUser, tokens: session.tokens });
       setUser(freshUser);
     } catch {
-      // keep existing session user
+      clearSession();
+      setUser(null);
     }
   }, []);
 

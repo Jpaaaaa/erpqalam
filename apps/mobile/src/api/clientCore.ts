@@ -5,6 +5,7 @@ import type {
   LoginPayload,
   Session,
 } from '../types/auth';
+import { assertDatedAttendancePath } from './datedAttendanceGuard';
 
 export class ApiClientError extends Error {
   status: number;
@@ -108,6 +109,8 @@ export function createApiClient(deps: ApiClientDeps) {
     options: RequestInit = {},
     retry = true,
   ): Promise<Response> {
+    assertDatedAttendancePath(path);
+
     const headers = new Headers(options.headers);
     if (
       !headers.has('Content-Type') &&

@@ -1,8 +1,10 @@
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { AuthProvider, useAuth } from './src/auth/context';
 import { canAccessAttendance } from './src/permissions';
-import { HomeScreen } from './src/screens/HomeScreen';
+import { MainTabs } from './src/navigation/MainTabs';
 import { LoginScreen } from './src/screens/LoginScreen';
 import { NoAccessScreen } from './src/screens/NoAccessScreen';
 
@@ -25,15 +27,21 @@ function Root() {
     return <NoAccessScreen />;
   }
 
-  return <HomeScreen />;
+  return (
+    <NavigationContainer>
+      <MainTabs />
+    </NavigationContainer>
+  );
 }
 
 export default function App() {
   return (
-    <AuthProvider>
-      <StatusBar style="auto" />
-      <Root />
-    </AuthProvider>
+    <SafeAreaProvider>
+      <AuthProvider>
+        <StatusBar style="auto" />
+        <Root />
+      </AuthProvider>
+    </SafeAreaProvider>
   );
 }
 

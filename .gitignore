@@ -5,3 +5,15 @@ apps/api/uploads/
 apps/api/.env
 apps/web/.env.local
 *.csv
+
+# Expo / Android signing
+.expo/
+apps/mobile/dist/
+apps/mobile/web-build/
+apps/mobile/expo-env.d.ts
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*

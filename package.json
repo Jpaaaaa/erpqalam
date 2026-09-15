@@ -10,7 +10,7 @@
     "dev:api": "npm run start:dev --prefix apps/api",
     "dev:web": "npm run dev --prefix apps/web",
     "build": "npm run build --prefix apps/api && npm run build --prefix apps/web",
-    "install:all": "npm install --prefix apps/api && npm install --prefix apps/web",
+    "install:all": "npm install --prefix apps/api && npm install --prefix apps/web && npm install --prefix apps/mobile",
     "db:ensure": "node scripts/ensure-db.mjs",
     "db:start": "node scripts/db-start.mjs",
     "db:stop": "docker compose -f docker/docker-compose.dev.yml stop postgres",

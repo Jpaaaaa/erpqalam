@@ -9,12 +9,16 @@ import {
   IsOptional,
   IsString,
   Matches,
+  Max,
   Min,
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+
+/** Matches the web per-employee records fetch (`limit: 5000`). */
+export const ATTENDANCE_RECORDS_MAX_LIMIT = 5000;
 
 export class ListAttendanceRecordsQueryDto {
   @ApiPropertyOptional({ example: '2026-01-01' })
@@ -34,11 +38,12 @@ export class ListAttendanceRecordsQueryDto {
   @IsString()
   deviceUserId?: string;
 
-  @ApiPropertyOptional({ default: 500 })
+  @ApiPropertyOptional({ default: 500, maximum: ATTENDANCE_RECORDS_MAX_LIMIT })
   @IsOptional()
   @Type(() => Number)
   @IsInt()
   @Min(1)
+  @Max(ATTENDANCE_RECORDS_MAX_LIMIT)
   limit?: number = 500;
 }
 

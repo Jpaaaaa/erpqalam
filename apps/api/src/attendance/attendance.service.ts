@@ -159,6 +159,22 @@ export class AttendanceService {
     return user.schoolId;
   }
 
+  private recordTimestampWhere(
+    fromDate?: string,
+    toDate?: string,
+  ): Pick<Prisma.AttendanceRecordWhereInput, 'timestamp'> {
+    const { from, to } = dateRangeBounds(fromDate, toDate);
+    if (!from && !to) {
+      return {};
+    }
+    return {
+      timestamp: {
+        ...(from ? { gte: from } : {}),
+        ...(to ? { lte: to } : {}),
+      },
+    };
+  }
+
   async loadSettingsMap(schoolId: string): Promise<AttendanceSettingsMap> {
     const rows = await this.prisma.attendanceSettings.findMany({
       where: { schoolId },
@@ -1014,7 +1030,10 @@ export class AttendanceService {
       employeeHolidays,
     ] = await Promise.all([
       this.prisma.attendanceRecord.findMany({
-        where: { schoolId },
+        where: {
+          schoolId,
+          ...this.recordTimestampWhere(query.fromDate, query.toDate),
+        },
         orderBy: { timestamp: 'desc' },
       }),
       this.prisma.attendanceUser.findMany({ where: { schoolId } }),
@@ -1111,6 +1130,7 @@ export class AttendanceService {
               where: {
                 schoolId,
                 ...(deviceUserId ? { deviceUserId } : {}),
+                ...this.recordTimestampWhere(query.fromDate, query.toDate),
               },
               orderBy: { timestamp: 'asc' },
             })

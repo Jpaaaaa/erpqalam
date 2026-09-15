@@ -82,6 +82,7 @@ export class BackupService {
 
     try {
       const databaseUrl = this.getDatabaseUrl();
+      this.logger.log(`pg_dump start file=${sqlPath}`);
       await this.runCommand('pg_dump', [
         '--dbname',
         databaseUrl,
@@ -93,12 +94,18 @@ export class BackupService {
         '--file',
         sqlPath,
       ]);
+      const sqlStat = await fs.stat(sqlPath);
+      this.logger.log(`pg_dump end sizeBytes=${sqlStat.size}`);
 
       const envPath = this.resolveEnvPath();
       await this.zipFiles(zipPath, [
         { source: envPath, name: '.env' },
         { source: sqlPath, name: path.basename(sqlPath) },
       ]);
+      const zipStat = await fs.stat(zipPath);
+      this.logger.log(
+        `zip created path=${zipPath} fileName=${fileName} sizeBytes=${zipStat.size}`,
+      );
 
       return { zipPath, fileName };
     } catch (err) {
@@ -185,6 +192,10 @@ export class BackupService {
     fileName: string,
     options?: { caption?: string; contentType?: string },
   ): Promise<void> {
+    const zipStat = await fs.stat(filePath);
+    this.logger.log(
+      `sendDocument file=${fileName} path=${filePath} sizeBytes=${zipStat.size} chatId=${chatId} contentType=${options?.contentType ?? 'application/octet-stream'}`,
+    );
     const fileBuffer = await fs.readFile(filePath);
     await this.sendTelegramDocumentBuffer(
       botToken,
@@ -203,9 +214,13 @@ export class BackupService {
     options?: { caption?: string; contentType?: string },
   ): Promise<void> {
     const url = `https://api.telegram.org/bot${botToken}/sendDocument`;
+    const contentType = options?.contentType ?? 'application/octet-stream';
     const blob = new Blob([Uint8Array.from(fileBuffer)], {
-      type: options?.contentType ?? 'application/octet-stream',
+      type: contentType,
     });
+    this.logger.log(
+      `sendDocument Blob constructed bufferBytes=${fileBuffer.length} blobSize=${blob.size} contentType=${contentType} fileName=${fileName} chatId=${chatId}`,
+    );
     const form = new FormData();
     form.append('chat_id', chatId);
     form.append('document', blob, fileName);
@@ -215,8 +230,14 @@ export class BackupService {
     );
 
     const response = await fetch(url, { method: 'POST', body: form });
+    const body = await response.text();
+    this.logger.log(
+      `sendDocument HTTP status=${response.status} ok=${response.ok} chatId=${chatId} fileName=${fileName}`,
+    );
     if (!response.ok) {
-      const body = await response.text();
+      this.logger.error(
+        `sendDocument Telegram body status=${response.status} chatId=${chatId} fileName=${fileName} body=${body}`,
+      );
       throw new Error(
         `Telegram sendDocument failed for chat ${chatId}: ${response.status} ${body}`,
       );

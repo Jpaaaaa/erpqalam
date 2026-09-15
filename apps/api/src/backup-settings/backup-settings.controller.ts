@@ -3,6 +3,7 @@ import {
   Body,
   Controller,
   Get,
+  Logger,
   Post,
   Res,
   StreamableFile,
@@ -45,6 +46,8 @@ import {
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('backup-settings')
 export class BackupSettingsController {
+  private readonly logger = new Logger(BackupSettingsController.name);
+
   constructor(
     private readonly settingsService: BackupSettingsService,
     private readonly backupService: BackupService,
@@ -162,7 +165,13 @@ export class BackupSettingsController {
             backup.fileName,
           );
           sent += 1;
-        } catch {
+        } catch (err) {
+          this.logger.error(
+            `sendNow Telegram failed for chat ${chatId}: ${
+              err instanceof Error ? err.message : String(err)
+            }`,
+            err instanceof Error ? err.stack : undefined,
+          );
           failed.push(chatId);
         }
       }

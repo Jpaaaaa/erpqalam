@@ -23,6 +23,7 @@ export const {
   apiRequest,
   getCurrentUser,
   login,
+  googleLogin,
   logout,
   onSessionInvalidated,
   getRefreshCallCount,

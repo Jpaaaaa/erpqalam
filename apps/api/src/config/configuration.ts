@@ -20,6 +20,7 @@ export default () => ({
     clientId: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     callbackUrl: process.env.GOOGLE_CALLBACK_URL,
+    androidClientId: process.env.GOOGLE_ANDROID_CLIENT_ID,
     frontendUrl: process.env.FRONTEND_URL ?? 'http://localhost:3001',
     defaultSchoolCode: process.env.GOOGLE_OAUTH_DEFAULT_SCHOOL_CODE ?? 'QALAM001',
     autoAdminEmails: (process.env.GOOGLE_OAUTH_AUTO_ADMIN_EMAILS ?? '')

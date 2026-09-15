@@ -178,6 +178,21 @@ export function createApiClient(deps: ApiClientDeps) {
     return session;
   }
 
+  async function googleLogin(idToken: string): Promise<Session> {
+    const data = await apiRequest<AuthResponse>(
+      '/auth/google/mobile',
+      {
+        method: 'POST',
+        body: JSON.stringify({ idToken }),
+      },
+      false,
+    );
+
+    const session = { user: data.user, tokens: data.tokens };
+    await deps.saveSession(session);
+    return session;
+  }
+
   async function logout(): Promise<void> {
     const refreshToken = await deps.getRefreshToken();
     if (refreshToken) {
@@ -202,6 +217,7 @@ export function createApiClient(deps: ApiClientDeps) {
     apiRequest,
     getCurrentUser,
     login,
+    googleLogin,
     logout,
     onSessionInvalidated,
     getRefreshCallCount: () => refreshCallCount,

@@ -51,6 +51,7 @@
     "class-validator": "^0.14.4",
     "dotenv": "^17.4.2",
     "erpqalam": "file:../..",
+    "google-auth-library": "^10.9.1",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
     "passport-jwt": "^4.0.1",

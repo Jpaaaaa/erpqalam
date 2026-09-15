@@ -1,29 +1,69 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
-  Pressable,
+  ScrollView,
   StyleSheet,
   TextInput,
   View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { API_BASE_URL, ApiClientError } from '../api/client';
-import { useAuth } from '../auth/context';
+import { AuthLogoHeader } from '../components/auth/AuthLogoHeader';
+import { GoogleSignInButton } from '../components/auth/GoogleSignInButton';
+import { GradientButton } from '../components/auth/GradientButton';
+import { OrDivider } from '../components/auth/OrDivider';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
+import { useGoogleAuthRequest } from '../hooks/useGoogleAuthRequest';
+import { useAuth } from '../auth/context';
 import { useI18n } from '../i18n/I18nProvider';
+import { cardShadow } from '../theme/brand';
 import { AppText } from '../ui/AppText';
 import { ltrText } from '../ui/ltr';
 
 export function LoginScreen() {
-  const { login } = useAuth();
-  const { fontFamily } = useI18n();
+  const { login, loginWithGoogle } = useAuth();
+  const { fontFamily, mirrorLayout } = useI18n();
   const { t } = useTranslation();
+  const { request, response, promptAsync, configured } = useGoogleAuthRequest();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+
+  useEffect(() => {
+    if (response?.type !== 'success') {
+      if (response?.type === 'error') {
+        setError(t('auth:googleCallbackError'));
+        setGoogleLoading(false);
+      }
+      return;
+    }
+
+    const idToken = response.params.id_token;
+    if (!idToken) {
+      setError(t('auth:googleCallbackError'));
+      setGoogleLoading(false);
+      return;
+    }
+
+    void (async () => {
+      setError('');
+      try {
+        await loginWithGoogle(idToken);
+      } catch (err) {
+        setError(
+          err instanceof ApiClientError
+            ? err.message
+            : t('auth:googleCallbackError'),
+        );
+      } finally {
+        setGoogleLoading(false);
+      }
+    })();
+  }, [response, loginWithGoogle, t]);
 
   async function handleSubmit() {
     setError('');
@@ -39,113 +79,146 @@ export function LoginScreen() {
     }
   }
 
+  async function handleGooglePress() {
+    if (!configured || !request) {
+      setError(t('auth:googleCallbackError'));
+      return;
+    }
+    setError('');
+    setGoogleLoading(true);
+    try {
+      const result = await promptAsync();
+      if (result.type === 'cancel' || result.type === 'dismiss') {
+        setGoogleLoading(false);
+      }
+    } catch {
+      setError(t('auth:googleCallbackError'));
+      setGoogleLoading(false);
+    }
+  }
+
   const inputFont = fontFamily ? { fontFamily } : null;
+  const busy = submitting || googleLoading;
 
   return (
-    <KeyboardAvoidingView
-      style={styles.flex}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      <View style={styles.container}>
-        <LanguageSwitcher />
-        <AppText style={styles.title}>{t('common:appName')}</AppText>
-        <AppText style={styles.subtitle}>{t('auth:signIn')}</AppText>
+    <SafeAreaView style={styles.safe}>
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <View style={[styles.langRow, mirrorLayout && styles.langRowRtl]}>
+          <LanguageSwitcher />
+        </View>
 
-        {error ? <AppText style={styles.error}>{error}</AppText> : null}
-
-        <AppText style={styles.label}>{t('auth:email')}</AppText>
-        <TextInput
-          style={[styles.input, ltrText, inputFont]}
-          autoCapitalize="none"
-          autoComplete="email"
-          keyboardType="email-address"
-          textContentType="emailAddress"
-          value={email}
-          onChangeText={setEmail}
-          placeholder={t('auth:emailPlaceholder')}
-          editable={!submitting}
-        />
-
-        <AppText style={styles.label}>{t('auth:password')}</AppText>
-        <TextInput
-          style={[styles.input, ltrText, inputFont]}
-          autoCapitalize="none"
-          autoComplete="password"
-          textContentType="password"
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-          editable={!submitting}
-        />
-
-        <Pressable
-          style={[styles.button, submitting && styles.buttonDisabled]}
-          onPress={() => void handleSubmit()}
-          disabled={submitting}
+        <ScrollView
+          contentContainerStyle={styles.scroll}
+          keyboardShouldPersistTaps="handled"
         >
-          {submitting ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <AppText style={styles.buttonText}>{t('auth:signIn')}</AppText>
-          )}
-        </Pressable>
+          <AuthLogoHeader />
 
-        <AppText style={[styles.url, { writingDirection: 'ltr' }]}>
-          {API_BASE_URL}
-        </AppText>
-      </View>
-    </KeyboardAvoidingView>
+          <View style={[styles.card, cardShadow]}>
+            <AppText style={styles.cardTitle}>{t('auth:signIn')}</AppText>
+
+            {error ? <AppText style={styles.error}>{error}</AppText> : null}
+
+            <AppText style={styles.label}>{t('auth:email')}</AppText>
+            <TextInput
+              style={[styles.input, ltrText, inputFont]}
+              autoCapitalize="none"
+              autoComplete="email"
+              keyboardType="email-address"
+              textContentType="emailAddress"
+              value={email}
+              onChangeText={setEmail}
+              placeholder={t('auth:emailPlaceholder')}
+              editable={!busy}
+            />
+
+            <AppText style={styles.label}>{t('auth:password')}</AppText>
+            <TextInput
+              style={[styles.input, ltrText, inputFont]}
+              autoCapitalize="none"
+              autoComplete="password"
+              textContentType="password"
+              secureTextEntry
+              value={password}
+              onChangeText={setPassword}
+              editable={!busy}
+            />
+
+            <GradientButton
+              onPress={() => void handleSubmit()}
+              disabled={busy}
+              isLoading={submitting}
+              loadingLabel={t('common:pleaseWait')}
+            >
+              {t('auth:signIn')}
+            </GradientButton>
+
+            <OrDivider label={t('auth:orContinueWith')} />
+
+            <GoogleSignInButton
+              label={t('auth:signInWithGoogle')}
+              onPress={() => void handleGooglePress()}
+              disabled={busy || !configured || !request}
+              isLoading={googleLoading}
+            />
+          </View>
+
+          <AppText style={[styles.url, ltrText]}>{API_BASE_URL}</AppText>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1, backgroundColor: '#fff' },
-  container: {
-    flex: 1,
+  safe: { flex: 1, backgroundColor: '#f8fafc' },
+  flex: { flex: 1 },
+  langRow: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    alignItems: 'flex-start',
+  },
+  langRowRtl: { alignItems: 'flex-end' },
+  scroll: {
+    flexGrow: 1,
     justifyContent: 'center',
-    paddingHorizontal: 24,
+    paddingHorizontal: 16,
+    paddingBottom: 32,
   },
-  title: {
-    fontSize: 22,
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: 24,
+    padding: 24,
+    gap: 12,
+  },
+  cardTitle: {
+    fontSize: 20,
     fontWeight: '600',
-    marginTop: 20,
+    color: '#0f172a',
     marginBottom: 4,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#475569',
-    marginBottom: 24,
   },
   label: {
     fontSize: 13,
     color: '#334155',
-    marginBottom: 6,
+    marginBottom: -4,
   },
   input: {
     borderWidth: 1,
     borderColor: '#cbd5e1',
-    borderRadius: 8,
+    borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontSize: 16,
-    marginBottom: 16,
+    backgroundColor: '#fff',
   },
-  button: {
-    backgroundColor: '#0f766e',
-    borderRadius: 8,
-    paddingVertical: 12,
-    alignItems: 'center',
-    minHeight: 48,
-    justifyContent: 'center',
-  },
-  buttonDisabled: { opacity: 0.7 },
-  buttonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
   error: {
     color: '#b91c1c',
-    marginBottom: 16,
+    marginBottom: 4,
   },
   url: {
-    marginTop: 24,
+    marginTop: 20,
     fontSize: 12,
     color: '#94a3b8',
     textAlign: 'center',

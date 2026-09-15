@@ -42,7 +42,8 @@
       "expo-font",
       "expo-splash-screen",
       "expo-localization",
-      "expo-updates"
+      "expo-updates",
+      "expo-web-browser"
     ],
     "owner": "jpaa"
   }

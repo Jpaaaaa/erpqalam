@@ -18,6 +18,7 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
 import {
+  GoogleMobileLoginDto,
   LoginDto,
   RefreshTokenDto,
   RegisterDto,
@@ -67,6 +68,18 @@ export class AuthController {
   @ApiResponse({ status: 200, type: AuthUserDto })
   me(@CurrentUser() user: JwtPayload): Promise<AuthUserDto> {
     return this.authService.getProfile(user.sub);
+  }
+
+  @Post('google/mobile')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Sign in with a Google ID token from the Android app',
+  })
+  @ApiResponse({ status: 200, type: AuthResponseDto })
+  googleMobileLogin(
+    @Body() dto: GoogleMobileLoginDto,
+  ): Promise<AuthResponseDto> {
+    return this.authService.loginWithGoogleIdToken(dto.idToken);
   }
 
   @Get('google')

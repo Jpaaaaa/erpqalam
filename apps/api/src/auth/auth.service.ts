@@ -25,6 +25,10 @@ import {
   RefreshTokenStore,
 } from './interfaces/refresh-token.store';
 import { GoogleOAuthProfile } from './interfaces/google-profile.interface';
+import {
+  GoogleIdTokenError,
+  verifyGoogleAndroidIdToken,
+} from './google-id-token';
 
 const BCRYPT_ROUNDS = 12;
 
@@ -145,6 +149,28 @@ export class AuthService {
     }
 
     return this.buildAuthResponse(user);
+  }
+
+  async loginWithGoogleIdToken(idToken: string): Promise<AuthResponseDto> {
+    const androidClientId = this.config.get<string>('google.androidClientId');
+    if (!androidClientId) {
+      throw new BadRequestException('Google mobile sign-in is not configured');
+    }
+
+    let profile: GoogleOAuthProfile;
+    try {
+      profile = await verifyGoogleAndroidIdToken(idToken, androidClientId);
+    } catch (error) {
+      if (error instanceof GoogleIdTokenError) {
+        if (error.code === 'email_not_verified') {
+          throw new UnauthorizedException('Google email is not verified');
+        }
+        throw new UnauthorizedException('Invalid Google ID token');
+      }
+      throw error;
+    }
+
+    return this.loginWithGoogle(profile);
   }
 
   async loginWithGoogle(profile: GoogleOAuthProfile): Promise<AuthResponseDto> {

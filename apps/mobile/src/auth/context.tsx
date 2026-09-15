@@ -9,6 +9,7 @@ import {
 } from 'react';
 import {
   getCurrentUser,
+  googleLogin as apiGoogleLogin,
   login as apiLogin,
   logout as apiLogout,
   onSessionInvalidated,
@@ -21,6 +22,7 @@ interface AuthContextValue {
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (payload: LoginPayload) => Promise<void>;
+  loginWithGoogle: (idToken: string) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -68,6 +70,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(session.user);
   }, []);
 
+  const loginWithGoogle = useCallback(async (idToken: string) => {
+    const session: Session = await apiGoogleLogin(idToken);
+    setUser(session.user);
+  }, []);
+
   const logout = useCallback(async () => {
     await apiLogout();
     await clearSession();
@@ -80,9 +87,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isLoading,
       isAuthenticated: !!user,
       login,
+      loginWithGoogle,
       logout,
     }),
-    [user, isLoading, login, logout],
+    [user, isLoading, login, loginWithGoogle, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

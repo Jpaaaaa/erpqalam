@@ -94,3 +94,10 @@ export class RefreshTokenDto {
   @IsNotEmpty()
   refreshToken: string;
 }
+
+export class GoogleMobileLoginDto {
+  @ApiProperty({ description: 'Google ID token from the Android OAuth client' })
+  @IsString()
+  @IsNotEmpty()
+  idToken: string;
+}

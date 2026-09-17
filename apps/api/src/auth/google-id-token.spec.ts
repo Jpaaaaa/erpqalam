@@ -11,8 +11,10 @@ jest.mock('google-auth-library', () => ({
 const MockOAuth2Client = OAuth2Client as jest.MockedClass<typeof OAuth2Client>;
 
 describe('verifyGoogleAndroidIdToken', () => {
-  const androidClientId =
-    '668282267650-test.apps.googleusercontent.com';
+  const debugClientId =
+    '668282267650-debug.apps.googleusercontent.com';
+  const releaseClientId =
+    '668282267650-release.apps.googleusercontent.com';
   let verifyIdToken: jest.Mock;
 
   beforeEach(() => {
@@ -37,7 +39,7 @@ describe('verifyGoogleAndroidIdToken', () => {
     });
 
     await expect(
-      verifyGoogleAndroidIdToken('token', androidClientId),
+      verifyGoogleAndroidIdToken('token', [debugClientId]),
     ).resolves.toEqual({
       email: 'user@example.com',
       firstName: 'Jane',
@@ -47,7 +49,27 @@ describe('verifyGoogleAndroidIdToken', () => {
 
     expect(verifyIdToken).toHaveBeenCalledWith({
       idToken: 'token',
-      audience: androidClientId,
+      audience: debugClientId,
+    });
+  });
+
+  it('accepts any configured Android client ID as audience', async () => {
+    verifyIdToken.mockResolvedValue({
+      getPayload: () => ({
+        email: 'user@example.com',
+        email_verified: true,
+        sub: 'google-sub-1',
+      }),
+    });
+
+    await verifyGoogleAndroidIdToken('token', [
+      debugClientId,
+      releaseClientId,
+    ]);
+
+    expect(verifyIdToken).toHaveBeenCalledWith({
+      idToken: 'token',
+      audience: [debugClientId, releaseClientId],
     });
   });
 
@@ -61,7 +83,7 @@ describe('verifyGoogleAndroidIdToken', () => {
     });
 
     await expect(
-      verifyGoogleAndroidIdToken('token', androidClientId),
+      verifyGoogleAndroidIdToken('token', [debugClientId]),
     ).rejects.toMatchObject({ code: 'email_not_verified' });
   });
 
@@ -74,7 +96,7 @@ describe('verifyGoogleAndroidIdToken', () => {
     });
 
     await expect(
-      verifyGoogleAndroidIdToken('token', androidClientId),
+      verifyGoogleAndroidIdToken('token', [debugClientId]),
     ).rejects.toMatchObject({ code: 'email_not_verified' });
   });
 
@@ -82,7 +104,13 @@ describe('verifyGoogleAndroidIdToken', () => {
     verifyIdToken.mockRejectedValue(new Error('invalid token'));
 
     await expect(
-      verifyGoogleAndroidIdToken('token', androidClientId),
+      verifyGoogleAndroidIdToken('token', [debugClientId]),
     ).rejects.toBeInstanceOf(GoogleIdTokenError);
+  });
+
+  it('rejects empty client ID list', async () => {
+    await expect(
+      verifyGoogleAndroidIdToken('token', []),
+    ).rejects.toMatchObject({ code: 'invalid' });
   });
 });

@@ -45,6 +45,10 @@
       "expo-updates",
       "expo-web-browser"
     ],
-    "owner": "jpaa"
+    "owner": "jpaa",
+    "scheme": [
+      "erpqalam",
+      "dev.erpqalam.mobile"
+    ]
   }
 }

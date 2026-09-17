@@ -19,7 +19,7 @@ import {
   isRtlLocale,
   type AppLocale,
 } from './locales';
-import { syncNativeRtl } from './rtl';
+import { syncNativeRtlBoot, syncNativeRtlSwitch } from './rtl';
 import { RestartRequiredScreen } from '../screens/RestartRequiredScreen';
 import { needsJsMirror } from '../ui/rtlLayout';
 
@@ -49,40 +49,41 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   const [needsNativeRestart, setNeedsNativeRestart] = useState(false);
 
   const finishReady = useCallback(async (next: AppLocale) => {
+    console.log('[i18n] finishReady', { locale: next });
     setLocaleState(next);
     setReady(true);
+    console.log('[i18n] splash hide start');
     await SplashScreen.hideAsync().catch(() => undefined);
+    console.log('[i18n] splash hide done');
   }, []);
 
   useEffect(() => {
     let cancelled = false;
 
     async function bootstrap() {
+      console.log('[i18n] bootstrap start');
       await i18nReady;
+      console.log('[i18n] i18nReady');
+
       const stored = await AsyncStorage.getItem(LOCALE_STORAGE_KEY);
       const next: AppLocale = isAppLocale(stored) ? stored : DEFAULT_LOCALE;
       if (!stored) {
         await AsyncStorage.setItem(LOCALE_STORAGE_KEY, next);
       }
+      console.log('[i18n] locale', { stored, next });
+
       await i18n.changeLanguage(next);
       if (cancelled) return;
 
       await Font.loadAsync(FONT_ASSETS);
       if (cancelled) return;
+      console.log('[i18n] fonts loaded');
 
-      const rtl = await syncNativeRtl(isRtlLocale(next));
+      await syncNativeRtlBoot(isRtlLocale(next));
       if (cancelled) return;
 
-      if (rtl === 'reloading') {
-        return;
-      }
-      if (rtl === 'needs_restart') {
-        setNeedsNativeRestart(true);
-        await SplashScreen.hideAsync().catch(() => undefined);
-        return;
-      }
-
       await finishReady(next);
+      console.log('[i18n] bootstrap done');
     }
 
     void bootstrap();
@@ -94,10 +95,21 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   const setLocale = useCallback(
     async (next: AppLocale) => {
       if (next === locale) return;
+
+      const prevRtl = isRtlLocale(locale);
+      const nextRtl = isRtlLocale(next);
+
       await AsyncStorage.setItem(LOCALE_STORAGE_KEY, next);
       await i18n.changeLanguage(next);
 
-      const rtl = await syncNativeRtl(isRtlLocale(next));
+      // ku↔ar: both RTL — no native direction change needed.
+      if (prevRtl === nextRtl) {
+        console.log('[i18n] locale switch same direction', { from: locale, to: next });
+        setLocaleState(next);
+        return;
+      }
+
+      const rtl = await syncNativeRtlSwitch(nextRtl);
       if (rtl === 'reloading') {
         return;
       }

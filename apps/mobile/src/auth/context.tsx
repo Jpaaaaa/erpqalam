@@ -17,6 +17,26 @@ import {
 import { clearSession, getSession, saveSession } from './storage';
 import type { AuthUser, LoginPayload, Session } from '../types/auth';
 
+const AUTH_ME_TIMEOUT_MS = 15_000;
+
+function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      reject(new Error(`${label} timed out after ${ms}ms`));
+    }, ms);
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (err) => {
+        clearTimeout(timer);
+        reject(err);
+      },
+    );
+  });
+}
+
 interface AuthContextValue {
   user: AuthUser | null;
   isLoading: boolean;
@@ -40,25 +60,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     async function bootstrap() {
+      console.log('[auth] bootstrap start');
       const session = await getSession();
       if (!session) {
+        console.log('[auth] no stored session');
         setIsLoading(false);
         return;
       }
 
+      console.log('[auth] /auth/me start');
       try {
-        const freshUser = await getCurrentUser();
+        const freshUser = await withTimeout(
+          getCurrentUser(),
+          AUTH_ME_TIMEOUT_MS,
+          '/auth/me',
+        );
         const latest = await getSession();
         await saveSession({
           user: freshUser,
           tokens: latest?.tokens ?? session.tokens,
         });
         setUser(freshUser);
-      } catch {
+        console.log('[auth] /auth/me done');
+      } catch (err) {
+        console.warn('[auth] /auth/me failed', err);
         await clearSession();
         setUser(null);
       } finally {
         setIsLoading(false);
+        console.log('[auth] bootstrap done');
       }
     }
 

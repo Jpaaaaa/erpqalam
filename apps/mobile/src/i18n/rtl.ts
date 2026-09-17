@@ -10,13 +10,43 @@ export function isExpoGo(): boolean {
   return Constants.appOwnership === 'expo';
 }
 
-export async function syncNativeRtl(
+export type RtlSyncResult = 'ok' | 'reloading' | 'needs_restart';
+
+function applyForceRtl(wantRtl: boolean): void {
+  I18nManager.allowRTL(true);
+  if (wantRtl !== I18nManager.isRTL) {
+    I18nManager.forceRTL(wantRtl);
+  }
+}
+
+/**
+ * Boot path: JS-mirror-first. Never reload or show RestartRequiredScreen.
+ * forceRTL prepares the next cold start; layout uses needsJsMirror until then.
+ */
+export async function syncNativeRtlBoot(wantRtl: boolean): Promise<'ok'> {
+  if (isExpoGo()) {
+    return 'ok';
+  }
+
+  applyForceRtl(wantRtl);
+  return 'ok';
+}
+
+/**
+ * Language-switch path. ku↔ar stays ok (both RTL). LTR↔RTL needs native flip:
+ * release → one guarded reloadAsync; dev client → RestartRequiredScreen (no reload).
+ */
+export async function syncNativeRtlSwitch(
   wantRtl: boolean,
-): Promise<'ok' | 'reloading' | 'needs_restart'> {
+): Promise<RtlSyncResult> {
   I18nManager.allowRTL(true);
 
   if (isExpoGo()) {
-    // forceRTL does not persist in the Expo Go host; layout is driven from locale in JS.
+    return 'ok';
+  }
+
+  if (wantRtl === I18nManager.isRTL) {
+    await AsyncStorage.removeItem(RTL_RELOAD_ATTEMPTED_KEY);
     return 'ok';
   }
 
@@ -27,6 +57,7 @@ export async function syncNativeRtl(
     wantRtl,
     nativeRtl: I18nManager.isRTL,
     isExpoGo: false,
+    isDevClient: __DEV__,
     updatesEnabled: Updates.isEnabled,
     reloadAlreadyTried,
   });
@@ -43,16 +74,11 @@ export async function syncNativeRtl(
     try {
       await Updates.reloadAsync();
       return 'reloading';
-    } catch (err) {
-      console.warn('[i18n] Updates.reloadAsync failed', err);
+    } catch {
       await AsyncStorage.removeItem(RTL_RELOAD_ATTEMPTED_KEY);
       return 'needs_restart';
     }
   }
 
-  console.warn(
-    `[i18n] native RTL is ${I18nManager.isRTL}, want ${wantRtl}; ` +
-      `showing close-and-reopen screen (${plan.reason})`,
-  );
   return 'needs_restart';
 }

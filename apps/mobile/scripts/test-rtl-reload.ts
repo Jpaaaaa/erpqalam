@@ -11,6 +11,7 @@ assert(
     wantRtl: true,
     nativeRtl: true,
     isExpoGo: false,
+    isDevClient: false,
     updatesEnabled: false,
     reloadAlreadyTried: false,
   }).action === 'ok',
@@ -22,29 +23,52 @@ assert(
     wantRtl: false,
     nativeRtl: true,
     isExpoGo: false,
+    isDevClient: true,
+    updatesEnabled: true,
+    reloadAlreadyTried: false,
+  }).action === 'force_and_prompt_restart' &&
+    planRtlSync({
+      wantRtl: false,
+      nativeRtl: true,
+      isExpoGo: false,
+      isDevClient: true,
+      updatesEnabled: true,
+      reloadAlreadyTried: false,
+    }).reason === 'dev_client',
+  'dev client should prompt restart, not reloadAsync',
+);
+
+assert(
+  planRtlSync({
+    wantRtl: false,
+    nativeRtl: true,
+    isExpoGo: false,
+    isDevClient: false,
     updatesEnabled: true,
     reloadAlreadyTried: false,
   }).action === 'force_and_reload',
-  'standalone/dev client should try reloadAsync once',
+  'release build should try reloadAsync once',
 );
 
 const already = planRtlSync({
   wantRtl: false,
   nativeRtl: true,
   isExpoGo: false,
+  isDevClient: false,
   updatesEnabled: true,
   reloadAlreadyTried: true,
 });
 assert(
   already.action === 'force_and_prompt_restart' &&
     already.reason === 'reload_already_tried',
-  'second standalone attempt should prompt, not loop reloadAsync',
+  'second release attempt should prompt, not loop reloadAsync',
 );
 
 const disabled = planRtlSync({
   wantRtl: true,
   nativeRtl: false,
   isExpoGo: false,
+  isDevClient: false,
   updatesEnabled: false,
   reloadAlreadyTried: false,
 });
@@ -54,11 +78,12 @@ assert(
   'no Updates.reloadAsync → prompt close/reopen',
 );
 
-// Expo Go never calls planRtlSync — syncNativeRtl returns 'ok' before planning.
+// Expo Go never calls planRtlSync — syncNativeRtlSwitch returns 'ok' before planning.
 const expoGoPlanner = planRtlSync({
   wantRtl: true,
   nativeRtl: false,
   isExpoGo: true,
+  isDevClient: false,
   updatesEnabled: true,
   reloadAlreadyTried: false,
 });

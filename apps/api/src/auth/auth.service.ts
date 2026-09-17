@@ -152,14 +152,14 @@ export class AuthService {
   }
 
   async loginWithGoogleIdToken(idToken: string): Promise<AuthResponseDto> {
-    const androidClientId = this.config.get<string>('google.androidClientId');
-    if (!androidClientId) {
+    const androidClientIds = this.config.get<string[]>('google.androidClientIds');
+    if (!androidClientIds?.length) {
       throw new BadRequestException('Google mobile sign-in is not configured');
     }
 
     let profile: GoogleOAuthProfile;
     try {
-      profile = await verifyGoogleAndroidIdToken(idToken, androidClientId);
+      profile = await verifyGoogleAndroidIdToken(idToken, androidClientIds);
     } catch (error) {
       if (error instanceof GoogleIdTokenError) {
         if (error.code === 'email_not_verified') {

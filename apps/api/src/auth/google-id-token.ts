@@ -10,15 +10,20 @@ export class GoogleIdTokenError extends Error {
 
 export async function verifyGoogleAndroidIdToken(
   idToken: string,
-  androidClientId: string,
+  androidClientIds: string[],
 ): Promise<GoogleOAuthProfile> {
-  const client = new OAuth2Client(androidClientId);
+  const audiences = androidClientIds.map((id) => id.trim()).filter(Boolean);
+  if (audiences.length === 0) {
+    throw new GoogleIdTokenError('invalid');
+  }
+
+  const client = new OAuth2Client();
 
   let payload;
   try {
     const ticket = await client.verifyIdToken({
       idToken,
-      audience: androidClientId,
+      audience: audiences.length === 1 ? audiences[0] : audiences,
     });
     payload = ticket.getPayload();
   } catch {

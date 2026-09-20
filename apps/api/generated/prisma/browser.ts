@@ -33,6 +33,11 @@ export type PendingStudent = Prisma.PendingStudentModel
  */
 export type Student = Prisma.StudentModel
 /**
+ * Model StudentAuditLog
+ * 
+ */
+export type StudentAuditLog = Prisma.StudentAuditLogModel
+/**
  * Model DocumentRequestSettings
  * 
  */

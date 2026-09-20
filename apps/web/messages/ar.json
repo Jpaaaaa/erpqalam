@@ -306,9 +306,21 @@
       "guardianName": "اسم ولي الطالب",
       "guardianMobile": "رقم موبايل ولي الطالب"
     },
+    "audit": {
+      "editedBy": "تعديل بواسطة {name} · {date}",
+      "details": "التفاصيل",
+      "historyTitle": "سجل التعديلات",
+      "empty": "لا يوجد سجل بعد.",
+      "enrolledBy": "تسجيل بواسطة {name} · {date}",
+      "updatedBy": "تعديل بواسطة {name} · {date}",
+      "columnField": "الحقل",
+      "columnOld": "السابق",
+      "columnNew": "الجديد"
+    },
     "documentRequest": {
       "title": "إنشاء طلب الوثيقة",
       "generateButton": "إنشاء طلب الوثيقة",
+      "sectionRequiredHint": "اختر القسم (الشعبة) أولاً لإنشاء الخطاب.",
       "studentName": "اسم الطالب",
       "languageLabel": "لغة الوثيقة",
       "languageArabic": "عربي",

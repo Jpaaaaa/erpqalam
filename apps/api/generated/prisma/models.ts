@@ -11,6 +11,7 @@
 export type * from './models/School'
 export type * from './models/PendingStudent'
 export type * from './models/Student'
+export type * from './models/StudentAuditLog'
 export type * from './models/DocumentRequestSettings'
 export type * from './models/BackupSettings'
 export type * from './models/DocumentRequestLetter'

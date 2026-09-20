@@ -387,6 +387,7 @@ export const ModelName = {
   School: 'School',
   PendingStudent: 'PendingStudent',
   Student: 'Student',
+  StudentAuditLog: 'StudentAuditLog',
   DocumentRequestSettings: 'DocumentRequestSettings',
   BackupSettings: 'BackupSettings',
   DocumentRequestLetter: 'DocumentRequestLetter',
@@ -415,7 +416,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "school" | "pendingStudent" | "student" | "documentRequestSettings" | "backupSettings" | "documentRequestLetter" | "user" | "refreshToken" | "attendanceDevice" | "attendanceUser" | "attendanceRecord" | "attendanceSettings" | "attendanceHoliday" | "timeLeaveUsage" | "employeeLeaveBalance" | "employeeHoliday"
+    modelProps: "school" | "pendingStudent" | "student" | "studentAuditLog" | "documentRequestSettings" | "backupSettings" | "documentRequestLetter" | "user" | "refreshToken" | "attendanceDevice" | "attendanceUser" | "attendanceRecord" | "attendanceSettings" | "attendanceHoliday" | "timeLeaveUsage" | "employeeLeaveBalance" | "employeeHoliday"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -638,6 +639,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.StudentCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.StudentCountAggregateOutputType> | number
+        }
+      }
+    }
+    StudentAuditLog: {
+      payload: Prisma.$StudentAuditLogPayload<ExtArgs>
+      fields: Prisma.StudentAuditLogFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.StudentAuditLogFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StudentAuditLogPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.StudentAuditLogFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StudentAuditLogPayload>
+        }
+        findFirst: {
+          args: Prisma.StudentAuditLogFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StudentAuditLogPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.StudentAuditLogFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StudentAuditLogPayload>
+        }
+        findMany: {
+          args: Prisma.StudentAuditLogFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StudentAuditLogPayload>[]
+        }
+        create: {
+          args: Prisma.StudentAuditLogCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StudentAuditLogPayload>
+        }
+        createMany: {
+          args: Prisma.StudentAuditLogCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.StudentAuditLogCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StudentAuditLogPayload>[]
+        }
+        delete: {
+          args: Prisma.StudentAuditLogDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StudentAuditLogPayload>
+        }
+        update: {
+          args: Prisma.StudentAuditLogUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StudentAuditLogPayload>
+        }
+        deleteMany: {
+          args: Prisma.StudentAuditLogDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.StudentAuditLogUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.StudentAuditLogUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StudentAuditLogPayload>[]
+        }
+        upsert: {
+          args: Prisma.StudentAuditLogUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StudentAuditLogPayload>
+        }
+        aggregate: {
+          args: Prisma.StudentAuditLogAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateStudentAuditLog>
+        }
+        groupBy: {
+          args: Prisma.StudentAuditLogGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.StudentAuditLogGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.StudentAuditLogCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.StudentAuditLogCountAggregateOutputType> | number
         }
       }
     }
@@ -1717,6 +1792,21 @@ export const StudentScalarFieldEnum = {
 export type StudentScalarFieldEnum = (typeof StudentScalarFieldEnum)[keyof typeof StudentScalarFieldEnum]
 
 
+export const StudentAuditLogScalarFieldEnum = {
+  id: 'id',
+  studentId: 'studentId',
+  pendingStudentId: 'pendingStudentId',
+  schoolId: 'schoolId',
+  action: 'action',
+  changedById: 'changedById',
+  changedByName: 'changedByName',
+  changes: 'changes',
+  createdAt: 'createdAt'
+} as const
+
+export type StudentAuditLogScalarFieldEnum = (typeof StudentAuditLogScalarFieldEnum)[keyof typeof StudentAuditLogScalarFieldEnum]
+
+
 export const DocumentRequestSettingsScalarFieldEnum = {
   id: 'id',
   schoolId: 'schoolId',
@@ -1903,6 +1993,13 @@ export const SortOrder = {
 export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
 
 
+export const JsonNullValueInput = {
+  JsonNull: JsonNull
+} as const
+
+export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
+
+
 export const QueryMode = {
   default: 'default',
   insensitive: 'insensitive'
@@ -1917,6 +2014,15 @@ export const NullsOrder = {
 } as const
 
 export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
+export const JsonNullValueFilter = {
+  DbNull: DbNull,
+  JsonNull: JsonNull,
+  AnyNull: AnyNull
+} as const
+
+export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
 
 
 
@@ -1950,6 +2056,20 @@ export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel
  * Reference to a field of type 'DateTime[]'
  */
 export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime[]'>
+    
+
+
+/**
+ * Reference to a field of type 'Json'
+ */
+export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
+    
+
+
+/**
+ * Reference to a field of type 'QueryMode'
+ */
+export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
     
 
 
@@ -2156,6 +2276,7 @@ export type GlobalOmitConfig = {
   school?: Prisma.SchoolOmit
   pendingStudent?: Prisma.PendingStudentOmit
   student?: Prisma.StudentOmit
+  studentAuditLog?: Prisma.StudentAuditLogOmit
   documentRequestSettings?: Prisma.DocumentRequestSettingsOmit
   backupSettings?: Prisma.BackupSettingsOmit
   documentRequestLetter?: Prisma.DocumentRequestLetterOmit

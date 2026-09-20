@@ -42,6 +42,7 @@ import {
   UpdatePendingStudentDto,
 } from './dto/pending-students.dto';
 import { UpdateStudentDetailsDto } from './dto/student-details.dto';
+import { StudentAuditLogEntryDto } from './dto/student-audit.dto';
 
 @ApiTags('students')
 @Controller()
@@ -84,6 +85,19 @@ export class StudentsController {
     @CurrentUser() user: JwtPayload,
   ): Promise<PaginatedPendingStudentsResponseDto> {
     return this.pendingStudentsService.findAll(user, query);
+  }
+
+  @Get('pending-students/:id/audit')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @RequirePermission(PERMISSIONS.REGISTRATION_VIEW)
+  @ApiOperation({ summary: 'Edit history for a pending student' })
+  @ApiResponse({ status: 200, type: [StudentAuditLogEntryDto] })
+  getPendingStudentAudit(
+    @Param('id') id: string,
+    @CurrentUser() user: JwtPayload,
+  ): Promise<StudentAuditLogEntryDto[]> {
+    return this.pendingStudentsService.getAuditLog(id, user);
   }
 
   @Patch('pending-students/:id')
@@ -163,6 +177,19 @@ export class StudentsController {
     @CurrentUser() user: JwtPayload,
   ): Promise<PaginatedStudentsResponseDto> {
     return this.studentsService.findAll(user, query);
+  }
+
+  @Get('students/:id/audit')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @RequirePermission(PERMISSIONS.REGISTRATION_VIEW)
+  @ApiOperation({ summary: 'Edit history for an enrolled student' })
+  @ApiResponse({ status: 200, type: [StudentAuditLogEntryDto] })
+  getStudentAudit(
+    @Param('id') id: string,
+    @CurrentUser() user: JwtPayload,
+  ): Promise<StudentAuditLogEntryDto[]> {
+    return this.studentsService.getAuditLog(id, user);
   }
 
   @Patch('students/:id/details')

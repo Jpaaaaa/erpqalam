@@ -306,9 +306,21 @@
       "guardianName": "Guardian name",
       "guardianMobile": "Guardian mobile number"
     },
+    "audit": {
+      "editedBy": "Edited by {name} · {date}",
+      "details": "Details",
+      "historyTitle": "Edit history",
+      "empty": "No history yet.",
+      "enrolledBy": "Enrolled by {name} · {date}",
+      "updatedBy": "Edited by {name} · {date}",
+      "columnField": "Field",
+      "columnOld": "Previous",
+      "columnNew": "New"
+    },
     "documentRequest": {
       "title": "Generate document request",
       "generateButton": "Generate document request",
+      "sectionRequiredHint": "Choose a department (section) first to generate a letter.",
       "studentName": "Student name",
       "languageLabel": "Document language",
       "languageArabic": "Arabic",

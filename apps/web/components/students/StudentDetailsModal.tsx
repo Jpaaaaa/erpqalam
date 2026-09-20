@@ -1,18 +1,21 @@
 'use client';
 
-import { FormEvent, useEffect, useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { useLocale, useTranslations } from 'next-intl';
 import {
   ApiClientError as DocumentRequestApiError,
   fetchLatestDocumentRequestPdf,
 } from '@/lib/api/document-requests';
 import {
   ApiClientError,
+  fetchPendingStudentAudit,
+  fetchStudentAudit,
   updatePendingStudent,
   updatePendingStudentDetails,
   updateStudent,
   updateStudentDetails,
 } from '@/lib/api/students';
+import type { StudentAuditLogEntry } from '@/lib/types/student-audit';
 import {
   detailsFormToPayload,
   editFormToStudentPayload,
@@ -35,6 +38,11 @@ import {
 import { IconButton } from '@/components/ui/IconButton';
 import { Alert } from '@/components/ui/Alert';
 import { Modal } from '@/components/ui/Modal';
+import { StudentAuditHistoryModal } from '@/components/students/StudentAuditHistoryModal';
+
+function formatAuditDate(value: string, locale: string) {
+  return new Date(value).toLocaleString(locale);
+}
 
 interface StudentDetailsModalProps {
   open: boolean;
@@ -126,24 +134,49 @@ export function StudentDetailsModal({
   onClose,
   onSaved,
 }: StudentDetailsModalProps) {
+  const locale = useLocale();
   const t = useTranslations('students');
+  const tAudit = useTranslations('students.audit');
   const tDetails = useTranslations('students.detailsForm');
   const tCommon = useTranslations('common');
   const [form, setForm] = useState<DetailsFormState>(() => recordToDetailsForm(record));
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [auditEntries, setAuditEntries] = useState<StudentAuditLogEntry[]>([]);
+  const [auditHistoryOpen, setAuditHistoryOpen] = useState(false);
   const [docRequestOpen, setDocRequestOpen] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewBlob, setPreviewBlob] = useState<Blob | null>(null);
   const [documentNumber, setDocumentNumber] = useState('');
   const [isPreviewLoading, setIsPreviewLoading] = useState(false);
 
+  const loadAudit = useCallback(async () => {
+    try {
+      const entries =
+        mode === 'registered'
+          ? await fetchStudentAudit(record.id)
+          : await fetchPendingStudentAudit(record.id);
+      setAuditEntries(entries);
+    } catch {
+      setAuditEntries([]);
+    }
+  }, [mode, record.id]);
+
   useEffect(() => {
     if (open) {
       setForm(recordToDetailsForm(record));
       setError('');
+      setAuditHistoryOpen(false);
+      void loadAudit();
     }
-  }, [open, record]);
+  }, [open, record, loadAudit]);
+
+  const latestEdit = useMemo(
+    () => auditEntries.find((entry) => entry.action === 'UPDATE'),
+    [auditEntries],
+  );
+
+  const stackedModalOpen = auditHistoryOpen || docRequestOpen || previewOpen;
 
   function resetPreview() {
     setPreviewBlob(null);
@@ -211,6 +244,7 @@ export function StudentDetailsModal({
         } else {
           await updateStudent(record.id, payload);
         }
+        await loadAudit();
         onSaved?.();
         onClose();
       } catch (err) {
@@ -234,6 +268,7 @@ export function StudentDetailsModal({
       } else {
         await updateStudentDetails(record.id, payload);
       }
+      await loadAudit();
       onSaved?.();
       onClose();
     } catch (err) {
@@ -249,23 +284,36 @@ export function StudentDetailsModal({
     ? formatSectionValue(record.section, t)
     : '—';
 
+  const effectiveSection = sectionEditable ? form.section : (record.section ?? '');
+  const documentGenerateBlocked =
+    mode === 'pending' && !effectiveSection.trim();
+
   return (
     <>
       <Modal
         open={open}
         onClose={onClose}
+        closeOnEscape={!stackedModalOpen}
         title={sectionEditable ? t('editSectionTitle') : tDetails('title')}
         footer={
           <div className="flex flex-wrap items-center justify-end gap-2">
             <IconButton label={tDetails('skip')} onClick={onClose}>
               <CloseIcon className="h-5 w-5" />
             </IconButton>
-            <IconButton
-              label={t('documentRequest.generateButton')}
-              onClick={() => setDocRequestOpen(true)}
-            >
-              <DocumentIcon className="h-5 w-5" />
-            </IconButton>
+            <div className="flex max-w-md flex-wrap items-center justify-end gap-2">
+              {documentGenerateBlocked && (
+                <p className="text-xs text-amber-800 sm:text-end">
+                  {t('documentRequest.sectionRequiredHint')}
+                </p>
+              )}
+              <IconButton
+                label={t('documentRequest.generateButton')}
+                disabled={documentGenerateBlocked}
+                onClick={() => setDocRequestOpen(true)}
+              >
+                <DocumentIcon className="h-5 w-5" />
+              </IconButton>
+            </div>
             <IconButton
               label={t('documentRequest.previewButton')}
               onClick={handlePreview}
@@ -300,6 +348,21 @@ export function StudentDetailsModal({
           <legend className="mb-2">
             <FormFieldLabel labelKey="fullName" />
           </legend>
+          {latestEdit && (
+            <p className="text-sm text-slate-600">
+              {tAudit('editedBy', {
+                name: latestEdit.changedByName,
+                date: formatAuditDate(latestEdit.createdAt, locale),
+              })}{' '}
+              <button
+                type="button"
+                className="font-medium text-teal-700 underline-offset-2 hover:underline"
+                onClick={() => setAuditHistoryOpen(true)}
+              >
+                {tAudit('details')}
+              </button>
+            </p>
+          )}
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <NameField
               label={t('firstName')}
@@ -431,6 +494,12 @@ export function StudentDetailsModal({
         />
       </form>
     </Modal>
+
+      <StudentAuditHistoryModal
+        open={auditHistoryOpen}
+        entries={auditEntries}
+        onClose={() => setAuditHistoryOpen(false)}
+      />
 
       <DocumentRequestModal
         open={docRequestOpen}

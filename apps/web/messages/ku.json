@@ -306,9 +306,21 @@
       "guardianName": "ناوی باخێوکار",
       "guardianMobile": "ژ.موبایلی باخێوکار"
     },
+    "audit": {
+      "editedBy": "دەستکاری لەلایەن {name} · {date}",
+      "details": "وردەکاری",
+      "historyTitle": "مێژووی دەستکاری",
+      "empty": "هێشتا مێژوو نییە.",
+      "enrolledBy": "تۆمارکراو لەلایەن {name} · {date}",
+      "updatedBy": "دەستکاری لەلایەن {name} · {date}",
+      "columnField": "خانە",
+      "columnOld": "پێشتر",
+      "columnNew": "نوێ"
+    },
     "documentRequest": {
       "title": "دروستکردنی داواکاری بەڵگە",
       "generateButton": "دروستکردنی داواکاری بەڵگە",
+      "sectionRequiredHint": "سەرەتا بەش (بەش/قسم) هەڵبژێرە بۆ دروستکردنی نامە.",
       "studentName": "ناوی فێرخواز",
       "languageLabel": "زمانی بەڵگە",
       "languageArabic": "عەرەبی",

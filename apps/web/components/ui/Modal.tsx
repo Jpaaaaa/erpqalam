@@ -13,6 +13,8 @@ interface ModalProps {
   panelClassName?: string;
   contentClassName?: string;
   footerClassName?: string;
+  /** When false, Escape does not close this modal (use while a stacked modal is open). */
+  closeOnEscape?: boolean;
 }
 
 const sizeClasses = {
@@ -34,12 +36,13 @@ export function Modal({
   panelClassName = '',
   contentClassName = '',
   footerClassName = '',
+  closeOnEscape = true,
 }: ModalProps) {
   useEffect(() => {
     if (!open) return;
 
     function onKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') {
+      if (event.key === 'Escape' && closeOnEscape) {
         onClose();
       }
     }
@@ -51,7 +54,7 @@ export function Modal({
       document.removeEventListener('keydown', onKeyDown);
       document.body.style.overflow = '';
     };
-  }, [open, onClose]);
+  }, [open, onClose, closeOnEscape]);
 
   if (!open) {
     return null;

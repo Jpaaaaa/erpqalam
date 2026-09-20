@@ -19,6 +19,13 @@ import { PendingStudentResponseDto } from './dto/pending-students.dto';
 import { copyStudentDetailsFromPending, syncPhoneNumbersFromDetails } from './student-details.util';
 import { buildStudentListWhere } from './student-list-filters.util';
 import { pendingInclude, toPendingResponse } from './pending-students.service';
+import {
+  computeUpdateStudentDetailsDtoChanges,
+  computeUpdateStudentDtoChanges,
+  toStudentAuditLogEntries,
+  writeStudentAuditLog,
+} from './student-audit.util';
+import { StudentAuditLogEntryDto } from './dto/student-audit.dto';
 
 const registeredBySelect = {
   id: true,
@@ -126,6 +133,38 @@ export class StudentsService {
     };
   }
 
+  async getAuditLog(
+    id: string,
+    actor: JwtPayload,
+  ): Promise<StudentAuditLogEntryDto[]> {
+    if (!hasPermission(actor.role, actor.permissions, PERMISSIONS.REGISTRATION_VIEW)) {
+      throw new ForbiddenException('You do not have permission to view students');
+    }
+
+    const student = await this.prisma.student.findFirst({
+      where: { id, schoolId: actor.schoolId },
+      select: { id: true },
+    });
+
+    if (!student) {
+      throw new NotFoundException('Student not found');
+    }
+
+    const rows = await this.prisma.studentAuditLog.findMany({
+      where: { studentId: id, schoolId: actor.schoolId },
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        action: true,
+        changedByName: true,
+        createdAt: true,
+        changes: true,
+      },
+    });
+
+    return toStudentAuditLogEntries(rows);
+  }
+
   async getCounts(
     actor: JwtPayload,
   ): Promise<{ pending: number; registered: number }> {
@@ -160,15 +199,40 @@ export class StudentsService {
       throw new NotFoundException('Student not found');
     }
 
+    if (Object.keys(dto).length === 0) {
+      throw new BadRequestException('At least one field is required');
+    }
+
+    const changes = computeUpdateStudentDetailsDtoChanges(existing, dto);
+    if (changes.length === 0) {
+      const unchanged = await this.prisma.student.findFirstOrThrow({
+        where: { id },
+        include: studentInclude,
+      });
+      return toStudentResponse(unchanged);
+    }
+
     const phoneNumbers = syncPhoneNumbersFromDetails(existing.phoneNumbers, dto);
 
-    const student = await this.prisma.student.update({
-      where: { id },
-      data: {
-        ...buildDetailsUpdateData(dto),
-        ...(phoneNumbers !== undefined && { phoneNumbers }),
-      },
-      include: studentInclude,
+    const student = await this.prisma.$transaction(async (tx) => {
+      const updated = await tx.student.update({
+        where: { id },
+        data: {
+          ...buildDetailsUpdateData(dto),
+          ...(phoneNumbers !== undefined && { phoneNumbers }),
+        },
+        include: studentInclude,
+      });
+
+      await writeStudentAuditLog(tx, {
+        studentId: id,
+        schoolId: actor.schoolId,
+        action: 'UPDATE',
+        actor,
+        changes,
+      });
+
+      return updated;
     });
 
     return toStudentResponse(student);
@@ -219,10 +283,31 @@ export class StudentsService {
       throw new BadRequestException('At least one field is required');
     }
 
-    const student = await this.prisma.student.update({
-      where: { id },
-      data,
-      include: studentInclude,
+    const changes = computeUpdateStudentDtoChanges(existing, dto);
+    if (changes.length === 0) {
+      const unchanged = await this.prisma.student.findFirstOrThrow({
+        where: { id },
+        include: studentInclude,
+      });
+      return toStudentResponse(unchanged);
+    }
+
+    const student = await this.prisma.$transaction(async (tx) => {
+      const updated = await tx.student.update({
+        where: { id },
+        data,
+        include: studentInclude,
+      });
+
+      await writeStudentAuditLog(tx, {
+        studentId: id,
+        schoolId: actor.schoolId,
+        action: 'UPDATE',
+        actor,
+        changes,
+      });
+
+      return updated;
     });
 
     return toStudentResponse(student);

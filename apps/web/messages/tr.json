@@ -201,9 +201,21 @@
       "guardianName": "Veli adı",
       "guardianMobile": "Veli cep telefonu"
     },
+    "audit": {
+      "editedBy": "{name} tarafından düzenlendi · {date}",
+      "details": "Ayrıntılar",
+      "historyTitle": "Düzenleme geçmişi",
+      "empty": "Henüz geçmiş yok.",
+      "enrolledBy": "{name} tarafından kaydedildi · {date}",
+      "updatedBy": "{name} tarafından düzenlendi · {date}",
+      "columnField": "Alan",
+      "columnOld": "Önceki",
+      "columnNew": "Yeni"
+    },
     "documentRequest": {
       "title": "Generate document request",
       "generateButton": "Generate document request",
+      "sectionRequiredHint": "Choose a department (section) first to generate a letter.",
       "studentName": "Student name",
       "languageLabel": "Document language",
       "languageArabic": "Arabic",

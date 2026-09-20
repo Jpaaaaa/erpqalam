@@ -54,6 +54,7 @@ export const ModelName = {
   School: 'School',
   PendingStudent: 'PendingStudent',
   Student: 'Student',
+  StudentAuditLog: 'StudentAuditLog',
   DocumentRequestSettings: 'DocumentRequestSettings',
   BackupSettings: 'BackupSettings',
   DocumentRequestLetter: 'DocumentRequestLetter',
@@ -158,6 +159,21 @@ export const StudentScalarFieldEnum = {
 } as const
 
 export type StudentScalarFieldEnum = (typeof StudentScalarFieldEnum)[keyof typeof StudentScalarFieldEnum]
+
+
+export const StudentAuditLogScalarFieldEnum = {
+  id: 'id',
+  studentId: 'studentId',
+  pendingStudentId: 'pendingStudentId',
+  schoolId: 'schoolId',
+  action: 'action',
+  changedById: 'changedById',
+  changedByName: 'changedByName',
+  changes: 'changes',
+  createdAt: 'createdAt'
+} as const
+
+export type StudentAuditLogScalarFieldEnum = (typeof StudentAuditLogScalarFieldEnum)[keyof typeof StudentAuditLogScalarFieldEnum]
 
 
 export const DocumentRequestSettingsScalarFieldEnum = {
@@ -346,6 +362,13 @@ export const SortOrder = {
 export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
 
 
+export const JsonNullValueInput = {
+  JsonNull: JsonNull
+} as const
+
+export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
+
+
 export const QueryMode = {
   default: 'default',
   insensitive: 'insensitive'
@@ -360,4 +383,13 @@ export const NullsOrder = {
 } as const
 
 export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
+export const JsonNullValueFilter = {
+  DbNull: DbNull,
+  JsonNull: JsonNull,
+  AnyNull: AnyNull
+} as const
+
+export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
 

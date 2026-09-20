@@ -341,6 +341,7 @@ export type StudentWhereInput = {
   school?: Prisma.XOR<Prisma.SchoolScalarRelationFilter, Prisma.SchoolWhereInput>
   registeredBy?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   documentRequestLetters?: Prisma.DocumentRequestLetterListRelationFilter
+  auditLogs?: Prisma.StudentAuditLogListRelationFilter
 }
 
 export type StudentOrderByWithRelationInput = {
@@ -372,6 +373,7 @@ export type StudentOrderByWithRelationInput = {
   school?: Prisma.SchoolOrderByWithRelationInput
   registeredBy?: Prisma.UserOrderByWithRelationInput
   documentRequestLetters?: Prisma.DocumentRequestLetterOrderByRelationAggregateInput
+  auditLogs?: Prisma.StudentAuditLogOrderByRelationAggregateInput
 }
 
 export type StudentWhereUniqueInput = Prisma.AtLeast<{
@@ -406,6 +408,7 @@ export type StudentWhereUniqueInput = Prisma.AtLeast<{
   school?: Prisma.XOR<Prisma.SchoolScalarRelationFilter, Prisma.SchoolWhereInput>
   registeredBy?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   documentRequestLetters?: Prisma.DocumentRequestLetterListRelationFilter
+  auditLogs?: Prisma.StudentAuditLogListRelationFilter
 }, "id" | "pendingStudentId">
 
 export type StudentOrderByWithAggregationInput = {
@@ -497,6 +500,7 @@ export type StudentCreateInput = {
   school: Prisma.SchoolCreateNestedOneWithoutStudentsInput
   registeredBy?: Prisma.UserCreateNestedOneWithoutRegisteredStudentsInput
   documentRequestLetters?: Prisma.DocumentRequestLetterCreateNestedManyWithoutStudentInput
+  auditLogs?: Prisma.StudentAuditLogCreateNestedManyWithoutStudentInput
 }
 
 export type StudentUncheckedCreateInput = {
@@ -526,6 +530,7 @@ export type StudentUncheckedCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   documentRequestLetters?: Prisma.DocumentRequestLetterUncheckedCreateNestedManyWithoutStudentInput
+  auditLogs?: Prisma.StudentAuditLogUncheckedCreateNestedManyWithoutStudentInput
 }
 
 export type StudentUpdateInput = {
@@ -555,6 +560,7 @@ export type StudentUpdateInput = {
   school?: Prisma.SchoolUpdateOneRequiredWithoutStudentsNestedInput
   registeredBy?: Prisma.UserUpdateOneWithoutRegisteredStudentsNestedInput
   documentRequestLetters?: Prisma.DocumentRequestLetterUpdateManyWithoutStudentNestedInput
+  auditLogs?: Prisma.StudentAuditLogUpdateManyWithoutStudentNestedInput
 }
 
 export type StudentUncheckedUpdateInput = {
@@ -584,6 +590,7 @@ export type StudentUncheckedUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   documentRequestLetters?: Prisma.DocumentRequestLetterUncheckedUpdateManyWithoutStudentNestedInput
+  auditLogs?: Prisma.StudentAuditLogUncheckedUpdateManyWithoutStudentNestedInput
 }
 
 export type StudentCreateManyInput = {
@@ -816,6 +823,22 @@ export type StudentUpdatephoneNumbersInput = {
   push?: string | string[]
 }
 
+export type StudentCreateNestedOneWithoutAuditLogsInput = {
+  create?: Prisma.XOR<Prisma.StudentCreateWithoutAuditLogsInput, Prisma.StudentUncheckedCreateWithoutAuditLogsInput>
+  connectOrCreate?: Prisma.StudentCreateOrConnectWithoutAuditLogsInput
+  connect?: Prisma.StudentWhereUniqueInput
+}
+
+export type StudentUpdateOneWithoutAuditLogsNestedInput = {
+  create?: Prisma.XOR<Prisma.StudentCreateWithoutAuditLogsInput, Prisma.StudentUncheckedCreateWithoutAuditLogsInput>
+  connectOrCreate?: Prisma.StudentCreateOrConnectWithoutAuditLogsInput
+  upsert?: Prisma.StudentUpsertWithoutAuditLogsInput
+  disconnect?: Prisma.StudentWhereInput | boolean
+  delete?: Prisma.StudentWhereInput | boolean
+  connect?: Prisma.StudentWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.StudentUpdateToOneWithWhereWithoutAuditLogsInput, Prisma.StudentUpdateWithoutAuditLogsInput>, Prisma.StudentUncheckedUpdateWithoutAuditLogsInput>
+}
+
 export type StudentCreateNestedOneWithoutDocumentRequestLettersInput = {
   create?: Prisma.XOR<Prisma.StudentCreateWithoutDocumentRequestLettersInput, Prisma.StudentUncheckedCreateWithoutDocumentRequestLettersInput>
   connectOrCreate?: Prisma.StudentCreateOrConnectWithoutDocumentRequestLettersInput
@@ -900,6 +923,7 @@ export type StudentCreateWithoutSchoolInput = {
   updatedAt?: Date | string
   registeredBy?: Prisma.UserCreateNestedOneWithoutRegisteredStudentsInput
   documentRequestLetters?: Prisma.DocumentRequestLetterCreateNestedManyWithoutStudentInput
+  auditLogs?: Prisma.StudentAuditLogCreateNestedManyWithoutStudentInput
 }
 
 export type StudentUncheckedCreateWithoutSchoolInput = {
@@ -928,6 +952,7 @@ export type StudentUncheckedCreateWithoutSchoolInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   documentRequestLetters?: Prisma.DocumentRequestLetterUncheckedCreateNestedManyWithoutStudentInput
+  auditLogs?: Prisma.StudentAuditLogUncheckedCreateNestedManyWithoutStudentInput
 }
 
 export type StudentCreateOrConnectWithoutSchoolInput = {
@@ -987,6 +1012,138 @@ export type StudentScalarWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"Student"> | Date | string
 }
 
+export type StudentCreateWithoutAuditLogsInput = {
+  id?: string
+  firstName: string
+  secondName: string
+  thirdName?: string | null
+  fourthName?: string | null
+  section: string
+  phoneNumbers?: Prisma.StudentCreatephoneNumbersInput | string[]
+  guardianInfo?: string | null
+  comeViaWho?: string | null
+  homeAddress?: string | null
+  birthPlace?: string | null
+  birthDate?: Date | string | null
+  nationalIdNumber?: string | null
+  residenceCardNumber?: string | null
+  foodRationCardNumber?: string | null
+  guardianName?: string | null
+  guardianMobile?: string | null
+  stage?: string | null
+  detailsCompletedAt?: Date | string | null
+  registeredAt?: Date | string
+  pendingStudentId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  school: Prisma.SchoolCreateNestedOneWithoutStudentsInput
+  registeredBy?: Prisma.UserCreateNestedOneWithoutRegisteredStudentsInput
+  documentRequestLetters?: Prisma.DocumentRequestLetterCreateNestedManyWithoutStudentInput
+}
+
+export type StudentUncheckedCreateWithoutAuditLogsInput = {
+  id?: string
+  firstName: string
+  secondName: string
+  thirdName?: string | null
+  fourthName?: string | null
+  section: string
+  phoneNumbers?: Prisma.StudentCreatephoneNumbersInput | string[]
+  guardianInfo?: string | null
+  comeViaWho?: string | null
+  homeAddress?: string | null
+  birthPlace?: string | null
+  birthDate?: Date | string | null
+  nationalIdNumber?: string | null
+  residenceCardNumber?: string | null
+  foodRationCardNumber?: string | null
+  guardianName?: string | null
+  guardianMobile?: string | null
+  stage?: string | null
+  detailsCompletedAt?: Date | string | null
+  schoolId: string
+  registeredByUserId?: string | null
+  registeredAt?: Date | string
+  pendingStudentId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  documentRequestLetters?: Prisma.DocumentRequestLetterUncheckedCreateNestedManyWithoutStudentInput
+}
+
+export type StudentCreateOrConnectWithoutAuditLogsInput = {
+  where: Prisma.StudentWhereUniqueInput
+  create: Prisma.XOR<Prisma.StudentCreateWithoutAuditLogsInput, Prisma.StudentUncheckedCreateWithoutAuditLogsInput>
+}
+
+export type StudentUpsertWithoutAuditLogsInput = {
+  update: Prisma.XOR<Prisma.StudentUpdateWithoutAuditLogsInput, Prisma.StudentUncheckedUpdateWithoutAuditLogsInput>
+  create: Prisma.XOR<Prisma.StudentCreateWithoutAuditLogsInput, Prisma.StudentUncheckedCreateWithoutAuditLogsInput>
+  where?: Prisma.StudentWhereInput
+}
+
+export type StudentUpdateToOneWithWhereWithoutAuditLogsInput = {
+  where?: Prisma.StudentWhereInput
+  data: Prisma.XOR<Prisma.StudentUpdateWithoutAuditLogsInput, Prisma.StudentUncheckedUpdateWithoutAuditLogsInput>
+}
+
+export type StudentUpdateWithoutAuditLogsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  secondName?: Prisma.StringFieldUpdateOperationsInput | string
+  thirdName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fourthName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  section?: Prisma.StringFieldUpdateOperationsInput | string
+  phoneNumbers?: Prisma.StudentUpdatephoneNumbersInput | string[]
+  guardianInfo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  comeViaWho?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  homeAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  birthPlace?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  birthDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  nationalIdNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  residenceCardNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  foodRationCardNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  guardianName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  guardianMobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  detailsCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  registeredAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  pendingStudentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  school?: Prisma.SchoolUpdateOneRequiredWithoutStudentsNestedInput
+  registeredBy?: Prisma.UserUpdateOneWithoutRegisteredStudentsNestedInput
+  documentRequestLetters?: Prisma.DocumentRequestLetterUpdateManyWithoutStudentNestedInput
+}
+
+export type StudentUncheckedUpdateWithoutAuditLogsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  secondName?: Prisma.StringFieldUpdateOperationsInput | string
+  thirdName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fourthName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  section?: Prisma.StringFieldUpdateOperationsInput | string
+  phoneNumbers?: Prisma.StudentUpdatephoneNumbersInput | string[]
+  guardianInfo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  comeViaWho?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  homeAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  birthPlace?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  birthDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  nationalIdNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  residenceCardNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  foodRationCardNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  guardianName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  guardianMobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  detailsCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  schoolId?: Prisma.StringFieldUpdateOperationsInput | string
+  registeredByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  registeredAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  pendingStudentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  documentRequestLetters?: Prisma.DocumentRequestLetterUncheckedUpdateManyWithoutStudentNestedInput
+}
+
 export type StudentCreateWithoutDocumentRequestLettersInput = {
   id?: string
   firstName: string
@@ -1013,6 +1170,7 @@ export type StudentCreateWithoutDocumentRequestLettersInput = {
   updatedAt?: Date | string
   school: Prisma.SchoolCreateNestedOneWithoutStudentsInput
   registeredBy?: Prisma.UserCreateNestedOneWithoutRegisteredStudentsInput
+  auditLogs?: Prisma.StudentAuditLogCreateNestedManyWithoutStudentInput
 }
 
 export type StudentUncheckedCreateWithoutDocumentRequestLettersInput = {
@@ -1041,6 +1199,7 @@ export type StudentUncheckedCreateWithoutDocumentRequestLettersInput = {
   pendingStudentId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  auditLogs?: Prisma.StudentAuditLogUncheckedCreateNestedManyWithoutStudentInput
 }
 
 export type StudentCreateOrConnectWithoutDocumentRequestLettersInput = {
@@ -1085,6 +1244,7 @@ export type StudentUpdateWithoutDocumentRequestLettersInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   school?: Prisma.SchoolUpdateOneRequiredWithoutStudentsNestedInput
   registeredBy?: Prisma.UserUpdateOneWithoutRegisteredStudentsNestedInput
+  auditLogs?: Prisma.StudentAuditLogUpdateManyWithoutStudentNestedInput
 }
 
 export type StudentUncheckedUpdateWithoutDocumentRequestLettersInput = {
@@ -1113,6 +1273,7 @@ export type StudentUncheckedUpdateWithoutDocumentRequestLettersInput = {
   pendingStudentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  auditLogs?: Prisma.StudentAuditLogUncheckedUpdateManyWithoutStudentNestedInput
 }
 
 export type StudentCreateWithoutRegisteredByInput = {
@@ -1141,6 +1302,7 @@ export type StudentCreateWithoutRegisteredByInput = {
   updatedAt?: Date | string
   school: Prisma.SchoolCreateNestedOneWithoutStudentsInput
   documentRequestLetters?: Prisma.DocumentRequestLetterCreateNestedManyWithoutStudentInput
+  auditLogs?: Prisma.StudentAuditLogCreateNestedManyWithoutStudentInput
 }
 
 export type StudentUncheckedCreateWithoutRegisteredByInput = {
@@ -1169,6 +1331,7 @@ export type StudentUncheckedCreateWithoutRegisteredByInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   documentRequestLetters?: Prisma.DocumentRequestLetterUncheckedCreateNestedManyWithoutStudentInput
+  auditLogs?: Prisma.StudentAuditLogUncheckedCreateNestedManyWithoutStudentInput
 }
 
 export type StudentCreateOrConnectWithoutRegisteredByInput = {
@@ -1250,6 +1413,7 @@ export type StudentUpdateWithoutSchoolInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   registeredBy?: Prisma.UserUpdateOneWithoutRegisteredStudentsNestedInput
   documentRequestLetters?: Prisma.DocumentRequestLetterUpdateManyWithoutStudentNestedInput
+  auditLogs?: Prisma.StudentAuditLogUpdateManyWithoutStudentNestedInput
 }
 
 export type StudentUncheckedUpdateWithoutSchoolInput = {
@@ -1278,6 +1442,7 @@ export type StudentUncheckedUpdateWithoutSchoolInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   documentRequestLetters?: Prisma.DocumentRequestLetterUncheckedUpdateManyWithoutStudentNestedInput
+  auditLogs?: Prisma.StudentAuditLogUncheckedUpdateManyWithoutStudentNestedInput
 }
 
 export type StudentUncheckedUpdateManyWithoutSchoolInput = {
@@ -1360,6 +1525,7 @@ export type StudentUpdateWithoutRegisteredByInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   school?: Prisma.SchoolUpdateOneRequiredWithoutStudentsNestedInput
   documentRequestLetters?: Prisma.DocumentRequestLetterUpdateManyWithoutStudentNestedInput
+  auditLogs?: Prisma.StudentAuditLogUpdateManyWithoutStudentNestedInput
 }
 
 export type StudentUncheckedUpdateWithoutRegisteredByInput = {
@@ -1388,6 +1554,7 @@ export type StudentUncheckedUpdateWithoutRegisteredByInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   documentRequestLetters?: Prisma.DocumentRequestLetterUncheckedUpdateManyWithoutStudentNestedInput
+  auditLogs?: Prisma.StudentAuditLogUncheckedUpdateManyWithoutStudentNestedInput
 }
 
 export type StudentUncheckedUpdateManyWithoutRegisteredByInput = {
@@ -1424,10 +1591,12 @@ export type StudentUncheckedUpdateManyWithoutRegisteredByInput = {
 
 export type StudentCountOutputType = {
   documentRequestLetters: number
+  auditLogs: number
 }
 
 export type StudentCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   documentRequestLetters?: boolean | StudentCountOutputTypeCountDocumentRequestLettersArgs
+  auditLogs?: boolean | StudentCountOutputTypeCountAuditLogsArgs
 }
 
 /**
@@ -1445,6 +1614,13 @@ export type StudentCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Exte
  */
 export type StudentCountOutputTypeCountDocumentRequestLettersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.DocumentRequestLetterWhereInput
+}
+
+/**
+ * StudentCountOutputType without action
+ */
+export type StudentCountOutputTypeCountAuditLogsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.StudentAuditLogWhereInput
 }
 
 
@@ -1477,6 +1653,7 @@ export type StudentSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   school?: boolean | Prisma.SchoolDefaultArgs<ExtArgs>
   registeredBy?: boolean | Prisma.Student$registeredByArgs<ExtArgs>
   documentRequestLetters?: boolean | Prisma.Student$documentRequestLettersArgs<ExtArgs>
+  auditLogs?: boolean | Prisma.Student$auditLogsArgs<ExtArgs>
   _count?: boolean | Prisma.StudentCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["student"]>
 
@@ -1573,6 +1750,7 @@ export type StudentInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs
   school?: boolean | Prisma.SchoolDefaultArgs<ExtArgs>
   registeredBy?: boolean | Prisma.Student$registeredByArgs<ExtArgs>
   documentRequestLetters?: boolean | Prisma.Student$documentRequestLettersArgs<ExtArgs>
+  auditLogs?: boolean | Prisma.Student$auditLogsArgs<ExtArgs>
   _count?: boolean | Prisma.StudentCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type StudentIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1590,6 +1768,7 @@ export type $StudentPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     school: Prisma.$SchoolPayload<ExtArgs>
     registeredBy: Prisma.$UserPayload<ExtArgs> | null
     documentRequestLetters: Prisma.$DocumentRequestLetterPayload<ExtArgs>[]
+    auditLogs: Prisma.$StudentAuditLogPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -2014,6 +2193,7 @@ export interface Prisma__StudentClient<T, Null = never, ExtArgs extends runtime.
   school<T extends Prisma.SchoolDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SchoolDefaultArgs<ExtArgs>>): Prisma.Prisma__SchoolClient<runtime.Types.Result.GetResult<Prisma.$SchoolPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   registeredBy<T extends Prisma.Student$registeredByArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Student$registeredByArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   documentRequestLetters<T extends Prisma.Student$documentRequestLettersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Student$documentRequestLettersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DocumentRequestLetterPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  auditLogs<T extends Prisma.Student$auditLogsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Student$auditLogsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$StudentAuditLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2509,6 +2689,30 @@ export type Student$documentRequestLettersArgs<ExtArgs extends runtime.Types.Ext
   take?: number
   skip?: number
   distinct?: Prisma.DocumentRequestLetterScalarFieldEnum | Prisma.DocumentRequestLetterScalarFieldEnum[]
+}
+
+/**
+ * Student.auditLogs
+ */
+export type Student$auditLogsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the StudentAuditLog
+   */
+  select?: Prisma.StudentAuditLogSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the StudentAuditLog
+   */
+  omit?: Prisma.StudentAuditLogOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.StudentAuditLogInclude<ExtArgs> | null
+  where?: Prisma.StudentAuditLogWhereInput
+  orderBy?: Prisma.StudentAuditLogOrderByWithRelationInput | Prisma.StudentAuditLogOrderByWithRelationInput[]
+  cursor?: Prisma.StudentAuditLogWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.StudentAuditLogScalarFieldEnum | Prisma.StudentAuditLogScalarFieldEnum[]
 }
 
 /**

@@ -71,6 +71,7 @@ model PendingStudent {
   updatedAt         DateTime @updatedAt
 
   documentRequestLetters DocumentRequestLetter[]
+  auditLogs              StudentAuditLog[]
 
   @@index([schoolId])
   @@index([submittedByUserId])
@@ -110,10 +111,30 @@ model Student {
   updatedAt          DateTime @updatedAt
 
   documentRequestLetters DocumentRequestLetter[]
+  auditLogs              StudentAuditLog[]
 
   @@index([schoolId])
   @@index([registeredByUserId])
   @@index([schoolId, registeredAt])
+}
+
+model StudentAuditLog {
+  id               String   @id @default(cuid())
+  studentId        String?
+  pendingStudentId String?
+  schoolId         String
+  action           String
+  changedById      String?
+  changedByName    String
+  changes          Json
+  createdAt        DateTime @default(now())
+
+  student        Student?        @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  pendingStudent PendingStudent? @relation(fields: [pendingStudentId], references: [id], onDelete: Cascade)
+
+  @@index([studentId, createdAt])
+  @@index([pendingStudentId, createdAt])
+  @@index([schoolId])
 }
 
 model DocumentRequestSettings {

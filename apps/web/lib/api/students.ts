@@ -9,6 +9,7 @@ import type {
   UpdatePendingStudentPayload,
 } from '@/lib/types/student';
 import type { UpdateStudentDetailsPayload } from '@/lib/types/student-details';
+import type { StudentAuditLogEntry } from '@/lib/types/student-audit';
 import type { PendingStudentFilters } from '@/lib/students/pending-filters';
 import { pendingFiltersToQueryParams } from '@/lib/students/pending-filters';
 
@@ -169,6 +170,20 @@ export async function updateStudentDetails(
     method: 'PATCH',
     body: JSON.stringify(payload),
   });
+}
+
+export async function fetchStudentAudit(
+  studentId: string,
+): Promise<StudentAuditLogEntry[]> {
+  return apiRequest<StudentAuditLogEntry[]>(`/students/${studentId}/audit`);
+}
+
+export async function fetchPendingStudentAudit(
+  pendingStudentId: string,
+): Promise<StudentAuditLogEntry[]> {
+  return apiRequest<StudentAuditLogEntry[]>(
+    `/pending-students/${pendingStudentId}/audit`,
+  );
 }
 
 /** @deprecated Use approvePendingStudent */

@@ -24,6 +24,16 @@ import {
   copyStudentDetailsFromPending,
   syncPhoneNumbersFromDetails,
 } from './student-details.util';
+import { StudentAuditLogEntryDto } from './dto/student-audit.dto';
+import { repointPendingStudentLinksOnApprove } from './student-record-repoint.util';
+import {
+  computeCreateAuditChanges,
+  computeUpdatePendingStudentDtoChanges,
+  computeUpdateStudentDetailsDtoChanges,
+  toStudentAuditLogEntries,
+  toStudentAuditSource,
+  writeStudentAuditLog,
+} from './student-audit.util';
 import {
   buildPendingListWhere,
   phoneIlikePattern,
@@ -223,6 +233,38 @@ export class PendingStudentsService {
     };
   }
 
+  async getAuditLog(
+    id: string,
+    actor: JwtPayload,
+  ): Promise<StudentAuditLogEntryDto[]> {
+    if (!hasPermission(actor.role, actor.permissions, PERMISSIONS.REGISTRATION_VIEW)) {
+      throw new ForbiddenException('You do not have permission to view pending students');
+    }
+
+    const pending = await this.prisma.pendingStudent.findFirst({
+      where: { id, schoolId: actor.schoolId },
+      select: { id: true },
+    });
+
+    if (!pending) {
+      throw new NotFoundException('Pending student not found');
+    }
+
+    const rows = await this.prisma.studentAuditLog.findMany({
+      where: { pendingStudentId: id, schoolId: actor.schoolId },
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        action: true,
+        changedByName: true,
+        createdAt: true,
+        changes: true,
+      },
+    });
+
+    return toStudentAuditLogEntries(rows);
+  }
+
   async update(
     id: string,
     dto: UpdatePendingStudentDto,
@@ -240,25 +282,61 @@ export class PendingStudentsService {
       throw new NotFoundException('Pending student not found');
     }
 
-    const row = await this.prisma.pendingStudent.update({
-      where: { id },
-      data: {
-        ...(dto.firstName !== undefined && { firstName: dto.firstName.trim() }),
-        ...(dto.secondName !== undefined && { secondName: dto.secondName.trim() }),
-        ...(dto.thirdName !== undefined && { thirdName: dto.thirdName.trim() }),
-        ...(dto.fourthName !== undefined && { fourthName: dto.fourthName.trim() }),
-        ...(dto.section !== undefined && { section: dto.section.trim() }),
-        ...(dto.phoneNumbers !== undefined && {
-          phoneNumbers: normalizePhones(dto.phoneNumbers),
-        }),
-        ...(dto.guardianInfo !== undefined && {
-          guardianInfo: dto.guardianInfo.trim() || null,
-        }),
-        ...(dto.comeViaWho !== undefined && {
-          comeViaWho: dto.comeViaWho.trim() || null,
-        }),
-      },
-      include: pendingInclude,
+    if (Object.keys(dto).length === 0) {
+      throw new BadRequestException('At least one field is required');
+    }
+
+    const dtoForDiff: UpdatePendingStudentDto = {
+      ...dto,
+      ...(dto.phoneNumbers !== undefined && {
+        phoneNumbers: normalizePhones(dto.phoneNumbers),
+      }),
+    };
+
+    const changes = computeUpdatePendingStudentDtoChanges(
+      toStudentAuditSource(existing),
+      dtoForDiff,
+    );
+
+    if (changes.length === 0) {
+      const unchanged = await this.prisma.pendingStudent.findFirstOrThrow({
+        where: { id },
+        include: pendingInclude,
+      });
+      return toPendingResponse(unchanged);
+    }
+
+    const row = await this.prisma.$transaction(async (tx) => {
+      const updated = await tx.pendingStudent.update({
+        where: { id },
+        data: {
+          ...(dto.firstName !== undefined && { firstName: dto.firstName.trim() }),
+          ...(dto.secondName !== undefined && { secondName: dto.secondName.trim() }),
+          ...(dto.thirdName !== undefined && { thirdName: dto.thirdName.trim() }),
+          ...(dto.fourthName !== undefined && { fourthName: dto.fourthName.trim() }),
+          ...(dto.section !== undefined && { section: dto.section.trim() }),
+          ...(dto.phoneNumbers !== undefined && {
+            phoneNumbers: normalizePhones(dto.phoneNumbers),
+          }),
+          ...(dto.guardianInfo !== undefined && {
+            guardianInfo: dto.guardianInfo.trim() || null,
+          }),
+          ...(dto.comeViaWho !== undefined && {
+            comeViaWho: dto.comeViaWho.trim() || null,
+          }),
+        },
+        include: pendingInclude,
+      });
+
+      await writeStudentAuditLog(tx, {
+        pendingStudentId: id,
+        schoolId: actor.schoolId,
+        action: 'UPDATE',
+        actor,
+        changes,
+      });
+
+      return updated;
     });
 
     return toPendingResponse(row);
@@ -281,15 +359,44 @@ export class PendingStudentsService {
       throw new NotFoundException('Pending student not found');
     }
 
+    if (Object.keys(dto).length === 0) {
+      throw new BadRequestException('At least one field is required');
+    }
+
+    const changes = computeUpdateStudentDetailsDtoChanges(
+      toStudentAuditSource(existing),
+      dto,
+    );
+
+    if (changes.length === 0) {
+      const unchanged = await this.prisma.pendingStudent.findFirstOrThrow({
+        where: { id },
+        include: pendingInclude,
+      });
+      return toPendingResponse(unchanged);
+    }
+
     const phoneNumbers = syncPhoneNumbersFromDetails(existing.phoneNumbers, dto);
 
-    const row = await this.prisma.pendingStudent.update({
-      where: { id },
-      data: {
-        ...buildDetailsUpdateData(dto),
-        ...(phoneNumbers !== undefined && { phoneNumbers }),
-      },
-      include: pendingInclude,
+    const row = await this.prisma.$transaction(async (tx) => {
+      const updated = await tx.pendingStudent.update({
+        where: { id },
+        data: {
+          ...buildDetailsUpdateData(dto),
+          ...(phoneNumbers !== undefined && { phoneNumbers }),
+        },
+        include: pendingInclude,
+      });
+
+      await writeStudentAuditLog(tx, {
+        pendingStudentId: id,
+        schoolId: actor.schoolId,
+        action: 'UPDATE',
+        actor,
+        changes,
+      });
+
+      return updated;
     });
 
     return toPendingResponse(row);
@@ -345,6 +452,20 @@ export class PendingStudentsService {
         include: {
           registeredBy: { select: staffSelect },
         },
+      });
+
+      await repointPendingStudentLinksOnApprove(tx, {
+        pendingStudentId: pending.id,
+        studentId: student.id,
+        schoolId: pending.schoolId,
+      });
+
+      await writeStudentAuditLog(tx, {
+        studentId: student.id,
+        schoolId: pending.schoolId,
+        action: 'CREATE',
+        actor,
+        changes: computeCreateAuditChanges(),
       });
 
       await tx.pendingStudent.delete({ where: { id: pending.id } });

@@ -394,6 +394,11 @@ export class DocumentRequestsService {
       if (!pending) {
         throw new NotFoundException('Pending student not found');
       }
+      if (!pending.section?.trim()) {
+        throw new BadRequestException(
+          'Assign a department (section) before generating a document request',
+        );
+      }
       studentFullName = formatStudentFullName(pending);
       studentSectionLabel = formatStudentSectionLabel(pending.section, language);
     }

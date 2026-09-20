@@ -194,9 +194,9 @@ const HEADER_NUMBER = {
 
   arabic: {
 
-    rightX: 170,
+    rightX: 165,
 
-    baselineFromTop: 158,
+    baselineFromTop: 145,
 
   },
 
@@ -204,7 +204,7 @@ const HEADER_NUMBER = {
 
     x: 520,
 
-    baselineFromTop: 158,
+    baselineFromTop: 145,
 
   },
 
@@ -218,15 +218,15 @@ const HEADER_DATE = {
 
     rightX: 159,
 
-    baselineFromTop: 180,
+    baselineFromTop: 169,
 
   },
 
   kurdish: {
 
-    x: 475,
+    x: 490,
 
-    baselineFromTop: 180,
+    baselineFromTop: 169,
 
   },
 

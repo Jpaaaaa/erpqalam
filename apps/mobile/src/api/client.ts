@@ -7,7 +7,7 @@ import {
 import { createApiClient } from './clientCore';
 
 export const API_BASE_URL =
-  process.env.EXPO_PUBLIC_API_URL ?? 'https://api.erpqalam.dev/api/v1';
+  process.env.EXPO_PUBLIC_API_URL ?? 'https://api.qalam-est.online/api/v1';
 
 const client = createApiClient({
   apiBaseUrl: API_BASE_URL,

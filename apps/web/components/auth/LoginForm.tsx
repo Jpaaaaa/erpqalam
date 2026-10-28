@@ -12,8 +12,8 @@ import { Alert } from '@/components/ui/Alert';
 import { ArrowNavForm } from '@/components/ui/ArrowNavForm';
 
 function setOAuthLocaleCookie(locale: string): void {
-  const isProduction = window.location.hostname.endsWith('erpqalam.dev');
-  const domain = isProduction ? '; domain=.erpqalam.dev' : '';
+  const isProduction = window.location.hostname.endsWith('qalam-est.online');
+  const domain = isProduction ? '; domain=.qalam-est.online' : '';
   document.cookie = `oauth_locale=${locale}; path=/; max-age=300; SameSite=Lax${domain}`;
 }
 

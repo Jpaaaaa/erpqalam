@@ -8,6 +8,7 @@ import type {
   Session,
 } from '../types/auth';
 import { assertDatedAttendancePath } from './datedAttendanceGuard';
+import { NetworkError } from './errors';
 
 export class ApiClientError extends Error {
   status: number;
@@ -127,10 +128,15 @@ export function createApiClient(deps: ApiClientDeps) {
       headers.set('Authorization', `Bearer ${token}`);
     }
 
-    const response = await deps.fetch(`${deps.apiBaseUrl}${path}`, {
-      ...options,
-      headers,
-    });
+    let response: Response;
+    try {
+      response = await deps.fetch(`${deps.apiBaseUrl}${path}`, {
+        ...options,
+        headers,
+      });
+    } catch (err) {
+      throw new NetworkError(err);
+    }
 
     if (response.status === 401 && retry) {
       const refreshed = await refreshAccessToken();

@@ -9,7 +9,8 @@ import {
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useTranslation } from 'react-i18next';
-import { ApiClientError } from '../api/client';
+import { resolveUserFacingError } from '../api/client';
+import { NetworkErrorPanel } from '../components/NetworkErrorPanel';
 import {
   getDailySummaries,
   listAttendanceDevices,
@@ -63,6 +64,7 @@ export function RecordsScreen({ navigation }: Props) {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
+  const [errorIsNetwork, setErrorIsNetwork] = useState(false);
 
   const load = useCallback(async () => {
     setError('');
@@ -81,11 +83,14 @@ export function RecordsScreen({ navigation }: Props) {
       setDeviceNames(buildDeviceNameLookup(devices));
       setRecords(rows);
     } catch (err) {
-      setError(
-        err instanceof ApiClientError
-          ? err.message
-          : t('attendance:records.loadError'),
+      const resolved = resolveUserFacingError(
+        err,
+        t,
+        'attendance:records.loadError',
       );
+      if (resolved.sessionExpired) return;
+      setError(resolved.message);
+      setErrorIsNetwork(resolved.isNetwork);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -188,7 +193,11 @@ export function RecordsScreen({ navigation }: Props) {
           </AppText>
         </Pressable>
       ) : null}
-      {error ? <AppText style={styles.error}>{error}</AppText> : null}
+      {errorIsNetwork ? (
+        <NetworkErrorPanel message={error} onRetry={() => void load()} />
+      ) : error ? (
+        <AppText style={styles.error}>{error}</AppText>
+      ) : null}
       <SectionList
         sections={sections}
         keyExtractor={(item) => item.id}

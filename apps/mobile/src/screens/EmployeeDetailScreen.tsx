@@ -7,7 +7,8 @@ import {
   View,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { ApiClientError } from '../api/client';
+import { resolveUserFacingError } from '../api/client';
+import { NetworkErrorPanel } from '../components/NetworkErrorPanel';
 import {
   listAttendanceDevices,
   listAttendanceRecords,
@@ -35,6 +36,7 @@ export function EmployeeDetailScreen({ route }: EmployeeDetailProps) {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
+  const [errorIsNetwork, setErrorIsNetwork] = useState(false);
 
   const load = useCallback(async () => {
     setError('');
@@ -51,11 +53,14 @@ export function EmployeeDetailScreen({ route }: EmployeeDetailProps) {
       setRecords(rows);
       setDeviceNames(buildDeviceNameLookup(devices));
     } catch (err) {
-      setError(
-        err instanceof ApiClientError
-          ? err.message
-          : t('attendance:records.loadError'),
+      const resolved = resolveUserFacingError(
+        err,
+        t,
+        'attendance:records.loadError',
       );
+      if (resolved.sessionExpired) return;
+      setError(resolved.message);
+      setErrorIsNetwork(resolved.isNetwork);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -70,7 +75,11 @@ export function EmployeeDetailScreen({ route }: EmployeeDetailProps) {
     <View style={styles.container}>
       <AppText style={[styles.subtitle, ltrText]}>{deviceUserId}</AppText>
       <DateRangeChips filter={filter} onChange={setFilter} />
-      {error ? <AppText style={styles.error}>{error}</AppText> : null}
+      {errorIsNetwork ? (
+        <NetworkErrorPanel message={error} onRetry={() => void load()} />
+      ) : error ? (
+        <AppText style={styles.error}>{error}</AppText>
+      ) : null}
       {loading && records.length === 0 ? (
         <View style={styles.centered}>
           <ActivityIndicator size="large" color="#0f766e" />

@@ -9,7 +9,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
-import { changePassword, ApiClientError } from '../api/client';
+import { changePassword, resolveUserFacingError } from '../api/client';
+import { NetworkErrorPanel } from '../components/NetworkErrorPanel';
 import { AuthLogoHeader } from '../components/auth/AuthLogoHeader';
 import { GradientButton } from '../components/auth/GradientButton';
 import { useAuth } from '../auth/context';
@@ -26,6 +27,7 @@ export function ChangePasswordScreen() {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
+  const [errorIsNetwork, setErrorIsNetwork] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   const inputFont = fontFamily ? { fontFamily } : null;
@@ -42,9 +44,10 @@ export function ChangePasswordScreen() {
       await changePassword({ currentPassword, newPassword });
       await refreshUser();
     } catch (err) {
-      setError(
-        err instanceof ApiClientError ? err.message : t('auth:changePasswordError'),
-      );
+      const resolved = resolveUserFacingError(err, t, 'auth:changePasswordError');
+      if (resolved.sessionExpired) return;
+      setError(resolved.message);
+      setErrorIsNetwork(resolved.isNetwork);
     } finally {
       setSubmitting(false);
     }
@@ -61,7 +64,11 @@ export function ChangePasswordScreen() {
           <View style={[styles.card, cardShadow]}>
             <AppText style={styles.cardTitle}>{t('auth:changePasswordTitle')}</AppText>
             <AppText style={styles.description}>{t('auth:changePasswordDescription')}</AppText>
-            {error ? <AppText style={styles.error}>{error}</AppText> : null}
+            {errorIsNetwork ? (
+              <NetworkErrorPanel message={error} onRetry={() => void handleSubmit()} />
+            ) : error ? (
+              <AppText style={styles.error}>{error}</AppText>
+            ) : null}
 
             <AppText style={styles.label}>{t('auth:currentPassword')}</AppText>
             <TextInput

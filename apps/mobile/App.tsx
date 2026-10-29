@@ -11,6 +11,7 @@ import { LoginScreen } from './src/screens/LoginScreen';
 import { SetCredentialsScreen } from './src/screens/SetCredentialsScreen';
 import { ChangePasswordScreen } from './src/screens/ChangePasswordScreen';
 import { NoAccessScreen } from './src/screens/NoAccessScreen';
+import { OfflineBanner } from './src/components/OfflineBanner';
 
 function Root() {
   const { user, isLoading } = useAuth();
@@ -53,6 +54,7 @@ export default function App() {
       <I18nProvider>
         <AuthProvider>
           <StatusBar style="dark" />
+          <OfflineBanner />
           <Root />
         </AuthProvider>
       </I18nProvider>

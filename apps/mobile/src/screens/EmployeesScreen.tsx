@@ -9,7 +9,8 @@ import {
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useTranslation } from 'react-i18next';
-import { ApiClientError } from '../api/client';
+import { resolveUserFacingError } from '../api/client';
+import { NetworkErrorPanel } from '../components/NetworkErrorPanel';
 import {
   listAttendanceRecords,
   listAttendanceUsers,
@@ -36,6 +37,7 @@ export function EmployeesScreen({ navigation }: Props) {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
+  const [errorIsNetwork, setErrorIsNetwork] = useState(false);
 
   const load = useCallback(async () => {
     setError('');
@@ -51,11 +53,14 @@ export function EmployeesScreen({ navigation }: Props) {
       ]);
       setEmployees(mergeEmployeesWithPunchIds(users, records));
     } catch (err) {
-      setError(
-        err instanceof ApiClientError
-          ? err.message
-          : t('attendance:employees.loadError'),
+      const resolved = resolveUserFacingError(
+        err,
+        t,
+        'attendance:employees.loadError',
       );
+      if (resolved.sessionExpired) return;
+      setError(resolved.message);
+      setErrorIsNetwork(resolved.isNetwork);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -93,7 +98,11 @@ export function EmployeesScreen({ navigation }: Props) {
         onChangeText={setSearch}
         placeholder={t('attendance:employees.searchPlaceholder')}
       />
-      {error ? <AppText style={styles.error}>{error}</AppText> : null}
+      {errorIsNetwork ? (
+        <NetworkErrorPanel message={error} onRetry={() => void load()} />
+      ) : error ? (
+        <AppText style={styles.error}>{error}</AppText>
+      ) : null}
       <FlatList
         data={filtered}
         keyExtractor={(item) => item.deviceUserId}

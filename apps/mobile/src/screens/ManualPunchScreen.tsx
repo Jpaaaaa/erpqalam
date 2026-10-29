@@ -3,13 +3,14 @@ import { useNavigation } from '@react-navigation/native';
 import {
   ActivityIndicator,
   Pressable,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   TextInput,
   View,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { ApiClientError } from '../api/client';
+import { resolveUserFacingError } from '../api/client';
 import { addManualPunch, listAttendanceUsers } from '../api/attendance';
 import {
   buildLocalTimestamp,
@@ -17,17 +18,20 @@ import {
   todayDateKey,
 } from '../attendance/formatters';
 import { EmployeePicker } from '../components/EmployeePicker';
+import { SingleDatePicker } from '../components/SingleDatePicker';
+import { NetworkErrorPanel } from '../components/NetworkErrorPanel';
 import { useCanManageAttendance } from '../hooks/useCanManageAttendance';
 import type { AttendanceUser } from '../types/attendance';
 import { useI18n } from '../i18n/I18nProvider';
 import { AppText } from '../ui/AppText';
 import { ltrText } from '../ui/ltr';
+import { mirroredRow } from '../ui/rtlLayout';
 
 export function ManualPunchScreen() {
   const { t } = useTranslation('attendance');
   const navigation = useNavigation();
   const canManage = useCanManageAttendance();
-  const { fontFamily } = useI18n();
+  const { fontFamily, mirrorLayout } = useI18n();
 
   useEffect(() => {
     if (!canManage) {
@@ -36,8 +40,11 @@ export function ManualPunchScreen() {
   }, [canManage, navigation]);
   const [users, setUsers] = useState<AttendanceUser[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [errorIsNetwork, setErrorIsNetwork] = useState(false);
+  const [networkRetry, setNetworkRetry] = useState<'load' | 'save'>('load');
   const [success, setSuccess] = useState('');
   const [deviceUserId, setDeviceUserId] = useState('');
   const [date, setDate] = useState(todayDateKey());
@@ -45,14 +52,19 @@ export function ManualPunchScreen() {
   const [punchKind, setPunchKind] = useState<'in' | 'out'>('in');
 
   const load = useCallback(async () => {
+    setError('');
+    setErrorIsNetwork(false);
     try {
       setUsers(await listAttendanceUsers());
     } catch (err) {
-      setError(
-        err instanceof ApiClientError ? err.message : t('employees.loadError'),
-      );
+      const resolved = resolveUserFacingError(err, t, 'employees.loadError');
+      if (resolved.sessionExpired) return;
+      setError(resolved.message);
+      setErrorIsNetwork(resolved.isNetwork);
+      setNetworkRetry('load');
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   }, [t]);
 
@@ -63,10 +75,12 @@ export function ManualPunchScreen() {
   async function handleSave() {
     if (!deviceUserId || !isValidDateKey(date)) {
       setError(t('records.manualError'));
+      setErrorIsNetwork(false);
       return;
     }
     setSaving(true);
     setError('');
+    setErrorIsNetwork(false);
     setSuccess('');
     try {
       await addManualPunch({
@@ -76,9 +90,11 @@ export function ManualPunchScreen() {
       });
       setSuccess(t('records.manualSuccess'));
     } catch (err) {
-      setError(
-        err instanceof ApiClientError ? err.message : t('records.manualError'),
-      );
+      const resolved = resolveUserFacingError(err, t, 'records.manualError');
+      if (resolved.sessionExpired) return;
+      setError(resolved.message);
+      setErrorIsNetwork(resolved.isNetwork);
+      setNetworkRetry('save');
     } finally {
       setSaving(false);
     }
@@ -101,18 +117,23 @@ export function ManualPunchScreen() {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.content}>
+    <ScrollView
+      contentContainerStyle={styles.content}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={() => {
+            setRefreshing(true);
+            void load();
+          }}
+          tintColor="#0f766e"
+        />
+      }
+    >
       <AppText style={styles.title}>{t('records.manualTitle')}</AppText>
       <EmployeePicker users={users} value={deviceUserId} onChange={setDeviceUserId} />
 
-      <AppText style={styles.label}>{t('records.date')}</AppText>
-      <TextInput
-        style={[styles.input, ltrText, fontFamily ? { fontFamily } : null]}
-        value={date}
-        onChangeText={setDate}
-        placeholder="YYYY-MM-DD"
-        autoCapitalize="none"
-      />
+      <SingleDatePicker label={t('records.date')} value={date} onChange={setDate} />
 
       <AppText style={styles.label}>{t('records.time')}</AppText>
       <TextInput
@@ -124,7 +145,7 @@ export function ManualPunchScreen() {
       />
 
       <AppText style={styles.label}>{t('records.punchKind')}</AppText>
-      <View style={styles.kindRow}>
+      <View style={[styles.kindRow, mirroredRow(mirrorLayout)]}>
         {(['in', 'out'] as const).map((kind) => (
           <Pressable
             key={kind}
@@ -136,6 +157,7 @@ export function ManualPunchScreen() {
                 styles.kindText,
                 punchKind === kind && styles.kindTextActive,
               ]}
+              numberOfLines={1}
             >
               {kind === 'in' ? t('records.punchIn') : t('records.punchOut')}
             </AppText>
@@ -143,7 +165,17 @@ export function ManualPunchScreen() {
         ))}
       </View>
 
-      {error ? <AppText style={styles.error}>{error}</AppText> : null}
+      {errorIsNetwork ? (
+        <NetworkErrorPanel
+          message={error}
+          onRetry={() => {
+            if (networkRetry === 'save') void handleSave();
+            else void load();
+          }}
+        />
+      ) : error ? (
+        <AppText style={styles.error}>{error}</AppText>
+      ) : null}
       {success ? <AppText style={styles.success}>{success}</AppText> : null}
 
       <Pressable

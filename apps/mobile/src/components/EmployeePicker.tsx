@@ -5,6 +5,8 @@ import { displayName } from '../attendance/formatters';
 import type { AttendanceUser } from '../types/attendance';
 import { SearchField } from './SearchField';
 import { AppText } from '../ui/AppText';
+import { useI18n } from '../i18n/I18nProvider';
+import { mirroredRow } from '../ui/rtlLayout';
 
 export function EmployeePicker({
   users,
@@ -16,6 +18,7 @@ export function EmployeePicker({
   onChange: (deviceUserId: string) => void;
 }) {
   const { t } = useTranslation('attendance');
+  const { mirrorLayout } = useI18n();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
 
@@ -34,7 +37,7 @@ export function EmployeePicker({
     <>
       <AppText style={styles.label}>{t('report.selectEmployee')}</AppText>
       <Pressable style={styles.trigger} onPress={() => setOpen(true)}>
-        <AppText style={styles.triggerText}>
+        <AppText style={styles.triggerText} numberOfLines={1}>
           {selected
             ? displayName(selected.name, selected.deviceUserId)
             : t('report.selectEmployeePlaceholder')}
@@ -43,8 +46,10 @@ export function EmployeePicker({
 
       <Modal visible={open} animationType="slide" onRequestClose={() => setOpen(false)}>
         <View style={styles.modal}>
-          <View style={styles.modalHeader}>
-            <AppText style={styles.modalTitle}>{t('report.selectEmployee')}</AppText>
+          <View style={[styles.modalHeader, mirroredRow(mirrorLayout)]}>
+            <AppText style={styles.modalTitle} numberOfLines={1}>
+              {t('report.selectEmployee')}
+            </AppText>
             <Pressable onPress={() => setOpen(false)}>
               <AppText style={styles.close}>{t('records.cancel')}</AppText>
             </Pressable>
@@ -69,7 +74,9 @@ export function EmployeePicker({
                 <AppText style={styles.rowName} numberOfLines={1}>
                   {displayName(item.name, item.deviceUserId)}
                 </AppText>
-                <AppText style={styles.rowId}>{item.deviceUserId}</AppText>
+                <AppText style={styles.rowId} numberOfLines={1}>
+                  {item.deviceUserId}
+                </AppText>
               </Pressable>
             )}
             ListEmptyComponent={
@@ -99,8 +106,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 12,
+    gap: 12,
   },
-  modalTitle: { fontSize: 18, fontWeight: '600' },
+  modalTitle: { fontSize: 18, fontWeight: '600', flex: 1 },
   close: { color: '#0f766e', fontWeight: '600', fontSize: 16 },
   row: {
     paddingVertical: 12,

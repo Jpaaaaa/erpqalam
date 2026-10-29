@@ -33,3 +33,4 @@ export const {
 } = client;
 
 export { ApiClientError, SessionExpiredError } from './clientCore';
+export { NetworkError, resolveUserFacingError, isNetworkFailure } from './errors';

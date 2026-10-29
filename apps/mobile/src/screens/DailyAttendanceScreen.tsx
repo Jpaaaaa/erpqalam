@@ -8,7 +8,7 @@ import {
   View,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { ApiClientError } from '../api/client';
+import { resolveUserFacingError } from '../api/client';
 import {
   getDailyReport,
   listAttendanceUsers,
@@ -25,14 +25,22 @@ import { SearchField } from '../components/SearchField';
 import { SingleDatePicker } from '../components/SingleDatePicker';
 import { MetricCard } from '../components/MetricCard';
 import { ViewOnlyBanner } from '../components/ViewOnlyBanner';
+import { NetworkErrorPanel } from '../components/NetworkErrorPanel';
+import {
+  LoadingListSkeleton,
+  LoadingMetricsSkeleton,
+} from '../components/LoadingMetricsSkeleton';
 import { useCanManageAttendance } from '../hooks/useCanManageAttendance';
 import type { PunchType } from '../types/attendance';
 import type { DailyAttendanceRow, DailyAttendanceSummary } from '../types/attendance';
 import { AppText } from '../ui/AppText';
 import { ltrText } from '../ui/ltr';
+import { useI18n } from '../i18n/I18nProvider';
+import { mirroredRow } from '../ui/rtlLayout';
 
 export function DailyAttendanceScreen() {
   const { t } = useTranslation('attendance');
+  const { mirrorLayout } = useI18n();
   const canManage = useCanManageAttendance();
   const [date, setDate] = useState(todayDateKey());
   const [rows, setRows] = useState<DailyAttendanceRow[]>([]);
@@ -40,12 +48,15 @@ export function DailyAttendanceScreen() {
   const [nameLookup, setNameLookup] = useState<Map<string, string>>(new Map());
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
+  const [dataReady, setDataReady] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [error, setError] = useState('');
+  const [errorIsNetwork, setErrorIsNetwork] = useState(false);
 
   const load = useCallback(async () => {
     setError('');
+    setErrorIsNetwork(false);
     try {
       const [report, users] = await Promise.all([
         getDailyReport(date),
@@ -54,10 +65,13 @@ export function DailyAttendanceScreen() {
       setRows(report.rows);
       setSummary(report.summary);
       setNameLookup(buildNameLookup(mergeEmployeesWithPunchIds(users, [])));
+      setDataReady(true);
     } catch (err) {
-      setError(
-        err instanceof ApiClientError ? err.message : t('daily.loadError'),
-      );
+      const resolved = resolveUserFacingError(err, t, 'daily.loadError');
+      if (resolved.sessionExpired) return;
+      setError(resolved.message);
+      setErrorIsNetwork(resolved.isNetwork);
+      setDataReady(false);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -65,6 +79,9 @@ export function DailyAttendanceScreen() {
   }, [date, t]);
 
   useEffect(() => {
+    setDataReady(false);
+    setSummary(null);
+    setRows([]);
     setLoading(true);
     void load();
   }, [load]);
@@ -84,6 +101,7 @@ export function DailyAttendanceScreen() {
   async function handlePdf() {
     setExporting(true);
     setError('');
+    setErrorIsNetwork(false);
     try {
       await shareAttendanceReportPdf({
         type: 'daily',
@@ -91,7 +109,10 @@ export function DailyAttendanceScreen() {
         toDate: date,
       });
     } catch (err) {
-      setError(err instanceof ApiClientError ? err.message : t('daily.pdfError'));
+      const resolved = resolveUserFacingError(err, t, 'daily.pdfError');
+      if (resolved.sessionExpired) return;
+      setError(resolved.message);
+      setErrorIsNetwork(resolved.isNetwork);
     } finally {
       setExporting(false);
     }
@@ -105,6 +126,8 @@ export function DailyAttendanceScreen() {
     if (!type) return '–';
     return t(`punchTypes.${type}`);
   }
+
+  const showSkeleton = loading || refreshing || !dataReady;
 
   return (
     <View style={styles.container}>
@@ -122,10 +145,17 @@ export function DailyAttendanceScreen() {
         )}
       </Pressable>
 
-      {error ? <AppText style={styles.error}>{error}</AppText> : null}
+      {errorIsNetwork ? (
+        <NetworkErrorPanel message={error} onRetry={() => void load()} />
+      ) : error ? (
+        <AppText style={styles.error}>{error}</AppText>
+      ) : null}
 
-      {loading && !summary ? (
-        <ActivityIndicator size="large" color="#0f766e" style={styles.loader} />
+      {showSkeleton ? (
+        <>
+          <LoadingMetricsSkeleton count={7} />
+          <LoadingListSkeleton rows={5} />
+        </>
       ) : summary ? (
         <View style={styles.metrics}>
           <MetricCard label={t('daily.summary.present')} value={summary.present} />
@@ -141,73 +171,78 @@ export function DailyAttendanceScreen() {
         </View>
       ) : null}
 
-      <SearchField
-        value={search}
-        onChangeText={setSearch}
-        placeholder={t('daily.searchPlaceholder')}
-      />
+      {!showSkeleton ? (
+        <SearchField
+          value={search}
+          onChangeText={setSearch}
+          placeholder={t('daily.searchPlaceholder')}
+        />
+      ) : null}
 
-      <FlatList
-        data={filtered}
-        keyExtractor={(item) => item.deviceUserId}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={() => {
-              setRefreshing(true);
-              void load();
-            }}
-            tintColor="#0f766e"
-          />
-        }
-        ListEmptyComponent={
-          !loading ? (
+      {!showSkeleton ? (
+        <FlatList
+          data={filtered}
+          keyExtractor={(item) => item.deviceUserId}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={() => {
+                setRefreshing(true);
+                setDataReady(false);
+                void load();
+              }}
+              tintColor="#0f766e"
+            />
+          }
+          ListEmptyComponent={
             <AppText style={styles.empty}>{t('daily.empty')}</AppText>
-          ) : null
-        }
-        renderItem={({ item }) => {
-          const name = displayName(
-            nameLookup.get(item.deviceUserId),
-            item.deviceUserId,
-          );
-          const badge = DAILY_STATUS_BADGE[item.status];
-          return (
-            <View style={styles.card}>
-              <View style={styles.cardHeader}>
-                <AppText style={styles.name} numberOfLines={1}>
-                  {name}
-                </AppText>
-                <View style={[styles.badge, { backgroundColor: badge.backgroundColor }]}>
-                  <AppText style={[styles.badgeText, { color: badge.color }]}>
-                    {statusLabel(item.status)}
+          }
+          renderItem={({ item }) => {
+            const name = displayName(
+              nameLookup.get(item.deviceUserId),
+              item.deviceUserId,
+            );
+            const badge = DAILY_STATUS_BADGE[item.status];
+            return (
+              <View style={styles.card}>
+                <View style={[styles.cardHeader, mirroredRow(mirrorLayout)]}>
+                  <AppText style={styles.name} numberOfLines={1}>
+                    {name}
                   </AppText>
+                  <View style={[styles.badge, { backgroundColor: badge.backgroundColor }]}>
+                    <AppText style={[styles.badgeText, { color: badge.color }]}>
+                      {statusLabel(item.status)}
+                    </AppText>
+                  </View>
                 </View>
+                <AppText style={[styles.id, ltrText]} numberOfLines={1}>
+                  {item.deviceUserId}
+                </AppText>
+                {item.entryTime || item.exitTime || item.entryType || item.exitType ? (
+                  <>
+                    <AppText style={styles.times}>
+                      {t('daily.entry')}:{' '}
+                      <AppText style={ltrText}>
+                        {item.entryTime ? formatDisplayTime(item.entryTime) : '–'}
+                      </AppText>
+                      {' · '}
+                      {t('daily.entryType')}: {punchLabel(item.entryType)}
+                    </AppText>
+                    <AppText style={styles.times}>
+                      {t('daily.exit')}:{' '}
+                      <AppText style={ltrText}>
+                        {item.exitTime ? formatDisplayTime(item.exitTime) : '–'}
+                      </AppText>
+                      {' · '}
+                      {t('daily.exitType')}: {punchLabel(item.exitType)}
+                    </AppText>
+                  </>
+                ) : null}
               </View>
-              <AppText style={[styles.id, ltrText]}>{item.deviceUserId}</AppText>
-              {item.entryTime || item.exitTime || item.entryType || item.exitType ? (
-                <>
-                  <AppText style={styles.times}>
-                    {t('daily.entry')}:{' '}
-                    <AppText style={ltrText}>
-                      {item.entryTime ? formatDisplayTime(item.entryTime) : '–'}
-                    </AppText>
-                    {' · '}
-                    {t('daily.entryType')}: {punchLabel(item.entryType)}
-                  </AppText>
-                  <AppText style={styles.times}>
-                    {t('daily.exit')}:{' '}
-                    <AppText style={ltrText}>
-                      {item.exitTime ? formatDisplayTime(item.exitTime) : '–'}
-                    </AppText>
-                    {' · '}
-                    {t('daily.exitType')}: {punchLabel(item.exitType)}
-                  </AppText>
-                </>
-              ) : null}
-            </View>
-          );
-        }}
-      />
+            );
+          }}
+        />
+      ) : null}
     </View>
   );
 }
@@ -224,7 +259,6 @@ const styles = StyleSheet.create({
   pdfBtnDisabled: { opacity: 0.7 },
   pdfBtnText: { color: '#fff', fontWeight: '600' },
   error: { color: '#b91c1c', marginBottom: 8 },
-  loader: { marginTop: 24 },
   metrics: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -245,7 +279,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     gap: 8,
   },
-  name: { fontSize: 16, fontWeight: '600', flex: 1 },
+  name: { fontSize: 16, fontWeight: '600', flex: 1, minWidth: 0 },
   badge: { borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4 },
   badgeText: { fontSize: 11, fontWeight: '600' },
   id: { fontSize: 12, color: '#64748b', marginTop: 4 },

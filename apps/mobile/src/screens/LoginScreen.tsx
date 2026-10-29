@@ -9,7 +9,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
-import { API_BASE_URL, ApiClientError } from '../api/client';
+import { API_BASE_URL, resolveUserFacingError } from '../api/client';
+import { NetworkErrorPanel } from '../components/NetworkErrorPanel';
 import { AuthLogoHeader } from '../components/auth/AuthLogoHeader';
 import { GoogleSignInButton } from '../components/auth/GoogleSignInButton';
 import { GradientButton } from '../components/auth/GradientButton';
@@ -30,6 +31,8 @@ export function LoginScreen() {
   const [loginId, setLoginId] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [errorIsNetwork, setErrorIsNetwork] = useState(false);
+  const [networkRetry, setNetworkRetry] = useState<'login' | 'google'>('login');
   const [submitting, setSubmitting] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
@@ -54,11 +57,11 @@ export function LoginScreen() {
       try {
         await loginWithGoogle(idToken);
       } catch (err) {
-        setError(
-          err instanceof ApiClientError
-            ? err.message
-            : t('auth:googleCallbackError'),
-        );
+        const resolved = resolveUserFacingError(err, t, 'auth:googleCallbackError');
+        if (resolved.sessionExpired) return;
+        setError(resolved.message);
+        setErrorIsNetwork(resolved.isNetwork);
+        setNetworkRetry('google');
       } finally {
         setGoogleLoading(false);
       }
@@ -71,9 +74,11 @@ export function LoginScreen() {
     try {
       await login({ login: loginId.trim(), password });
     } catch (err) {
-      setError(
-        err instanceof ApiClientError ? err.message : t('auth:loginError'),
-      );
+      const resolved = resolveUserFacingError(err, t, 'auth:loginError');
+      if (resolved.sessionExpired) return;
+      setError(resolved.message);
+      setErrorIsNetwork(resolved.isNetwork);
+      setNetworkRetry('login');
     } finally {
       setSubmitting(false);
     }
@@ -119,7 +124,17 @@ export function LoginScreen() {
           <View style={[styles.card, cardShadow]}>
             <AppText style={styles.cardTitle}>{t('auth:signIn')}</AppText>
 
-            {error ? <AppText style={styles.error}>{error}</AppText> : null}
+            {errorIsNetwork ? (
+              <NetworkErrorPanel
+                message={error}
+                onRetry={() => {
+                  if (networkRetry === 'google') void handleGooglePress();
+                  else void handleSubmit();
+                }}
+              />
+            ) : error ? (
+              <AppText style={styles.error}>{error}</AppText>
+            ) : null}
 
             <AppText style={styles.label}>{t('auth:usernameOrEmail')}</AppText>
             <TextInput

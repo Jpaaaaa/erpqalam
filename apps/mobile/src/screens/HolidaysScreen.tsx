@@ -10,7 +10,9 @@ import {
   View,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { ApiClientError } from '../api/client';
+import { resolveUserFacingError } from '../api/client';
+import { DateFieldPicker } from '../components/CalendarDatePicker';
+import { NetworkErrorPanel } from '../components/NetworkErrorPanel';
 import {
   addEmployeeHoliday,
   addEmployeeHolidayRange,
@@ -50,6 +52,7 @@ import type {
   TimeLeaveUsage,
 } from '../types/attendance';
 import { useI18n } from '../i18n/I18nProvider';
+import { mirroredRow } from '../ui/rtlLayout';
 import { AppText } from '../ui/AppText';
 import { ltrText } from '../ui/ltr';
 
@@ -58,7 +61,8 @@ type TabKey = 'official' | 'employee' | 'temporary' | 'settings';
 export function HolidaysScreen() {
   const { t } = useTranslation('attendance');
   const canManage = useCanManageAttendance();
-  const { fontFamily } = useI18n();
+  const { fontFamily, mirrorLayout } = useI18n();
+  const [errorIsNetwork, setErrorIsNetwork] = useState(false);
   const [tab, setTab] = useState<TabKey>('official');
   const [holidays, setHolidays] = useState<AttendanceHoliday[]>([]);
   const [employeeHolidays, setEmployeeHolidays] = useState<EmployeeHoliday[]>([]);
@@ -102,6 +106,7 @@ export function HolidaysScreen() {
 
   const loadCore = useCallback(async () => {
     setError('');
+    setErrorIsNetwork(false);
     try {
       const [h, eh, tl, bal, settingsRow, userRows] = await Promise.all([
         listHolidays(),
@@ -120,7 +125,10 @@ export function HolidaysScreen() {
       setAnnualDays(String(settingsRow.annualHolidaysDays));
       setTempRatio(String(settingsRow.tempHolidaysPerFullHoliday));
     } catch (err) {
-      setError(err instanceof ApiClientError ? err.message : t('holidays.loadError'));
+      const resolved = resolveUserFacingError(err, t, 'holidays.loadError');
+      if (resolved.sessionExpired) return;
+      setError(resolved.message);
+      setErrorIsNetwork(resolved.isNetwork);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -144,7 +152,10 @@ export function HolidaysScreen() {
       setEarlyOccurrences(report.earlyExitOccurrences);
       setCoverRecords(records);
     } catch (err) {
-      setError(err instanceof ApiClientError ? err.message : t('holidays.loadError'));
+      const resolved = resolveUserFacingError(err, t, 'holidays.loadError');
+      if (resolved.sessionExpired) return;
+      setError(resolved.message);
+      setErrorIsNetwork(resolved.isNetwork);
     }
   }, [coverFilter.fromDate, coverFilter.toDate, t]);
 
@@ -177,7 +188,10 @@ export function HolidaysScreen() {
       setOrgTo('');
       await refreshAfterMutation();
     } catch (err) {
-      setError(err instanceof ApiClientError ? err.message : t('holidays.saveError'));
+      const resolved = resolveUserFacingError(err, t, 'holidays.saveError');
+      if (resolved.sessionExpired) return;
+      setError(resolved.message);
+      setErrorIsNetwork(resolved.isNetwork);
     }
   }
 
@@ -201,7 +215,10 @@ export function HolidaysScreen() {
       setEmpTo('');
       await refreshAfterMutation();
     } catch (err) {
-      setError(err instanceof ApiClientError ? err.message : t('holidays.saveError'));
+      const resolved = resolveUserFacingError(err, t, 'holidays.saveError');
+      if (resolved.sessionExpired) return;
+      setError(resolved.message);
+      setErrorIsNetwork(resolved.isNetwork);
     }
   }
 
@@ -217,7 +234,10 @@ export function HolidaysScreen() {
       setSuccess(t('holidays.configSaved'));
       await refreshAfterMutation();
     } catch (err) {
-      setError(err instanceof ApiClientError ? err.message : t('holidays.saveError'));
+      const resolved = resolveUserFacingError(err, t, 'holidays.saveError');
+      if (resolved.sessionExpired) return;
+      setError(resolved.message);
+      setErrorIsNetwork(resolved.isNetwork);
     }
   }
 
@@ -230,7 +250,10 @@ export function HolidaysScreen() {
       setSuccess(t('holidays.balanceSaved'));
       await refreshAfterMutation();
     } catch (err) {
-      setError(err instanceof ApiClientError ? err.message : t('holidays.saveError'));
+      const resolved = resolveUserFacingError(err, t, 'holidays.saveError');
+      if (resolved.sessionExpired) return;
+      setError(resolved.message);
+      setErrorIsNetwork(resolved.isNetwork);
     }
   }
 
@@ -262,8 +285,13 @@ export function HolidaysScreen() {
   return (
     <View style={styles.container}>
       {!canManage ? <ViewOnlyBanner /> : null}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tabScroll}>
-        <View style={styles.tabs}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.tabScroll}
+        contentContainerStyle={mirroredRow(mirrorLayout)}
+      >
+        <View style={[styles.tabs, mirroredRow(mirrorLayout)]}>
           {tabItems.map((item) => (
             <Pressable
               key={item.key}
@@ -281,7 +309,17 @@ export function HolidaysScreen() {
         </View>
       </ScrollView>
 
-      {error ? <AppText style={styles.error}>{error}</AppText> : null}
+      {errorIsNetwork ? (
+        <NetworkErrorPanel
+          message={error}
+          onRetry={() => {
+            void loadCore();
+            if (tab === 'temporary') void loadCoverData();
+          }}
+        />
+      ) : error ? (
+        <AppText style={styles.error}>{error}</AppText>
+      ) : null}
       {success ? <AppText style={styles.success}>{success}</AppText> : null}
 
       {tab === 'temporary' && settings ? (
@@ -396,7 +434,7 @@ export function HolidaysScreen() {
             canManage ? (
               <View style={styles.form}>
                 <AppText style={styles.formTitle}>{t('holidays.addOrg')}</AppText>
-                <View style={styles.typeRow}>
+                <View style={[styles.typeRow, mirroredRow(mirrorLayout)]}>
                   {ORG_TYPES.map((type) => (
                     <Pressable
                       key={type}
@@ -415,21 +453,16 @@ export function HolidaysScreen() {
                     </Pressable>
                   ))}
                 </View>
-                <AppText style={styles.fieldLabel}>{t('holidays.dateFrom')}</AppText>
-                <TextInput
-                  style={[styles.input, ltrText, fontFamily ? { fontFamily } : null]}
+                <DateFieldPicker
+                  label={t('holidays.dateFrom')}
                   value={orgFrom}
-                  onChangeText={setOrgFrom}
-                  placeholder="YYYY-MM-DD"
-                  autoCapitalize="none"
+                  onChange={setOrgFrom}
                 />
-                <AppText style={styles.fieldLabel}>{t('holidays.dateTo')}</AppText>
-                <TextInput
-                  style={[styles.input, ltrText, fontFamily ? { fontFamily } : null]}
+                <DateFieldPicker
+                  label={t('holidays.dateTo')}
                   value={orgTo}
-                  onChangeText={setOrgTo}
-                  placeholder={t('holidays.dateToOptional')}
-                  autoCapitalize="none"
+                  onChange={setOrgTo}
+                  optional
                 />
                 <Pressable style={styles.saveBtn} onPress={() => void handleAddOrg()}>
                   <AppText style={styles.saveBtnText}>{t('holidays.addOrg')}</AppText>
@@ -441,10 +474,14 @@ export function HolidaysScreen() {
             <AppText style={styles.empty}>{t('holidays.noOrg')}</AppText>
           }
           renderItem={({ item }) => (
-            <View style={styles.row}>
+            <View style={[styles.row, mirroredRow(mirrorLayout)]}>
               <View style={styles.rowBody}>
-                <AppText style={[ltrText]}>{formatDisplayDate(item.date)}</AppText>
-                <AppText style={styles.rowMeta}>{t(`holidays.types.${item.type}`)}</AppText>
+                <AppText style={[ltrText]} numberOfLines={1}>
+                  {formatDisplayDate(item.date)}
+                </AppText>
+                <AppText style={styles.rowMeta} numberOfLines={1}>
+                  {t(`holidays.types.${item.type}`)}
+                </AppText>
               </View>
               {canManage ? (
                 <Pressable onPress={() => void removeHoliday(item.id).then(loadCore)}>
@@ -475,21 +512,16 @@ export function HolidaysScreen() {
               <View style={styles.form}>
                 <AppText style={styles.formTitle}>{t('holidays.addEmp')}</AppText>
                 <EmployeePicker users={users} value={empUserId} onChange={setEmpUserId} />
-                <AppText style={styles.fieldLabel}>{t('holidays.dateFrom')}</AppText>
-                <TextInput
-                  style={[styles.input, ltrText, fontFamily ? { fontFamily } : null]}
+                <DateFieldPicker
+                  label={t('holidays.dateFrom')}
                   value={empFrom}
-                  onChangeText={setEmpFrom}
-                  placeholder="YYYY-MM-DD"
-                  autoCapitalize="none"
+                  onChange={setEmpFrom}
                 />
-                <AppText style={styles.fieldLabel}>{t('holidays.dateTo')}</AppText>
-                <TextInput
-                  style={[styles.input, ltrText, fontFamily ? { fontFamily } : null]}
+                <DateFieldPicker
+                  label={t('holidays.dateTo')}
                   value={empTo}
-                  onChangeText={setEmpTo}
-                  placeholder={t('holidays.dateToOptional')}
-                  autoCapitalize="none"
+                  onChange={setEmpTo}
+                  optional
                 />
                 <Pressable style={styles.saveBtn} onPress={() => void handleAddEmp()}>
                   <AppText style={styles.saveBtnText}>{t('holidays.addEmp')}</AppText>
@@ -501,7 +533,7 @@ export function HolidaysScreen() {
             <AppText style={styles.empty}>{t('holidays.noEmp')}</AppText>
           }
           renderItem={({ item }) => (
-            <View style={styles.row}>
+            <View style={[styles.row, mirroredRow(mirrorLayout)]}>
               <View style={styles.rowBody}>
                 <AppText style={styles.rowName} numberOfLines={1}>
                   {displayName(nameLookup.get(item.deviceUserId), item.deviceUserId)}

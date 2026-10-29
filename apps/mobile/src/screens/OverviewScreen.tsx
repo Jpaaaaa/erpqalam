@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
-  Pressable,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -9,7 +8,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
-import { ApiClientError } from '../api/client';
+import { resolveUserFacingError } from '../api/client';
+import { NetworkErrorPanel } from '../components/NetworkErrorPanel';
 import {
   getEmployeeReport,
   listAttendanceRecords,
@@ -20,19 +20,18 @@ import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { ViewOnlyBanner } from '../components/ViewOnlyBanner';
 import { useCanManageAttendance } from '../hooks/useCanManageAttendance';
 import { todayDateKey } from '../attendance/formatters';
-import { useAuth } from '../auth/context';
 import { useI18n } from '../i18n/I18nProvider';
 import { AppText } from '../ui/AppText';
 import { mirroredRow } from '../ui/rtlLayout';
 
 export function OverviewScreen() {
-  const { logout } = useAuth();
   const { mirrorLayout } = useI18n();
   const { t } = useTranslation();
   const canManage = useCanManageAttendance();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
+  const [errorIsNetwork, setErrorIsNetwork] = useState(false);
   const [employeeCount, setEmployeeCount] = useState(0);
   const [todayPresent, setTodayPresent] = useState(0);
   const [lateToday, setLateToday] = useState(0);
@@ -77,11 +76,14 @@ export function OverviewScreen() {
           : '0',
       );
     } catch (err) {
-      setError(
-        err instanceof ApiClientError
-          ? err.message
-          : t('attendance:overview.loadError'),
+      const resolved = resolveUserFacingError(
+        err,
+        t,
+        'attendance:overview.loadError',
       );
+      if (resolved.sessionExpired) return;
+      setError(resolved.message);
+      setErrorIsNetwork(resolved.isNetwork);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -116,12 +118,7 @@ export function OverviewScreen() {
           />
         }
       >
-        <View style={[styles.headerRow, mirroredRow(mirrorLayout)]}>
-          <AppText style={styles.title}>{t('attendance:tabs.overview')}</AppText>
-          <Pressable onPress={() => void logout()}>
-            <AppText style={styles.logout}>{t('auth:signOut')}</AppText>
-          </Pressable>
-        </View>
+        <AppText style={styles.title}>{t('attendance:tabs.overview')}</AppText>
 
         <View style={styles.switcher}>
           <LanguageSwitcher />
@@ -129,7 +126,11 @@ export function OverviewScreen() {
 
         {!canManage ? <ViewOnlyBanner /> : null}
 
-        {error ? <AppText style={styles.error}>{error}</AppText> : null}
+        {errorIsNetwork ? (
+          <NetworkErrorPanel message={error} onRetry={() => void load()} />
+        ) : error ? (
+          <AppText style={styles.error}>{error}</AppText>
+        ) : null}
 
         <Metric
           label={t('attendance:overview.employees')}
@@ -185,14 +186,8 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   content: { padding: 16, paddingBottom: 32, backgroundColor: '#fff' },
-  headerRow: {
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
   switcher: { marginBottom: 16 },
-  title: { fontSize: 22, fontWeight: '600', color: '#0f172a' },
-  logout: { fontSize: 15, fontWeight: '600', color: '#0f766e' },
+  title: { fontSize: 22, fontWeight: '600', color: '#0f172a', marginBottom: 12 },
   muted: { color: '#64748b' },
   error: { color: '#b91c1c', marginBottom: 12 },
   card: {

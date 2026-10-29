@@ -1,6 +1,7 @@
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import {
+  formatDisplayDate,
   getQuickRange,
   isFilterActive,
 } from '../attendance/formatters';
@@ -51,7 +52,10 @@ export function DateRangeChips({
                 active && styles.chipActive,
               ]}
             >
-              <AppText style={[styles.chipText, active && styles.chipTextActive]}>
+              <AppText
+                style={[styles.chipText, active && styles.chipTextActive]}
+                numberOfLines={1}
+              >
                 {t(RANGE_LABEL[key])}
               </AppText>
             </Pressable>
@@ -60,10 +64,10 @@ export function DateRangeChips({
       </ScrollView>
       <AppText style={styles.bounds}>
         {t('dateFilter.from')}{' '}
-        <AppText style={[styles.bounds, ltrText]}>{filter.fromDate}</AppText>
+        <AppText style={[styles.bounds, ltrText]}>{formatDisplayDate(filter.fromDate)}</AppText>
         {' · '}
         {t('dateFilter.to')}{' '}
-        <AppText style={[styles.bounds, ltrText]}>{filter.toDate}</AppText>
+        <AppText style={[styles.bounds, ltrText]}>{formatDisplayDate(filter.toDate)}</AppText>
       </AppText>
     </View>
   );

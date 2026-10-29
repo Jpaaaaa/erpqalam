@@ -10,7 +10,10 @@
     "comingSoon": "Coming soon",
     "none": "None",
     "dash": "—",
-    "oneActive": "1 active"
+    "oneActive": "1 active",
+    "noConnection": "No connection. Check your network and try again.",
+    "retry": "Retry",
+    "offlineBanner": "You are offline"
   },
   "auth": {
     "signIn": "Sign in",
@@ -75,7 +78,23 @@
       "report": "Employee report",
       "holidays": "Holidays & leave",
       "manual": "Manual punch",
-      "viewOnly": "View only — you cannot add punches, holidays, or time-leave covers."
+      "viewOnly": "View only — you cannot add punches, holidays, or time-leave covers.",
+      "profile": "Signed in as",
+      "signOut": "Sign out"
+    },
+    "calendar": {
+      "pickDate": "Pick a date",
+      "prevMonth": "Previous month",
+      "nextMonth": "Next month",
+      "weekdays": {
+        "mon": "M",
+        "tue": "T",
+        "wed": "W",
+        "thu": "T",
+        "fri": "F",
+        "sat": "S",
+        "sun": "S"
+      }
     },
     "daily": {
       "loadError": "Unable to load daily report.",

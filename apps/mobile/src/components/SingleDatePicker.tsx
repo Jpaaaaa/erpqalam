@@ -1,10 +1,13 @@
-import { Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { useState } from 'react';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import { formatDisplayDate, isValidDateKey, shiftDateKey } from '../attendance/formatters';
+import { formatDisplayDate, shiftDateKey } from '../attendance/formatters';
+import { CalendarDatePickerModal } from './CalendarDatePicker';
 import { useI18n } from '../i18n/I18nProvider';
 import { AppText } from '../ui/AppText';
 import { ltrText } from '../ui/ltr';
+import { dateStepChevron } from '../ui/chevronIcons';
 import { mirroredRow } from '../ui/rtlLayout';
 
 export function SingleDatePicker({
@@ -17,7 +20,9 @@ export function SingleDatePicker({
   onChange: (dateKey: string) => void;
 }) {
   const { t } = useTranslation('attendance');
-  const { mirrorLayout, fontFamily } = useI18n();
+  const { mirrorLayout, isRtl } = useI18n();
+  const rtl = isRtl || mirrorLayout;
+  const [calendarOpen, setCalendarOpen] = useState(false);
 
   return (
     <View style={styles.wrap}>
@@ -28,30 +33,30 @@ export function SingleDatePicker({
           onPress={() => onChange(shiftDateKey(value, -1))}
           style={styles.iconBtn}
         >
-          <Ionicons name="chevron-back" size={22} color="#0f766e" />
+          <Ionicons name={dateStepChevron('prev', rtl)} size={22} color="#0f766e" />
         </Pressable>
-        <View style={styles.center}>
-          <AppText style={styles.display}>{formatDisplayDate(value)}</AppText>
-          <TextInput
-            style={[styles.input, ltrText, fontFamily ? { fontFamily } : null]}
-            value={value}
-            onChangeText={(text) => {
-              const trimmed = text.trim();
-              if (isValidDateKey(trimmed)) onChange(trimmed);
-            }}
-            placeholder="YYYY-MM-DD"
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
-        </View>
+        <Pressable
+          style={styles.center}
+          onPress={() => setCalendarOpen(true)}
+          accessibilityLabel={t('calendar.pickDate')}
+        >
+          <AppText style={[styles.display, ltrText]}>{formatDisplayDate(value)}</AppText>
+          <Ionicons name="calendar-outline" size={18} color="#64748b" />
+        </Pressable>
         <Pressable
           accessibilityLabel={t('daily.nextDay')}
           onPress={() => onChange(shiftDateKey(value, 1))}
           style={styles.iconBtn}
         >
-          <Ionicons name="chevron-forward" size={22} color="#0f766e" />
+          <Ionicons name={dateStepChevron('next', rtl)} size={22} color="#0f766e" />
         </Pressable>
       </View>
+      <CalendarDatePickerModal
+        visible={calendarOpen}
+        value={value}
+        onChange={onChange}
+        onClose={() => setCalendarOpen(false)}
+      />
     </View>
   );
 }
@@ -65,18 +70,16 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: '#f0fdfa',
   },
-  center: { flex: 1, alignItems: 'center' },
-  display: { fontSize: 16, fontWeight: '600', color: '#0f172a', marginBottom: 4 },
-  input: {
+  center: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+    paddingVertical: 8,
     borderWidth: 1,
     borderColor: '#cbd5e1',
     borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    fontSize: 14,
-    width: '100%',
-    maxWidth: 160,
-    textAlign: 'center',
     backgroundColor: '#fff',
   },
+  display: { fontSize: 16, fontWeight: '600', color: '#0f172a' },
 });

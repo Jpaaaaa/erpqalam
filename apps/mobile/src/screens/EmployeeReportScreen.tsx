@@ -8,7 +8,7 @@ import {
   View,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { ApiClientError } from '../api/client';
+import { resolveUserFacingError } from '../api/client';
 import {
   addTimeLeaveUsage,
   getAttendanceSettings,
@@ -55,7 +55,14 @@ import type {
   TimeLeaveUsage,
 } from '../types/attendance';
 import { SearchField } from '../components/SearchField';
+import { NetworkErrorPanel } from '../components/NetworkErrorPanel';
+import {
+  LoadingListSkeleton,
+  LoadingMetricsSkeleton,
+} from '../components/LoadingMetricsSkeleton';
 import { buildNameLookup, mergeEmployeesWithPunchIds } from '../attendance/lookups';
+import { useI18n } from '../i18n/I18nProvider';
+import { mirroredRow } from '../ui/rtlLayout';
 
 type ReportTab = 'performance' | 'per-employee' | 'summary';
 import { AppText } from '../ui/AppText';
@@ -93,17 +100,21 @@ export function EmployeeReportScreen() {
     { deviceUserId: string; date: string; timestamp: string }[]
   >([]);
   const [records, setRecords] = useState<AttendanceRecord[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [recordsLoading, setRecordsLoading] = useState(false);
+  const [metaReady, setMetaReady] = useState(false);
+  const [perfReady, setPerfReady] = useState(false);
+  const [employeeReady, setEmployeeReady] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [coverBusy, setCoverBusy] = useState<string | null>(null);
   const [error, setError] = useState('');
+  const [errorIsNetwork, setErrorIsNetwork] = useState(false);
+  const { mirrorLayout } = useI18n();
 
   const selectedUser = users.find((u) => u.deviceUserId === selectedId);
 
   const loadMeta = useCallback(async () => {
     setError('');
+    setErrorIsNetwork(false);
     try {
       const [userRows, settingsRow, holidayRows, empHolidayRows, bal, tl] =
         await Promise.all([
@@ -121,23 +132,33 @@ export function EmployeeReportScreen() {
       setEmployeeHolidays(empHolidayRows);
       setBalances(bal);
       setTimeLeaveUsage(tl);
+      setMetaReady(true);
     } catch (err) {
-      setError(err instanceof ApiClientError ? err.message : t('report.loadError'));
+      const resolved = resolveUserFacingError(err, t, 'report.loadError');
+      if (resolved.sessionExpired) return;
+      setError(resolved.message);
+      setErrorIsNetwork(resolved.isNetwork);
+      setMetaReady(false);
     } finally {
-      setLoading(false);
       setRefreshing(false);
     }
   }, [t]);
 
   const loadPerformanceReport = useCallback(async () => {
+    setPerfReady(false);
     try {
       const report = await getEmployeeReport({
         fromDate: filter.fromDate,
         toDate: filter.toDate,
       });
       setPerformanceRows(report.rows);
+      setPerfReady(true);
     } catch (err) {
-      setError(err instanceof ApiClientError ? err.message : t('report.loadError'));
+      const resolved = resolveUserFacingError(err, t, 'report.loadError');
+      if (resolved.sessionExpired) return;
+      setError(resolved.message);
+      setErrorIsNetwork(resolved.isNetwork);
+      setPerfReady(false);
     }
   }, [filter.fromDate, filter.toDate, t]);
 
@@ -181,7 +202,11 @@ export function EmployeeReportScreen() {
         report.earlyExitOccurrences.filter((o) => o.deviceUserId === selectedId),
       );
     } catch (err) {
-      setError(err instanceof ApiClientError ? err.message : t('report.loadError'));
+      const resolved = resolveUserFacingError(err, t, 'report.loadError');
+      if (resolved.sessionExpired) return;
+      setError(resolved.message);
+      setErrorIsNetwork(resolved.isNetwork);
+      throw err;
     }
   }, [selectedId, filter.fromDate, filter.toDate, t]);
 
@@ -190,7 +215,6 @@ export function EmployeeReportScreen() {
       setRecords([]);
       return;
     }
-    setRecordsLoading(true);
     try {
       const rows = await listAttendanceRecords({
         deviceUserId: selectedId,
@@ -200,9 +224,11 @@ export function EmployeeReportScreen() {
       });
       setRecords(rows);
     } catch (err) {
-      setError(err instanceof ApiClientError ? err.message : t('report.loadError'));
-    } finally {
-      setRecordsLoading(false);
+      const resolved = resolveUserFacingError(err, t, 'report.loadError');
+      if (resolved.sessionExpired) return;
+      setError(resolved.message);
+      setErrorIsNetwork(resolved.isNetwork);
+      throw err;
     }
   }, [selectedId, filter.fromDate, filter.toDate, t]);
 
@@ -215,14 +241,19 @@ export function EmployeeReportScreen() {
   }, [loadPerformanceReport]);
 
   useEffect(() => {
-    if (tab !== 'per-employee') return;
-    void loadReport();
-  }, [loadReport, tab]);
-
-  useEffect(() => {
-    if (tab !== 'per-employee') return;
-    void loadRecords();
-  }, [loadRecords, tab]);
+    if (tab !== 'per-employee') {
+      setEmployeeReady(true);
+      return;
+    }
+    if (!selectedId) {
+      setEmployeeReady(true);
+      return;
+    }
+    setEmployeeReady(false);
+    void Promise.all([loadReport(), loadRecords()])
+      .then(() => setEmployeeReady(true))
+      .catch(() => setEmployeeReady(false));
+  }, [tab, selectedId, loadReport, loadRecords]);
 
   const dayRows = useMemo(() => {
     if (!selectedId || !settings) return [];
@@ -336,7 +367,10 @@ export function EmployeeReportScreen() {
         deviceUserId: tab === 'per-employee' ? selectedId : undefined,
       });
     } catch (err) {
-      setError(err instanceof ApiClientError ? err.message : t('report.pdfError'));
+      const resolved = resolveUserFacingError(err, t, 'report.pdfError');
+      if (resolved.sessionExpired) return;
+      setError(resolved.message);
+      setErrorIsNetwork(resolved.isNetwork);
     } finally {
       setExporting(false);
     }
@@ -353,10 +387,27 @@ export function EmployeeReportScreen() {
     { key: 'summary', label: t('report.tabs.summary') },
   ];
 
+  const showContentLoading =
+    !metaReady ||
+    refreshing ||
+    ((tab === 'performance' || tab === 'summary') && !perfReady) ||
+    (tab === 'per-employee' && !!selectedId && !employeeReady);
+
+  const retryAll = () => {
+    void loadMeta();
+    void loadPerformanceReport();
+    if (tab === 'per-employee' && selectedId) {
+      setEmployeeReady(false);
+      void Promise.all([loadReport(), loadRecords()])
+        .then(() => setEmployeeReady(true))
+        .catch(() => setEmployeeReady(false));
+    }
+  };
+
   return (
     <View style={styles.container}>
       {!canManage ? <ViewOnlyBanner /> : null}
-      <View style={styles.tabRow}>
+      <View style={[styles.tabRow, mirroredRow(mirrorLayout)]}>
         {tabs.map((item) => (
           <Pressable
             key={item.key}
@@ -396,10 +447,17 @@ export function EmployeeReportScreen() {
         )}
       </Pressable>
 
-      {error ? <AppText style={styles.error}>{error}</AppText> : null}
+      {errorIsNetwork ? (
+        <NetworkErrorPanel message={error} onRetry={retryAll} />
+      ) : error ? (
+        <AppText style={styles.error}>{error}</AppText>
+      ) : null}
 
-      {loading ? (
-        <ActivityIndicator size="large" color="#0f766e" />
+      {showContentLoading ? (
+        <>
+          <LoadingMetricsSkeleton count={6} />
+          <LoadingListSkeleton rows={4} />
+        </>
       ) : tab === 'summary' ? (
         <View style={styles.metrics}>
           <MetricCard
@@ -424,9 +482,8 @@ export function EmployeeReportScreen() {
               refreshing={refreshing}
               onRefresh={() => {
                 setRefreshing(true);
-                void Promise.all([loadMeta(), loadPerformanceReport()]).finally(
-                  () => setRefreshing(false),
-                );
+                setPerfReady(false);
+                void Promise.all([loadMeta(), loadPerformanceReport()]);
               }}
               tintColor="#0f766e"
             />
@@ -441,11 +498,11 @@ export function EmployeeReportScreen() {
             );
             return (
               <View style={styles.perfCard}>
-                <View style={styles.perfHeader}>
+                <View style={[styles.perfHeader, mirroredRow(mirrorLayout)]}>
                   <AppText style={styles.perfName} numberOfLines={1}>
                     {name}
                   </AppText>
-                  <AppText style={styles.balanceTag}>
+                  <AppText style={styles.balanceTag} numberOfLines={1}>
                     {t('report.leaveBalance')}:{' '}
                     {balanceLookup.get(item.deviceUserId) ?? 0}
                   </AppText>
@@ -474,8 +531,9 @@ export function EmployeeReportScreen() {
               refreshing={refreshing}
               onRefresh={() => {
                 setRefreshing(true);
-                void Promise.all([loadMeta(), loadReport(), loadRecords()]).finally(
-                  () => setRefreshing(false),
+                setEmployeeReady(false);
+                void Promise.all([loadMeta(), loadReport(), loadRecords()]).then(() =>
+                  setEmployeeReady(true),
                 );
               }}
               tintColor="#0f766e"
@@ -523,15 +581,10 @@ export function EmployeeReportScreen() {
                   }}
                 />
               ) : null}
-              {recordsLoading ? (
-                <ActivityIndicator color="#0f766e" style={styles.loader} />
-              ) : null}
             </>
           }
           ListEmptyComponent={
-            !recordsLoading ? (
-              <AppText style={styles.empty}>{t('report.emptyDays')}</AppText>
-            ) : null
+            <AppText style={styles.empty}>{t('report.emptyDays')}</AppText>
           }
           renderItem={({ item: day }) => (
             <DayRowCard
@@ -543,6 +596,7 @@ export function EmployeeReportScreen() {
               timeLeaveUsage={timeLeaveUsage}
               t={t}
               punchLabel={punchLabel}
+              mirrorLayout={mirrorLayout}
               onCover={async (payload) => {
                 setCoverBusy(payload.timestamp);
                 try {
@@ -580,6 +634,7 @@ function DayRowCard({
   punchLabel,
   onCover,
   onRemove,
+  mirrorLayout,
 }: {
   day: ReturnType<typeof buildEmployeeDayRows>[number];
   deviceUserId: string;
@@ -596,6 +651,7 @@ function DayRowCard({
     type: 'late_arrival' | 'early_exit';
   }) => Promise<void>;
   onRemove: (id: string) => Promise<void>;
+  mirrorLayout: boolean;
 }) {
   const isLate = day.entryType === 'entry_late';
   const isEarly = day.exitType === 'early_exit';
@@ -616,13 +672,19 @@ function DayRowCard({
 
   return (
     <View style={styles.dayCard}>
-      <View style={styles.dayHeader}>
-        <AppText style={[styles.dayDate, ltrText]}>{formatDisplayDate(day.date)}</AppText>
+      <View style={[styles.dayHeader, mirroredRow(mirrorLayout)]}>
+        <AppText style={[styles.dayDate, ltrText]} numberOfLines={1}>
+          {formatDisplayDate(day.date)}
+        </AppText>
         {day.isHoliday ? (
-          <AppText style={styles.tagHoliday}>{t('report.holiday')}</AppText>
+          <AppText style={styles.tagHoliday} numberOfLines={1}>
+            {t('report.holiday')}
+          </AppText>
         ) : null}
         {day.isNotComing ? (
-          <AppText style={styles.tagAbsent}>{t('report.didNotCome')}</AppText>
+          <AppText style={styles.tagAbsent} numberOfLines={1}>
+            {t('report.didNotCome')}
+          </AppText>
         ) : null}
       </View>
       {!day.isHoliday && !day.isNotComing ? (
@@ -727,7 +789,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     gap: 8,
   },
-  perfName: { fontSize: 16, fontWeight: '600', flex: 1 },
+  perfName: { fontSize: 16, fontWeight: '600', flex: 1, minWidth: 0 },
   balanceTag: { fontSize: 11, fontWeight: '600', color: '#c2410c' },
   perfId: { fontSize: 12, color: '#64748b', marginBottom: 8 },
   pdfBtn: {

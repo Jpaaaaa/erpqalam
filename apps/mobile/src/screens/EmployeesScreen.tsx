@@ -10,10 +10,18 @@ import {
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useTranslation } from 'react-i18next';
 import { ApiClientError } from '../api/client';
-import { listAttendanceUsers } from '../api/attendance';
+import {
+  listAttendanceRecords,
+  listAttendanceUsers,
+} from '../api/attendance';
+import { displayName, getQuickRange } from '../attendance/formatters';
+import {
+  mergeEmployeesWithPunchIds,
+} from '../attendance/lookups';
 import { SearchField } from '../components/SearchField';
-import { displayName } from '../attendance/formatters';
-import type { AttendanceUser } from '../types/attendance';
+import { ViewOnlyBanner } from '../components/ViewOnlyBanner';
+import { useCanManageAttendance } from '../hooks/useCanManageAttendance';
+import type { MergedAttendanceEmployee } from '../types/attendance';
 import type { EmployeesStackParamList } from '../navigation/types';
 import { AppText } from '../ui/AppText';
 import { ltrText } from '../ui/ltr';
@@ -22,7 +30,8 @@ type Props = NativeStackScreenProps<EmployeesStackParamList, 'EmployeesList'>;
 
 export function EmployeesScreen({ navigation }: Props) {
   const { t } = useTranslation();
-  const [users, setUsers] = useState<AttendanceUser[]>([]);
+  const canManage = useCanManageAttendance();
+  const [employees, setEmployees] = useState<MergedAttendanceEmployee[]>([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -31,9 +40,16 @@ export function EmployeesScreen({ navigation }: Props) {
   const load = useCallback(async () => {
     setError('');
     try {
-      // Registered AttendanceUser rows only. Web also merges punch-only IDs
-      // from an undated records fetch (last 500 punches, any time).
-      setUsers(await listAttendanceUsers());
+      const range = getQuickRange('month');
+      const [users, records] = await Promise.all([
+        listAttendanceUsers(),
+        listAttendanceRecords({
+          fromDate: range.from,
+          toDate: range.to,
+          limit: 500,
+        }),
+      ]);
+      setEmployees(mergeEmployeesWithPunchIds(users, records));
     } catch (err) {
       setError(
         err instanceof ApiClientError
@@ -52,13 +68,13 @@ export function EmployeesScreen({ navigation }: Props) {
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return users;
-    return users.filter(
+    if (!q) return employees;
+    return employees.filter(
       (user) =>
         user.deviceUserId.toLowerCase().includes(q) ||
         (user.name || '').toLowerCase().includes(q),
     );
-  }, [users, search]);
+  }, [employees, search]);
 
   if (loading) {
     return (
@@ -71,6 +87,7 @@ export function EmployeesScreen({ navigation }: Props) {
 
   return (
     <View style={styles.container}>
+      {!canManage ? <ViewOnlyBanner /> : null}
       <SearchField
         value={search}
         onChangeText={setSearch}
@@ -107,8 +124,17 @@ export function EmployeesScreen({ navigation }: Props) {
                 })
               }
             >
-              <AppText style={styles.name}>{name}</AppText>
-              <AppText style={styles.id}>
+              <View style={styles.rowHeader}>
+                <AppText style={styles.name} numberOfLines={1}>
+                  {name}
+                </AppText>
+                {item.isUnregistered ? (
+                  <AppText style={styles.badge}>
+                    {t('attendance:employees.unregistered')}
+                  </AppText>
+                ) : null}
+              </View>
+              <AppText style={styles.id} numberOfLines={1}>
                 {t('attendance:employees.deviceUserId')}{' '}
                 <AppText style={[styles.id, ltrText]}>{item.deviceUserId}</AppText>
               </AppText>
@@ -139,6 +165,21 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 8,
   },
-  name: { fontSize: 16, fontWeight: '600', color: '#0f172a' },
+  rowHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
+  name: { fontSize: 16, fontWeight: '600', color: '#0f172a', flex: 1 },
+  badge: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#92400e',
+    backgroundColor: '#fef3c7',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
   id: { fontSize: 13, color: '#64748b', marginTop: 2 },
 });

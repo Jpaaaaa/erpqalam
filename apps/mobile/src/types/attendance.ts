@@ -5,6 +5,9 @@ export type PunchType =
   | 'early_exit'
   | 'out_of_shift';
 
+export type AttendanceHolidayType = 'early_exit' | 'entry_late' | 'day_off';
+export type TimeLeaveType = 'late_arrival' | 'early_exit';
+
 export interface AttendanceRecord {
   id: string;
   deviceUserId: string;
@@ -21,6 +24,10 @@ export interface AttendanceDevice {
   name: string;
   lastSeenAt?: string | null;
   isActive: boolean;
+}
+
+export interface MergedAttendanceEmployee extends AttendanceUser {
+  isUnregistered: boolean;
 }
 
 export interface AttendanceUser {
@@ -41,6 +48,47 @@ export interface AttendanceUser {
   linkedUserId?: string | null;
 }
 
+export interface AttendanceSettings {
+  shiftStartTime: string;
+  shiftEndTime: string;
+  entryZoneStart: string;
+  entryZoneEnd: string;
+  lateZoneStartTime: string;
+  lateZoneEndTime: string;
+  exitZoneStart: string;
+  exitZoneEnd: string;
+  earlyLeftZoneStartTime: string;
+  earlyLeftZoneEndTime: string;
+  workingDays: number[];
+  annualHolidaysDays: number;
+  tempHolidaysPerFullHoliday: number;
+}
+
+export interface AttendanceHoliday {
+  id: string;
+  date: string;
+  type: AttendanceHolidayType;
+}
+
+export interface EmployeeHoliday {
+  id: string;
+  deviceUserId: string;
+  date: string;
+}
+
+export interface TimeLeaveUsage {
+  id: string;
+  deviceUserId: string;
+  date: string;
+  timestamp: string;
+  type: TimeLeaveType;
+}
+
+export interface LeaveBalance {
+  deviceUserId: string;
+  balanceDays: number;
+}
+
 export interface EmployeeReportRow {
   deviceUserId: string;
   workingDaysPresent: number;
@@ -59,9 +107,56 @@ export interface EmployeeReport {
   }[];
 }
 
+export type DailyAttendanceStatus =
+  | 'day_off'
+  | 'official_holiday'
+  | 'on_leave'
+  | 'absent'
+  | 'on_time'
+  | 'late'
+  | 'early_exit';
+
+export interface DailyAttendanceRow {
+  deviceUserId: string;
+  status: DailyAttendanceStatus;
+  entryTime: string | null;
+  exitTime: string | null;
+  entryType: PunchType | null;
+  exitType: PunchType | null;
+}
+
+export interface DailyAttendanceSummary {
+  employeeCount: number;
+  present: number;
+  late: number;
+  earlyExit: number;
+  absent: number;
+  onLeave: number;
+  officialHoliday: number;
+  dayOff: number;
+}
+
+export interface DailyReport {
+  date: string;
+  rows: DailyAttendanceRow[];
+  summary: DailyAttendanceSummary;
+}
+
+export interface DailySummaryResponse {
+  fromDate: string;
+  toDate: string;
+  summaries: { date: string; summary: DailyAttendanceSummary }[];
+}
+
 export interface DateFilter {
   fromDate: string;
   toDate: string;
 }
 
 export type QuickRangeKey = 'today' | 'yesterday' | 'week' | 'month';
+
+export interface ApiSuccess {
+  success: boolean;
+  message?: string;
+  added?: number;
+}

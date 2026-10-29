@@ -1,12 +1,10 @@
-import type { AttendanceDevice, AttendanceUser } from '../types/attendance';
+import type { AttendanceDevice } from '../types/attendance';
+import {
+  buildNameLookup as buildNameLookupFromEmployees,
+  mergeEmployeesWithPunchIds,
+} from './employees';
 
-export function buildNameLookup(users: AttendanceUser[]): Map<string, string> {
-  const map = new Map<string, string>();
-  for (const user of users) {
-    map.set(user.deviceUserId, user.name.trim() || user.deviceUserId);
-  }
-  return map;
-}
+export { mergeEmployeesWithPunchIds, buildNameLookupFromEmployees as buildNameLookup };
 
 export function buildDeviceNameLookup(
   devices: AttendanceDevice[],

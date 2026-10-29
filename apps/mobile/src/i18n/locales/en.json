@@ -65,7 +65,51 @@
       "report": "Report",
       "employees": "Employees",
       "holidays": "Holidays",
-      "settings": "Settings"
+      "settings": "Settings",
+      "more": "More",
+      "daily": "Daily"
+    },
+    "more": {
+      "subtitle": "Daily reports, employee details, holidays, and manual punches.",
+      "daily": "Daily attendance",
+      "report": "Employee report",
+      "holidays": "Holidays & leave",
+      "manual": "Manual punch",
+      "viewOnly": "View only — you cannot add punches, holidays, or time-leave covers."
+    },
+    "daily": {
+      "loadError": "Unable to load daily report.",
+      "pickDate": "Date",
+      "prevDay": "Previous day",
+      "nextDay": "Next day",
+      "exportPdf": "Download daily PDF",
+      "pdfExporting": "Generating PDF...",
+      "pdfError": "Unable to generate daily PDF.",
+      "search": "Search",
+      "searchPlaceholder": "Filter by name or ID...",
+      "empty": "No employees match your search.",
+      "entry": "In time",
+      "exit": "Out time",
+      "summary": {
+        "present": "Present",
+        "late": "Late",
+        "earlyExit": "Early exit",
+        "absent": "Absent",
+        "onLeave": "On leave",
+        "officialHoliday": "Official holiday",
+        "dayOff": "Day off"
+      },
+      "entryType": "In type",
+      "exitType": "Out type",
+      "status": {
+        "on_time": "On time",
+        "late": "Late",
+        "early_exit": "Early exit",
+        "absent": "Absent",
+        "on_leave": "On leave",
+        "official_holiday": "Official holiday",
+        "day_off": "Day off"
+      }
     },
     "dateFilter": {
       "label": "Date range",
@@ -102,6 +146,14 @@
     },
     "records": {
       "loadError": "Unable to load attendance records.",
+      "groupByDate": "Group by date",
+      "daySummary": {
+        "present": "Present",
+        "late": "Late",
+        "absent": "Absent",
+        "onLeave": "On leave",
+        "loading": "Loading day summary…"
+      },
       "search": "Search",
       "searchPlaceholder": "Search by name or ID...",
       "addManual": "Add manual punch",
@@ -128,6 +180,11 @@
       "expectedDays": "Expected days",
       "absentDays": "Absent days",
       "lateEvents": "Late events",
+      "earlyEvents": "Early exit events",
+      "coverLate": "Cover late",
+      "coverEarly": "Cover early exit",
+      "uncoverLate": "Remove late cover",
+      "uncoverEarly": "Remove early cover",
       "attendanceRate": "Attendance rate",
       "employeeCount": "Employees",
       "searchPlaceholder": "Filter employees...",
@@ -267,7 +324,30 @@
       "noBalances": "No leave balances set.",
       "timeLeave": "Time leave usage",
       "noTimeLeave": "No time leave records.",
-      "timeLeaveHint": "Time leave is recorded automatically from late/early punches.",
+      "timeLeaveHint": "Cover late or early punches with time leave when balance allows.",
+      "timeLeaveTypes": {
+        "late_arrival": "Late arrival",
+        "early_exit": "Early exit"
+      },
+      "uncoveredLate": "Uncovered late arrivals",
+      "uncoveredEarly": "Uncovered early exits",
+      "noUncoveredLate": "No uncovered late arrivals in this period.",
+      "noUncoveredEarly": "No uncovered early exits in this period.",
+      "coverTimeLeave": "Cover as time leave",
+      "removeTimeLeave": "Remove",
+      "remove": "Delete",
+      "tempCount": "Temporary: {count}",
+      "fullUsed": "Full days used: {used} / {total}",
+      "remaining": "Remaining: {count}",
+      "subtabs": {
+        "employee": "Employee leave",
+        "official": "Official holidays",
+        "temporary": "Temporary leave",
+        "settings": "Settings"
+      },
+      "dateFrom": "From date",
+      "dateTo": "To date",
+      "dateToOptional": "Optional — same as from for one day",
       "summaryDayOff": "Days off",
       "summaryEarly": "Early exit",
       "summaryLate": "Late entry"

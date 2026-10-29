@@ -65,7 +65,51 @@
       "report": "التقرير",
       "employees": "الموظفون",
       "holidays": "الإجازات",
-      "settings": "الإعدادات"
+      "settings": "الإعدادات",
+      "more": "المزيد",
+      "daily": "يومي"
+    },
+    "more": {
+      "subtitle": "تقارير يومية وتفاصيل الموظفين والإجازات والبصمات اليدوية.",
+      "daily": "الحضور اليومي",
+      "report": "تقرير الموظف",
+      "holidays": "الإجازات والمغادرات",
+      "manual": "بصمة يدوية",
+      "viewOnly": "عرض فقط — لا يمكنك إضافة بصمات أو إجازات أو تغطية استئذان."
+    },
+    "daily": {
+      "loadError": "تعذر تحميل التقرير اليومي.",
+      "pickDate": "التاريخ",
+      "prevDay": "اليوم السابق",
+      "nextDay": "اليوم التالي",
+      "exportPdf": "تنزيل PDF يومي",
+      "pdfExporting": "جاري التوليد...",
+      "pdfError": "تعذر توليد PDF اليومي.",
+      "search": "بحث",
+      "searchPlaceholder": "تصفية بالاسم أو المعرف...",
+      "empty": "لا يوجد موظفون مطابقون.",
+      "entry": "وقت الدخول",
+      "exit": "وقت الخروج",
+      "summary": {
+        "present": "حاضر",
+        "late": "متأخر",
+        "earlyExit": "خروج مبكر",
+        "absent": "غائب",
+        "onLeave": "في إجازة",
+        "officialHoliday": "عطلة رسمية",
+        "dayOff": "يوم عطلة"
+      },
+      "entryType": "نوع الدخول",
+      "exitType": "نوع الخروج",
+      "status": {
+        "on_time": "في الوقت",
+        "late": "متأخر",
+        "early_exit": "خروج مبكر",
+        "absent": "غائب",
+        "on_leave": "في إجازة",
+        "official_holiday": "عطلة رسمية",
+        "day_off": "يوم عطلة"
+      }
     },
     "dateFilter": {
       "label": "نطاق التاريخ",
@@ -102,6 +146,14 @@
     },
     "records": {
       "loadError": "تعذر تحميل سجلات الحضور.",
+      "groupByDate": "تجميع حسب التاريخ",
+      "daySummary": {
+        "present": "حاضر",
+        "late": "متأخر",
+        "absent": "غائب",
+        "onLeave": "في إجازة",
+        "loading": "جاري تحميل ملخص اليوم…"
+      },
       "search": "بحث",
       "searchPlaceholder": "ابحث بالاسم أو المعرف...",
       "addManual": "إضافة بصمة يدوية",
@@ -128,6 +180,11 @@
       "expectedDays": "أيام متوقعة",
       "absentDays": "أيام الغياب",
       "lateEvents": "حالات التأخر",
+      "earlyEvents": "حالات الخروج المبكر",
+      "coverLate": "تغطية التأخر",
+      "coverEarly": "تغطية الخروج المبكر",
+      "uncoverLate": "إزالة تغطية التأخر",
+      "uncoverEarly": "إزالة تغطية الخروج المبكر",
       "attendanceRate": "نسبة الحضور",
       "employeeCount": "عدد الموظفين",
       "searchPlaceholder": "تصفية الموظفين...",
@@ -267,7 +324,30 @@
       "noBalances": "لم يُعيّن رصيد إجازات.",
       "timeLeave": "استخدام الإجازات الزمنية",
       "noTimeLeave": "لا توجد سجلات إجازات زمنية.",
-      "timeLeaveHint": "تُسجّل الإجازات الزمنية تلقائياً من بصمات التأخر/الخروج المبكر.",
+      "timeLeaveHint": "غطِّ التأخر أو الخروج المبكر بإجازة زمنية عند توفر الرصيد.",
+      "timeLeaveTypes": {
+        "late_arrival": "تأخر في الوصول",
+        "early_exit": "خروج مبكر"
+      },
+      "uncoveredLate": "حالات تأخر غير مغطاة",
+      "uncoveredEarly": "حالات خروج مبكر غير مغطاة",
+      "noUncoveredLate": "لا توجد حالات تأخر غير مغطاة في هذه الفترة.",
+      "noUncoveredEarly": "لا توجد حالات خروج مبكر غير مغطاة في هذه الفترة.",
+      "coverTimeLeave": "تغطية كإجازة زمنية",
+      "removeTimeLeave": "إزالة",
+      "remove": "حذف",
+      "tempCount": "مؤقت: {count}",
+      "fullUsed": "أيام كاملة مستخدمة: {used} / {total}",
+      "remaining": "المتبقي: {count}",
+      "subtabs": {
+        "employee": "إجازات الموظفين",
+        "official": "العطل الرسمية",
+        "temporary": "إجازات مؤقتة",
+        "settings": "الإعدادات"
+      },
+      "dateFrom": "من تاريخ",
+      "dateTo": "إلى تاريخ",
+      "dateToOptional": "اختياري — نفس تاريخ البداية ليوم واحد",
       "summaryDayOff": "أيام العطلة",
       "summaryEarly": "خروج مبكر",
       "summaryLate": "دخول متأخر"

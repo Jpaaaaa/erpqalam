@@ -5,7 +5,11 @@ module.exports = () => {
   const isLocalRelease = process.env.LOCAL_RELEASE_APK === '1';
   const expo = { ...appJson.expo };
 
-  expo.plugins = [...(appJson.expo.plugins ?? []), './plugins/withReleaseSigning'];
+  expo.plugins = [
+    ...(appJson.expo.plugins ?? []),
+    './plugins/withReleaseSigning',
+    'expo-sharing',
+  ];
 
   if (isLocalRelease) {
     expo.updates = {

@@ -30,3 +30,10 @@ export function canAccessAttendance(
 ): boolean {
   return hasPermission(role, permissions, PERMISSIONS.ATTENDANCE_VIEW);
 }
+
+export function canManageAttendance(
+  role: UserRole,
+  permissions: string[] | undefined,
+): boolean {
+  return hasPermission(role, permissions, PERMISSIONS.ATTENDANCE_MANAGE);
+}

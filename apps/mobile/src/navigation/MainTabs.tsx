@@ -6,15 +6,22 @@ import { EmployeeDetailScreen } from '../screens/EmployeeDetailScreen';
 import { EmployeesScreen } from '../screens/EmployeesScreen';
 import { OverviewScreen } from '../screens/OverviewScreen';
 import { RecordsScreen } from '../screens/RecordsScreen';
+import { MoreMenuScreen } from '../screens/MoreMenuScreen';
+import { DailyAttendanceScreen } from '../screens/DailyAttendanceScreen';
+import { EmployeeReportScreen } from '../screens/EmployeeReportScreen';
+import { HolidaysScreen } from '../screens/HolidaysScreen';
+import { ManualPunchScreen } from '../screens/ManualPunchScreen';
 import type {
   EmployeesStackParamList,
   MainTabParamList,
+  MoreStackParamList,
   RecordsStackParamList,
 } from './types';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 const EmployeesStack = createNativeStackNavigator<EmployeesStackParamList>();
 const RecordsStack = createNativeStackNavigator<RecordsStackParamList>();
+const MoreStack = createNativeStackNavigator<MoreStackParamList>();
 
 function EmployeesNavigator() {
   const { t } = useTranslation('attendance');
@@ -48,7 +55,45 @@ function RecordsNavigator() {
         component={EmployeeDetailScreen}
         options={({ route }) => ({ title: route.params.name })}
       />
+      <RecordsStack.Screen
+        name="ManualPunch"
+        component={ManualPunchScreen}
+        options={{ title: t('records.manualTitle') }}
+      />
     </RecordsStack.Navigator>
+  );
+}
+
+function MoreNavigator() {
+  const { t } = useTranslation('attendance');
+  return (
+    <MoreStack.Navigator>
+      <MoreStack.Screen
+        name="MoreMenu"
+        component={MoreMenuScreen}
+        options={{ title: t('tabs.more') }}
+      />
+      <MoreStack.Screen
+        name="Daily"
+        component={DailyAttendanceScreen}
+        options={{ title: t('tabs.daily') }}
+      />
+      <MoreStack.Screen
+        name="EmployeeReport"
+        component={EmployeeReportScreen}
+        options={{ title: t('tabs.report') }}
+      />
+      <MoreStack.Screen
+        name="Holidays"
+        component={HolidaysScreen}
+        options={{ title: t('tabs.holidays') }}
+      />
+      <MoreStack.Screen
+        name="ManualPunch"
+        component={ManualPunchScreen}
+        options={{ title: t('records.manualTitle') }}
+      />
+    </MoreStack.Navigator>
   );
 }
 
@@ -90,6 +135,16 @@ export function MainTabs() {
           title: t('tabs.records'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="list-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="MoreTab"
+        component={MoreNavigator}
+        options={{
+          title: t('tabs.more'),
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="ellipsis-horizontal-circle-outline" size={size} color={color} />
           ),
         }}
       />

@@ -65,7 +65,51 @@
       "report": "ڕاپۆرت",
       "employees": "کارمەندان",
       "holidays": "پشوو",
-      "settings": "ڕێکخستن"
+      "settings": "ڕێکخستن",
+      "more": "زیاتر",
+      "daily": "ڕۆژانە"
+    },
+    "more": {
+      "subtitle": "ڕاپۆرتی ڕۆژانە، وردەکاری کارمەند، پشوو، و پەنجەی دەستی.",
+      "daily": "ئامادەبوونی ڕۆژانە",
+      "report": "ڕاپۆرتی کارمەند",
+      "holidays": "پشوو و مۆڵەت",
+      "manual": "پەنجەی دەستی",
+      "viewOnly": "تەنها بینین — ناتوانیت پەنجە، پشوو، یان داپۆشینی مۆڵەت زیاد بکەیت."
+    },
+    "daily": {
+      "loadError": "بارکردنی ڕاپۆرتی ڕۆژانە سەرکەوتوو نەبوو.",
+      "pickDate": "بەروار",
+      "prevDay": "ڕۆژی پێشوو",
+      "nextDay": "ڕۆژی دواتر",
+      "exportPdf": "داگرتنی PDFی ڕۆژانە",
+      "pdfExporting": "دروستکردن...",
+      "pdfError": "دروستکردنی PDFی ڕۆژانە سەرکەوتوو نەبوو.",
+      "search": "گەڕان",
+      "searchPlaceholder": "پاڵاوتن بە ناو یان ناسنامە...",
+      "empty": "هیچ کارمەندێک ناگونجێت.",
+      "entry": "کاتی هاتن",
+      "exit": "کاتی چوون",
+      "summary": {
+        "present": "ئامادە",
+        "late": "دواکەوتوو",
+        "earlyExit": "چوونی زوو",
+        "absent": "غایب",
+        "onLeave": "لە پشوودا",
+        "officialHoliday": "پشوی فەرمی",
+        "dayOff": "ڕۆژی پشوو"
+      },
+      "entryType": "جۆری هاتن",
+      "exitType": "جۆری چوون",
+      "status": {
+        "on_time": "لە کاتی خۆیدا",
+        "late": "دواکەوتوو",
+        "early_exit": "چوونی زوو",
+        "absent": "غایب",
+        "on_leave": "لە پشوودا",
+        "official_holiday": "پشوی فەرمی",
+        "day_off": "ڕۆژی پشوو"
+      }
     },
     "dateFilter": {
       "label": "مەودای بەروار",
@@ -102,6 +146,14 @@
     },
     "records": {
       "loadError": "نەتوانرا تۆمارەکانی ئامادەبوون بار بکرێن.",
+      "groupByDate": "کۆکردنەوە بە بەروار",
+      "daySummary": {
+        "present": "ئامادە",
+        "late": "دواکەوتوو",
+        "absent": "غایب",
+        "onLeave": "لە پشوودا",
+        "loading": "بارکردنی پوختەی ڕۆژ…"
+      },
       "search": "گەڕان",
       "searchPlaceholder": "گەڕان بە ناو یان ئایدی...",
       "addManual": "زیادکردنی پەنجەی دەستی",
@@ -128,6 +180,11 @@
       "expectedDays": "ڕۆژانی چاوەڕوانکراو",
       "absentDays": "ڕۆژانی غیاب",
       "lateEvents": "دواکەوتنەکان",
+      "earlyEvents": "چوونی زوو",
+      "coverLate": "داپۆشینی دواکەوتن",
+      "coverEarly": "داپۆشینی چوونی زوو",
+      "uncoverLate": "لابردنی داپۆشینی دواکەوتن",
+      "uncoverEarly": "لابردنی داپۆشینی چوونی زوو",
       "attendanceRate": "ڕێژەی ئامادەبوون",
       "employeeCount": "کارمەندان",
       "searchPlaceholder": "پاڵاوتنی کارمەندان...",
@@ -267,7 +324,30 @@
       "noBalances": "هیچ باڵانسێکی پشوو دانەنراوە.",
       "timeLeave": "بەکارهێنانی پشوی کاتی",
       "noTimeLeave": "هیچ تۆمارێکی پشوی کاتی نییە.",
-      "timeLeaveHint": "پشوی کاتی بە شێوەی خۆکار لە پەنجەکانی دواکەوتن/چوونی زوو تۆمار دەکرێت.",
+      "timeLeaveHint": "دواکەوتن یان چوونی زوو بە پشوی کاتی داپۆشە کاتێک باڵانس هەیە.",
+      "timeLeaveTypes": {
+        "late_arrival": "دواکەوتنی هاتن",
+        "early_exit": "چوونی زوو"
+      },
+      "uncoveredLate": "دواکەوتنی داپۆشراو نەکراو",
+      "uncoveredEarly": "چوونی زووی داپۆشراو نەکراو",
+      "noUncoveredLate": "هیچ دواکەوتنێکی داپۆشراو نەکراو لەم مەودایەدا نییە.",
+      "noUncoveredEarly": "هیچ چوونێکی زووی داپۆشراو نەکراو لەم مەودایەدا نییە.",
+      "coverTimeLeave": "داپۆشین وەک پشوی کاتی",
+      "removeTimeLeave": "لابردن",
+      "remove": "سڕینەوە",
+      "tempCount": "کاتی: {count}",
+      "fullUsed": "ڕۆژی تەواو بەکارهاتوو: {used} / {total}",
+      "remaining": "ماوە: {count}",
+      "subtabs": {
+        "employee": "پشوی کارمەند",
+        "official": "پشوی فەرمی",
+        "temporary": "پشوی کاتی",
+        "settings": "ڕێکخستن"
+      },
+      "dateFrom": "لە بەروار",
+      "dateTo": "بۆ بەروار",
+      "dateToOptional": "ئارەزوومەندانە — هەمان بەرواری دەستپێک بۆ یەک ڕۆژ",
       "summaryDayOff": "ڕۆژانی پشوو",
       "summaryEarly": "چوونی زوو",
       "summaryLate": "هاتنی دواکەوتوو"

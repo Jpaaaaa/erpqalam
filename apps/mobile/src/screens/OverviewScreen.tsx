@@ -15,23 +15,21 @@ import {
   listAttendanceRecords,
   listAttendanceUsers,
 } from '../api/attendance';
+import { mergeEmployeesWithPunchIds } from '../attendance/lookups';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
+import { ViewOnlyBanner } from '../components/ViewOnlyBanner';
+import { useCanManageAttendance } from '../hooks/useCanManageAttendance';
 import { todayDateKey } from '../attendance/formatters';
 import { useAuth } from '../auth/context';
 import { useI18n } from '../i18n/I18nProvider';
 import { AppText } from '../ui/AppText';
 import { mirroredRow } from '../ui/rtlLayout';
 
-/**
- * Web overview counts `mergeEmployeesWithPunchIds(users, today's records)`,
- * so punch-only device IDs (punched today, no AttendanceUser row) inflate
- * the employee total. Mobile uses `users.length` only — registered device
- * users. Present/late can still include punch-only IDs from today's records.
- */
 export function OverviewScreen() {
   const { logout } = useAuth();
   const { mirrorLayout } = useI18n();
   const { t } = useTranslation();
+  const canManage = useCanManageAttendance();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
@@ -49,7 +47,7 @@ export function OverviewScreen() {
         listAttendanceRecords({ fromDate: today, toDate: today, limit: 500 }),
         getEmployeeReport({ fromDate: today, toDate: today }),
       ]);
-      setEmployeeCount(users.length);
+      setEmployeeCount(mergeEmployeesWithPunchIds(users, records).length);
 
       const presentIds = new Set<string>();
       for (const record of records) {
@@ -128,6 +126,8 @@ export function OverviewScreen() {
         <View style={styles.switcher}>
           <LanguageSwitcher />
         </View>
+
+        {!canManage ? <ViewOnlyBanner /> : null}
 
         {error ? <AppText style={styles.error}>{error}</AppText> : null}
 

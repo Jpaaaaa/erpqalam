@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
-  FlatList,
+  Pressable,
+  SectionList,
   RefreshControl,
   StyleSheet,
   View,
@@ -10,26 +11,40 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useTranslation } from 'react-i18next';
 import { ApiClientError } from '../api/client';
 import {
+  getDailySummaries,
   listAttendanceDevices,
   listAttendanceRecords,
   listAttendanceUsers,
 } from '../api/attendance';
-import { DateRangeChips } from '../components/DateRangeChips';
-import { PunchRow } from '../components/PunchRow';
-import { SearchField } from '../components/SearchField';
-import { displayName, todayDateKey } from '../attendance/formatters';
+import { timestampToDateKey } from '../attendance/formatters';
+import { displayName } from '../attendance/formatters';
 import {
   buildDeviceNameLookup,
   buildNameLookup,
+  mergeEmployeesWithPunchIds,
 } from '../attendance/lookups';
-import type { AttendanceRecord, DateFilter } from '../types/attendance';
+import { DateRangeChips } from '../components/DateRangeChips';
+import { PunchRow } from '../components/PunchRow';
+import { RecordsDayHeader } from '../components/RecordsDayHeader';
+import { SearchField } from '../components/SearchField';
+import { ViewOnlyBanner } from '../components/ViewOnlyBanner';
+import { useCanManageAttendance } from '../hooks/useCanManageAttendance';
+import { todayDateKey } from '../attendance/formatters';
+import type {
+  AttendanceRecord,
+  DailyAttendanceSummary,
+  DateFilter,
+} from '../types/attendance';
 import type { RecordsStackParamList } from '../navigation/types';
 import { AppText } from '../ui/AppText';
 
 type Props = NativeStackScreenProps<RecordsStackParamList, 'RecordsList'>;
 
+type Section = { date: string; data: AttendanceRecord[] };
+
 export function RecordsScreen({ navigation }: Props) {
   const { t } = useTranslation();
+  const canManage = useCanManageAttendance();
   const today = todayDateKey();
   const [filter, setFilter] = useState<DateFilter>({
     fromDate: today,
@@ -41,6 +56,10 @@ export function RecordsScreen({ navigation }: Props) {
   const [deviceNames, setDeviceNames] = useState<Map<string, string>>(
     new Map(),
   );
+  const [daySummaries, setDaySummaries] = useState<
+    Map<string, DailyAttendanceSummary>
+  >(new Map());
+  const [collapsedDates, setCollapsedDates] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
@@ -54,10 +73,11 @@ export function RecordsScreen({ navigation }: Props) {
         listAttendanceRecords({
           fromDate: filter.fromDate,
           toDate: filter.toDate,
-          limit: 500,
+          limit: 5000,
         }),
       ]);
-      setNameLookup(buildNameLookup(users));
+      const merged = mergeEmployeesWithPunchIds(users, rows);
+      setNameLookup(buildNameLookup(merged));
       setDeviceNames(buildDeviceNameLookup(devices));
       setRecords(rows);
     } catch (err) {
@@ -76,6 +96,31 @@ export function RecordsScreen({ navigation }: Props) {
     void load();
   }, [load]);
 
+  useEffect(() => {
+    const fromDate = filter.fromDate?.trim();
+    const toDate = filter.toDate?.trim();
+    if (!fromDate || !toDate) {
+      setDaySummaries(new Map());
+      return;
+    }
+    let cancelled = false;
+    getDailySummaries({ fromDate, toDate })
+      .then((response) => {
+        if (cancelled) return;
+        const next = new Map<string, DailyAttendanceSummary>();
+        for (const item of response.summaries) {
+          next.set(item.date, item.summary);
+        }
+        setDaySummaries(next);
+      })
+      .catch(() => {
+        if (!cancelled) setDaySummaries(new Map());
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [filter.fromDate, filter.toDate]);
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return records;
@@ -88,6 +133,33 @@ export function RecordsScreen({ navigation }: Props) {
     });
   }, [records, search, nameLookup]);
 
+  const sections: Section[] = useMemo(() => {
+    const map = new Map<string, AttendanceRecord[]>();
+    for (const record of filtered) {
+      const key = timestampToDateKey(record.timestamp);
+      const list = map.get(key) ?? [];
+      list.push(record);
+      map.set(key, list);
+    }
+    return Array.from(map.entries())
+      .sort((a, b) => b[0].localeCompare(a[0]))
+      .map(([date, items]) => ({
+        date,
+        data: collapsedDates.has(date)
+          ? []
+          : [...items].sort((a, b) => b.timestamp.localeCompare(a.timestamp)),
+      }));
+  }, [filtered, collapsedDates]);
+
+  function toggleDate(date: string) {
+    setCollapsedDates((prev) => {
+      const next = new Set(prev);
+      if (next.has(date)) next.delete(date);
+      else next.add(date);
+      return next;
+    });
+  }
+
   if (loading && records.length === 0) {
     return (
       <View style={styles.centered}>
@@ -99,15 +171,26 @@ export function RecordsScreen({ navigation }: Props) {
 
   return (
     <View style={styles.container}>
+      {!canManage ? <ViewOnlyBanner /> : null}
       <DateRangeChips filter={filter} onChange={setFilter} />
       <SearchField
         value={search}
         onChangeText={setSearch}
         placeholder={t('attendance:records.searchPlaceholder')}
       />
+      {canManage ? (
+        <Pressable
+          style={styles.manualBtn}
+          onPress={() => navigation.navigate('ManualPunch')}
+        >
+          <AppText style={styles.manualBtnText}>
+            {t('attendance:records.addManual')}
+          </AppText>
+        </Pressable>
+      ) : null}
       {error ? <AppText style={styles.error}>{error}</AppText> : null}
-      <FlatList
-        data={filtered}
+      <SectionList
+        sections={sections}
         keyExtractor={(item) => item.id}
         refreshControl={
           <RefreshControl
@@ -122,6 +205,14 @@ export function RecordsScreen({ navigation }: Props) {
         ListEmptyComponent={
           <AppText style={styles.empty}>{t('attendance:records.empty')}</AppText>
         }
+        renderSectionHeader={({ section }) => (
+          <RecordsDayHeader
+            date={section.date}
+            summary={daySummaries.get(section.date)}
+            expanded={!collapsedDates.has(section.date)}
+            onToggle={() => toggleDate(section.date)}
+          />
+        )}
         renderItem={({ item }) => {
           const name = displayName(
             nameLookup.get(item.deviceUserId),
@@ -156,6 +247,14 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   muted: { color: '#64748b' },
+  manualBtn: {
+    backgroundColor: '#0f766e',
+    borderRadius: 8,
+    paddingVertical: 10,
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  manualBtnText: { color: '#fff', fontWeight: '600' },
   error: { color: '#b91c1c', marginBottom: 8 },
   empty: { color: '#64748b', textAlign: 'center', marginTop: 24 },
 });

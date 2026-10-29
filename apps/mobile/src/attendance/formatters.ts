@@ -62,3 +62,36 @@ export function displayName(name: string | undefined, deviceUserId: string): str
   const trimmed = name?.trim();
   return trimmed || deviceUserId;
 }
+
+export function buildLocalTimestamp(date: string, time: string): string {
+  const [h, mi] = time.split(':');
+  return `${date}T${(h || '00').padStart(2, '0')}:${(mi || '00').padStart(2, '0')}:00.000`;
+}
+
+/** Local calendar date from an attendance timestamp string (no UTC conversion). */
+export function timestampToDateKey(ts: string): string {
+  const head = ts.trim().slice(0, 10);
+  if (/^\d{4}-\d{2}-\d{2}$/.test(head)) return head;
+  const d = new Date(ts);
+  if (Number.isNaN(d.getTime())) return head;
+  return formatLocalDateKey(d);
+}
+
+export function shiftDateKey(dateKey: string, deltaDays: number): string {
+  const parts = dateKey.split('-').map((p) => parseInt(p, 10));
+  if (parts.length !== 3 || parts.some((n) => Number.isNaN(n))) return dateKey;
+  const d = new Date(parts[0], parts[1] - 1, parts[2]);
+  d.setDate(d.getDate() + deltaDays);
+  return formatLocalDateKey(d);
+}
+
+export function isValidDateKey(value: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value.trim())) return false;
+  const parts = value.split('-').map((p) => parseInt(p, 10));
+  const d = new Date(parts[0], parts[1] - 1, parts[2]);
+  return (
+    d.getFullYear() === parts[0] &&
+    d.getMonth() === parts[1] - 1 &&
+    d.getDate() === parts[2]
+  );
+}

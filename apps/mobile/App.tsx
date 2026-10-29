@@ -12,6 +12,7 @@ import { SetCredentialsScreen } from './src/screens/SetCredentialsScreen';
 import { ChangePasswordScreen } from './src/screens/ChangePasswordScreen';
 import { NoAccessScreen } from './src/screens/NoAccessScreen';
 import { OfflineBanner } from './src/components/OfflineBanner';
+import { HomeThemeProvider } from './src/theme/HomeThemeProvider';
 
 function Root() {
   const { user, isLoading } = useAuth();
@@ -42,9 +43,11 @@ function Root() {
   }
 
   return (
-    <NavigationContainer direction={isRtl ? 'rtl' : 'ltr'}>
-      <MainTabs />
-    </NavigationContainer>
+    <HomeThemeProvider>
+      <NavigationContainer direction={isRtl ? 'rtl' : 'ltr'}>
+        <MainTabs />
+      </NavigationContainer>
+    </HomeThemeProvider>
   );
 }
 

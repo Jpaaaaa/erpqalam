@@ -15,6 +15,7 @@ export interface AuthUser {
   permissions: string[];
   status: UserStatus;
   schoolId: string;
+  schoolName?: string;
 }
 
 export interface AuthTokens {

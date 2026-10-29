@@ -1,13 +1,18 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  ActivityIndicator,
-  Pressable,
-  SectionList,
+  FlatList,
+  Platform,
   RefreshControl,
+  StatusBar as RNStatusBar,
   StyleSheet,
+  Text,
   View,
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useFocusEffect } from '@react-navigation/native';
+import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import { setStatusBarStyle } from 'expo-status-bar';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { resolveUserFacingError } from '../api/client';
 import { NetworkErrorPanel } from '../components/NetworkErrorPanel';
@@ -18,17 +23,21 @@ import {
   listAttendanceUsers,
 } from '../api/attendance';
 import { timestampToDateKey } from '../attendance/formatters';
-import { displayName } from '../attendance/formatters';
 import {
   buildDeviceNameLookup,
   buildNameLookup,
   mergeEmployeesWithPunchIds,
 } from '../attendance/lookups';
-import { DateRangeChips } from '../components/DateRangeChips';
-import { PunchRow } from '../components/PunchRow';
-import { RecordsDayHeader } from '../components/RecordsDayHeader';
-import { SearchField } from '../components/SearchField';
 import { ViewOnlyBanner } from '../components/ViewOnlyBanner';
+import { HomeHeader } from '../components/home/HomeHeader';
+import { HomeGlassBackground } from '../components/home/HomeGlassBackground';
+import { HOME_BG_DARK, HOME_BG_LIGHT } from '../components/home/homeGlass';
+import { RecordsDateChips } from '../components/records/RecordsDateChips';
+import { RecordsDayCard } from '../components/records/RecordsDayCard';
+import { RecordsEmptyState } from '../components/records/RecordsEmptyState';
+import { RecordsFab } from '../components/records/RecordsFab';
+import { RecordsSearchField } from '../components/records/RecordsSearchField';
+import { RecordsSkeleton } from '../components/records/RecordsSkeleton';
 import { useCanManageAttendance } from '../hooks/useCanManageAttendance';
 import { todayDateKey } from '../attendance/formatters';
 import type {
@@ -36,16 +45,34 @@ import type {
   DailyAttendanceSummary,
   DateFilter,
 } from '../types/attendance';
-import type { RecordsStackParamList } from '../navigation/types';
+import type { MainTabParamList, RecordsStackParamList } from '../navigation/types';
+import { overviewScrollPaddingBottom } from '../theme/homeTheme';
+import { useHomeTheme } from '../theme/HomeThemeProvider';
+import { useAuth } from '../auth/context';
+import { useI18n } from '../i18n/I18nProvider';
+import type { AppTypography } from '../i18n/fonts';
 import { AppText } from '../ui/AppText';
 
 type Props = NativeStackScreenProps<RecordsStackParamList, 'RecordsList'>;
 
-type Section = { date: string; data: AttendanceRecord[] };
+type DaySection = { date: string; records: AttendanceRecord[] };
 
 export function RecordsScreen({ navigation }: Props) {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const canManage = useCanManageAttendance();
+  const insets = useSafeAreaInsets();
+  const { palette, isDark } = useHomeTheme();
+  const { typography } = useI18n();
+  const tabNavigation =
+    navigation.getParent()?.getParent<BottomTabNavigationProp<MainTabParamList>>() ??
+    navigation.getParent<BottomTabNavigationProp<MainTabParamList>>();
+  const styles = useMemo(
+    () => createStyles(isDark, typography),
+    [isDark, typography],
+  );
+  const scrollBottomPad = overviewScrollPaddingBottom(insets.bottom) + (canManage ? 72 : 0);
+
   const today = todayDateKey();
   const [filter, setFilter] = useState<DateFilter>({
     fromDate: today,
@@ -54,9 +81,7 @@ export function RecordsScreen({ navigation }: Props) {
   const [search, setSearch] = useState('');
   const [records, setRecords] = useState<AttendanceRecord[]>([]);
   const [nameLookup, setNameLookup] = useState<Map<string, string>>(new Map());
-  const [deviceNames, setDeviceNames] = useState<Map<string, string>>(
-    new Map(),
-  );
+  const [, setDeviceNames] = useState<Map<string, string>>(new Map());
   const [daySummaries, setDaySummaries] = useState<
     Map<string, DailyAttendanceSummary>
   >(new Map());
@@ -126,6 +151,23 @@ export function RecordsScreen({ navigation }: Props) {
     };
   }, [filter.fromDate, filter.toDate]);
 
+  useFocusEffect(
+    useCallback(() => {
+      if (Platform.OS === 'android') {
+        RNStatusBar.setTranslucent(true);
+        RNStatusBar.setBackgroundColor('transparent');
+      }
+      setStatusBarStyle(isDark ? 'light' : 'dark');
+      return () => {
+        if (Platform.OS === 'android') {
+          RNStatusBar.setTranslucent(false);
+          RNStatusBar.setBackgroundColor(isDark ? HOME_BG_DARK : HOME_BG_LIGHT);
+        }
+        setStatusBarStyle('dark');
+      };
+    }, [isDark]),
+  );
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return records;
@@ -138,7 +180,7 @@ export function RecordsScreen({ navigation }: Props) {
     });
   }, [records, search, nameLookup]);
 
-  const sections: Section[] = useMemo(() => {
+  const daySections: DaySection[] = useMemo(() => {
     const map = new Map<string, AttendanceRecord[]>();
     for (const record of filtered) {
       const key = timestampToDateKey(record.timestamp);
@@ -150,11 +192,9 @@ export function RecordsScreen({ navigation }: Props) {
       .sort((a, b) => b[0].localeCompare(a[0]))
       .map(([date, items]) => ({
         date,
-        data: collapsedDates.has(date)
-          ? []
-          : [...items].sort((a, b) => b.timestamp.localeCompare(a.timestamp)),
+        records: [...items].sort((a, b) => b.timestamp.localeCompare(a.timestamp)),
       }));
-  }, [filtered, collapsedDates]);
+  }, [filtered]);
 
   function toggleDate(date: string) {
     setCollapsedDates((prev) => {
@@ -165,105 +205,136 @@ export function RecordsScreen({ navigation }: Props) {
     });
   }
 
-  if (loading && records.length === 0) {
-    return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#0f766e" />
-        <AppText style={styles.muted}>{t('common:loading')}</AppText>
-      </View>
-    );
+  function openMoreDaily() {
+    tabNavigation?.navigate('MoreTab', {
+      screen: 'Daily',
+      params: { attentionOnly: true },
+    });
   }
 
-  return (
-    <View style={styles.container}>
-      {!canManage ? <ViewOnlyBanner /> : null}
-      <DateRangeChips filter={filter} onChange={setFilter} />
-      <SearchField
+  const listHeader = (
+    <View style={[styles.headerBlock, { paddingTop: insets.top }]}>
+      {!canManage ? (
+        <View style={styles.bannerWrap}>
+          <ViewOnlyBanner />
+        </View>
+      ) : null}
+
+      <HomeHeader
+        user={user}
+        alertCount={0}
+        onAvatarPress={() =>
+          tabNavigation?.navigate('MoreTab', { screen: 'MoreMenu' })
+        }
+        onBellPress={openMoreDaily}
+      />
+
+      <Text style={styles.screenTitle}>{t('attendance:tabs.records')}</Text>
+
+      <RecordsSearchField
         value={search}
         onChangeText={setSearch}
         placeholder={t('attendance:records.searchPlaceholder')}
       />
-      {canManage ? (
-        <Pressable
-          style={styles.manualBtn}
-          onPress={() => navigation.navigate('ManualPunch')}
-        >
-          <AppText style={styles.manualBtnText}>
-            {t('attendance:records.addManual')}
-          </AppText>
-        </Pressable>
-      ) : null}
+
+      <RecordsDateChips filter={filter} onChange={setFilter} />
+
       {errorIsNetwork ? (
         <NetworkErrorPanel message={error} onRetry={() => void load()} />
       ) : error ? (
         <AppText style={styles.error}>{error}</AppText>
       ) : null}
-      <SectionList
-        sections={sections}
-        keyExtractor={(item) => item.id}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={() => {
-              setRefreshing(true);
-              void load();
-            }}
-            tintColor="#0f766e"
-          />
-        }
-        ListEmptyComponent={
-          <AppText style={styles.empty}>{t('attendance:records.empty')}</AppText>
-        }
-        renderSectionHeader={({ section }) => (
-          <RecordsDayHeader
-            date={section.date}
-            summary={daySummaries.get(section.date)}
-            expanded={!collapsedDates.has(section.date)}
-            onToggle={() => toggleDate(section.date)}
-          />
-        )}
-        renderItem={({ item }) => {
-          const name = displayName(
-            nameLookup.get(item.deviceUserId),
-            item.deviceUserId,
-          );
-          return (
-            <PunchRow
-              record={item}
-              name={name}
-              deviceName={deviceNames.get(item.deviceSerial) || item.deviceSerial}
-              onPress={() =>
-                navigation.navigate('EmployeeDetail', {
-                  deviceUserId: item.deviceUserId,
-                  name,
-                })
+    </View>
+  );
+
+  if (loading && records.length === 0) {
+    return (
+      <View style={styles.root}>
+        <HomeGlassBackground isDark={isDark} />
+        <SafeAreaView style={styles.safe} edges={[]}>
+          <View style={[styles.scrollContent, { paddingBottom: scrollBottomPad }]}>
+            {listHeader}
+            <RecordsSkeleton />
+          </View>
+        </SafeAreaView>
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.root}>
+      <HomeGlassBackground isDark={isDark} />
+      <SafeAreaView style={styles.safe} edges={[]}>
+        <FlatList
+          data={daySections}
+          keyExtractor={(item) => item.date}
+          style={styles.list}
+          contentContainerStyle={[
+            styles.scrollContent,
+            { paddingBottom: scrollBottomPad },
+            daySections.length === 0 && styles.listEmptyGrow,
+          ]}
+          ListHeaderComponent={listHeader}
+          ListEmptyComponent={<RecordsEmptyState />}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={() => {
+                setRefreshing(true);
+                void load();
+              }}
+              tintColor={palette.teal}
+            />
+          }
+          renderItem={({ item }) => (
+            <RecordsDayCard
+              date={item.date}
+              records={item.records}
+              summary={daySummaries.get(item.date)}
+              expanded={!collapsedDates.has(item.date)}
+              nameLookup={nameLookup}
+              onToggle={() => toggleDate(item.date)}
+              onRowPress={(deviceUserId, name) =>
+                navigation.navigate('EmployeeDetail', { deviceUserId, name })
               }
             />
-          );
-        }}
-      />
+          )}
+        />
+        {canManage ? (
+          <RecordsFab onPress={() => navigation.navigate('ManualPunch')} />
+        ) : null}
+      </SafeAreaView>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff', padding: 16 },
-  centered: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#fff',
-    gap: 8,
-  },
-  muted: { color: '#64748b' },
-  manualBtn: {
-    backgroundColor: '#0f766e',
-    borderRadius: 8,
-    paddingVertical: 10,
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  manualBtnText: { color: '#fff', fontWeight: '600' },
-  error: { color: '#b91c1c', marginBottom: 8 },
-  empty: { color: '#64748b', textAlign: 'center', marginTop: 24 },
-});
+function createStyles(isDark: boolean, typography: AppTypography) {
+  const text = isDark ? '#F1F5F9' : '#0F172A';
+
+  return StyleSheet.create({
+    root: {
+      flex: 1,
+      backgroundColor: isDark ? HOME_BG_DARK : HOME_BG_LIGHT,
+    },
+    safe: {
+      flex: 1,
+      backgroundColor: 'transparent',
+    },
+    list: { flex: 1, backgroundColor: 'transparent' },
+    scrollContent: {
+      paddingHorizontal: 16,
+      gap: 16,
+    },
+    listEmptyGrow: { flexGrow: 1 },
+    headerBlock: { gap: 16, marginBottom: 4 },
+    bannerWrap: { marginBottom: -8 },
+    screenTitle: {
+      fontFamily: typography.noto.bold,
+      fontSize: 26,
+      lineHeight: 34,
+      color: text,
+      marginTop: -4,
+    },
+    error: { color: '#EF4444', marginBottom: 4 },
+  });
+}

@@ -4,6 +4,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
+import { HomeThemeToggle } from '../components/HomeThemeToggle';
 import { useCanManageAttendance } from '../hooks/useCanManageAttendance';
 import type { MoreStackParamList } from '../navigation/types';
 import { useAuth } from '../auth/context';
@@ -12,6 +13,7 @@ import { useI18n } from '../i18n/I18nProvider';
 import { mirroredRow } from '../ui/rtlLayout';
 import { rowChevron } from '../ui/chevronIcons';
 import { ltrText } from '../ui/ltr';
+import { TAB_SCENE_BOTTOM_PAD } from '../theme/homeTheme';
 
 type Props = NativeStackScreenProps<MoreStackParamList, 'MoreMenu'>;
 
@@ -81,6 +83,7 @@ export function MoreMenuScreen({ navigation }: Props) {
       <View style={styles.switcher}>
         <LanguageSwitcher />
       </View>
+      <HomeThemeToggle />
 
       <AppText style={styles.hint}>{t('more.subtitle')}</AppText>
       {ITEMS.filter((item) => !item.manageOnly || canManage).map((item) => (
@@ -107,7 +110,12 @@ export function MoreMenuScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  content: { padding: 16, backgroundColor: '#fff', flexGrow: 1, paddingBottom: 32 },
+  content: {
+    padding: 16,
+    backgroundColor: '#fff',
+    flexGrow: 1,
+    paddingBottom: TAB_SCENE_BOTTOM_PAD,
+  },
   profile: {
     marginBottom: 16,
     padding: 14,

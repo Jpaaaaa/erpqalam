@@ -55,6 +55,14 @@ type AuthUserRecord = Pick<
   | 'schoolId'
 >;
 
+type AuthUserWithSchool = AuthUserRecord & {
+  school?: { name: string } | null;
+};
+
+const USER_WITH_SCHOOL = {
+  include: { school: { select: { name: true } } },
+} as const;
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -378,6 +386,7 @@ export class AuthService {
   async getProfile(userId: string): Promise<AuthUserDto> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
+      ...USER_WITH_SCHOOL,
     });
 
     if (!user) {
@@ -388,6 +397,16 @@ export class AuthService {
   }
 
   private async buildAuthResponse(user: AuthUserRecord): Promise<AuthResponseDto> {
+    const withSchool = await this.prisma.user.findUnique({
+      where: { id: user.id },
+      ...USER_WITH_SCHOOL,
+    });
+
+    if (!withSchool) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    user = withSchool;
     const payload: JwtPayload = {
       sub: user.id,
       email: user.email,
@@ -403,12 +422,12 @@ export class AuthService {
     await this.refreshTokenStore.save(user.id, refreshToken, expiresAt);
 
     return {
-      user: this.toAuthUser(user),
+      user: this.toAuthUser(withSchool),
       tokens: { accessToken, refreshToken },
     };
   }
 
-  private toAuthUser(user: AuthUserRecord): AuthUserDto {
+  private toAuthUser(user: AuthUserWithSchool): AuthUserDto {
     return {
       id: user.id,
       email: user.email,
@@ -422,6 +441,7 @@ export class AuthService {
       permissions: resolvePermissions(user.role, user.permissions),
       status: user.status,
       schoolId: user.schoolId,
+      schoolName: user.school?.name,
     };
   }
 

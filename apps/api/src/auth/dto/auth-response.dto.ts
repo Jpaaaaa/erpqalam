@@ -39,6 +39,9 @@ export class AuthUserDto {
 
   @ApiProperty()
   schoolId: string;
+
+  @ApiProperty({ required: false, description: 'Display name of the user’s school' })
+  schoolName?: string;
 }
 
 export class AuthTokensDto {

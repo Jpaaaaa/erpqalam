@@ -1,130 +1,142 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 import {
   ActivityIndicator,
+  Platform,
   RefreshControl,
   ScrollView,
+  StatusBar as RNStatusBar,
   StyleSheet,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { BlurTargetView } from 'expo-blur';
+import { setStatusBarStyle } from 'expo-status-bar';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import type { CompositeNavigationProp } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTranslation } from 'react-i18next';
-import { resolveUserFacingError } from '../api/client';
 import { NetworkErrorPanel } from '../components/NetworkErrorPanel';
-import {
-  getEmployeeReport,
-  listAttendanceRecords,
-  listAttendanceUsers,
-} from '../api/attendance';
-import { mergeEmployeesWithPunchIds } from '../attendance/lookups';
-import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { ViewOnlyBanner } from '../components/ViewOnlyBanner';
+import { HomeHeader } from '../components/home/HomeHeader';
+import { RingSummaryCard } from '../components/home/RingSummaryCard';
+import { QuickActionsRow } from '../components/home/QuickActionsRow';
+import { NeedsAttentionSection } from '../components/home/NeedsAttentionSection';
+import { RecentRecordsFeed } from '../components/home/RecentRecordsFeed';
+import { useHomeDashboard } from '../hooks/useHomeDashboard';
 import { useCanManageAttendance } from '../hooks/useCanManageAttendance';
-import { todayDateKey } from '../attendance/formatters';
-import { useI18n } from '../i18n/I18nProvider';
+import { useAuth } from '../auth/context';
+import type { MainTabParamList } from '../navigation/types';
+import type { MoreStackParamList } from '../navigation/types';
+import { overviewScrollPaddingBottom } from '../theme/homeTheme';
+import { useHomeTheme } from '../theme/HomeThemeProvider';
 import { AppText } from '../ui/AppText';
-import { mirroredRow } from '../ui/rtlLayout';
+import { HomeGlassBackground } from '../components/home/HomeGlassBackground';
+import { HOME_BG_DARK, HOME_BG_LIGHT } from '../components/home/homeGlass';
+import { useHomeBlurTarget } from '../components/home/HomeBlurTargetContext';
+
+type HomeNav = CompositeNavigationProp<
+  BottomTabNavigationProp<MainTabParamList, 'Overview'>,
+  NativeStackNavigationProp<MoreStackParamList>
+>;
 
 export function OverviewScreen() {
-  const { mirrorLayout } = useI18n();
-  const { t } = useTranslation();
+  const { t } = useTranslation('attendance');
+  const navigation = useNavigation<HomeNav>();
+  const { user } = useAuth();
   const canManage = useCanManageAttendance();
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState('');
-  const [errorIsNetwork, setErrorIsNetwork] = useState(false);
-  const [employeeCount, setEmployeeCount] = useState(0);
-  const [todayPresent, setTodayPresent] = useState(0);
-  const [lateToday, setLateToday] = useState(0);
-  const [attendanceRate, setAttendanceRate] = useState('0');
+  const insets = useSafeAreaInsets();
+  const { palette, isDark } = useHomeTheme();
+  const scrollBottomPad = overviewScrollPaddingBottom(insets.bottom);
+  const blurTarget = useHomeBlurTarget();
+  const styles = useMemo(
+    () => createStyles(palette, isDark),
+    [palette, isDark],
+  );
+  const {
+    loading,
+    refreshing,
+    setRefreshing,
+    error,
+    errorIsNetwork,
+    load,
+    summary,
+    attendancePct,
+    punctualityPct,
+    weeklyAvg,
+    attentionItems,
+    recentRecords,
+    nameLookup,
+  } = useHomeDashboard();
 
-  const load = useCallback(async () => {
-    setError('');
-    const today = todayDateKey();
-    try {
-      const [users, records, report] = await Promise.all([
-        listAttendanceUsers(),
-        listAttendanceRecords({ fromDate: today, toDate: today, limit: 500 }),
-        getEmployeeReport({ fromDate: today, toDate: today }),
-      ]);
-      setEmployeeCount(mergeEmployeesWithPunchIds(users, records).length);
-
-      const presentIds = new Set<string>();
-      for (const record of records) {
-        if (
-          record.punchType === 'entry_on_time' ||
-          record.punchType === 'entry_late' ||
-          record.punchType === 'exit' ||
-          record.punchType === 'early_exit'
-        ) {
-          presentIds.add(record.deviceUserId);
-        }
+  useFocusEffect(
+    useCallback(() => {
+      if (Platform.OS === 'android') {
+        RNStatusBar.setTranslucent(true);
+        RNStatusBar.setBackgroundColor('transparent');
       }
-      setTodayPresent(presentIds.size);
-      setLateToday(records.filter((r) => r.punchType === 'entry_late').length);
+      setStatusBarStyle(isDark ? 'light' : 'dark');
+      return () => {
+        if (Platform.OS === 'android') {
+          RNStatusBar.setTranslucent(false);
+          RNStatusBar.setBackgroundColor(isDark ? HOME_BG_DARK : HOME_BG_LIGHT);
+        }
+        setStatusBarStyle('dark');
+        blurTarget?.setReady(false);
+      };
+    }, [isDark, blurTarget]),
+  );
 
-      const totalExpected = report.rows.reduce(
-        (sum, row) => sum + row.expectedWorkingDays,
-        0,
-      );
-      const totalPresent = report.rows.reduce(
-        (sum, row) => sum + row.workingDaysPresent,
-        0,
-      );
-      setAttendanceRate(
-        totalExpected > 0
-          ? ((totalPresent / totalExpected) * 100).toFixed(1)
-          : '0',
-      );
-    } catch (err) {
-      const resolved = resolveUserFacingError(
-        err,
-        t,
-        'attendance:overview.loadError',
-      );
-      if (resolved.sessionExpired) return;
-      setError(resolved.message);
-      setErrorIsNetwork(resolved.isNetwork);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, [t]);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
-
-  if (loading) {
+  if (loading && !summary) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#0f766e" />
+        <ActivityIndicator size="large" color={palette.teal} />
         <AppText style={styles.muted}>{t('common:loading')}</AppText>
       </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top']}>
-      <ScrollView
-        contentContainerStyle={styles.content}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={() => {
-              setRefreshing(true);
-              void load();
-            }}
-            tintColor="#0f766e"
-          />
-        }
+    <View style={styles.root}>
+      <BlurTargetView
+        ref={blurTarget?.ref}
+        style={styles.blurTarget}
+        collapsable={false}
+        onLayout={() => blurTarget?.setReady(true)}
       >
-        <AppText style={styles.title}>{t('attendance:tabs.overview')}</AppText>
+        <HomeGlassBackground isDark={isDark} />
+        <SafeAreaView style={styles.safe} edges={['top']}>
+        <ScrollView
+          style={styles.scroll}
+          contentContainerStyle={[styles.content, { paddingBottom: scrollBottomPad }]}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={() => {
+                setRefreshing(true);
+                void load();
+              }}
+              tintColor={palette.teal}
+            />
+          }
+        >
+        {!canManage ? (
+          <View style={styles.bannerWrap}>
+            <ViewOnlyBanner />
+          </View>
+        ) : null}
 
-        <View style={styles.switcher}>
-          <LanguageSwitcher />
-        </View>
-
-        {!canManage ? <ViewOnlyBanner /> : null}
+        <HomeHeader
+          user={user}
+          alertCount={attentionItems.length}
+          onAvatarPress={() => navigation.navigate('MoreTab', { screen: 'MoreMenu' })}
+          onBellPress={() =>
+            navigation.navigate('MoreTab', {
+              screen: 'Daily',
+              params: { attentionOnly: true },
+            })
+          }
+        />
 
         {errorIsNetwork ? (
           <NetworkErrorPanel message={error} onRetry={() => void load()} />
@@ -132,73 +144,89 @@ export function OverviewScreen() {
           <AppText style={styles.error}>{error}</AppText>
         ) : null}
 
-        <Metric
-          label={t('attendance:overview.employees')}
-          value={String(employeeCount)}
-          footer={t('attendance:overview.employeesFooter')}
-        />
-        <Metric
-          label={t('attendance:overview.todayPresent')}
-          value={String(todayPresent)}
-          footer={t('attendance:overview.todayPresentFooter', {
-            total: employeeCount,
-          })}
-        />
-        <Metric
-          label={t('attendance:overview.todayLate')}
-          value={String(lateToday)}
-        />
-        <Metric
-          label={t('attendance:overview.attendanceRate')}
-          value={`${attendanceRate}%`}
-          footer={t('attendance:overview.attendanceRateFooter')}
-        />
-      </ScrollView>
-    </SafeAreaView>
-  );
-}
+        {summary ? (
+          <>
+            <RingSummaryCard
+              summary={summary}
+              attendancePct={attendancePct}
+              punctualityPct={punctualityPct}
+              weeklyAvgPct={weeklyAvg}
+              onOpenDaily={() => navigation.navigate('MoreTab', { screen: 'Daily' })}
+            />
 
-function Metric({
-  label,
-  value,
-  footer,
-}: {
-  label: string;
-  value: string;
-  footer?: string;
-}) {
-  return (
-    <View style={styles.card}>
-      <AppText style={styles.cardLabel}>{label}</AppText>
-      <AppText style={styles.cardValue}>{value}</AppText>
-      {footer ? <AppText style={styles.cardFooter}>{footer}</AppText> : null}
+            <QuickActionsRow
+              canManage={canManage}
+              onManual={() =>
+                navigation.navigate('MoreTab', { screen: 'ManualPunch' })
+              }
+              onDaily={() => navigation.navigate('MoreTab', { screen: 'Daily' })}
+              onReport={() =>
+                navigation.navigate('MoreTab', { screen: 'EmployeeReport' })
+              }
+              onHolidays={() =>
+                navigation.navigate('MoreTab', { screen: 'Holidays' })
+              }
+            />
+
+            <NeedsAttentionSection
+              items={attentionItems}
+              onRowPress={(deviceUserId) =>
+                navigation.navigate('MoreTab', {
+                  screen: 'EmployeeReport',
+                  params: { deviceUserId },
+                })
+              }
+              onSeeAll={() =>
+                navigation.navigate('MoreTab', {
+                  screen: 'Daily',
+                  params: { attentionOnly: true },
+                })
+              }
+            />
+
+            <RecentRecordsFeed
+              records={recentRecords}
+              nameLookup={nameLookup}
+              onSeeAll={() => navigation.navigate('RecordsTab')}
+            />
+          </>
+        ) : null}
+        </ScrollView>
+        </SafeAreaView>
+      </BlurTargetView>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#fff' },
-  centered: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#fff',
-    gap: 8,
-  },
-  content: { padding: 16, paddingBottom: 32, backgroundColor: '#fff' },
-  switcher: { marginBottom: 16 },
-  title: { fontSize: 22, fontWeight: '600', color: '#0f172a', marginBottom: 12 },
-  muted: { color: '#64748b' },
-  error: { color: '#b91c1c', marginBottom: 12 },
-  card: {
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    backgroundColor: '#fff',
-  },
-  cardLabel: { fontSize: 13, color: '#64748b', fontWeight: '600' },
-  cardValue: { fontSize: 28, fontWeight: '700', color: '#0f172a', marginTop: 4 },
-  cardFooter: { fontSize: 12, color: '#94a3b8', marginTop: 6 },
-});
+function createStyles(
+  p: ReturnType<typeof useHomeTheme>['palette'],
+  isDark: boolean,
+) {
+  return StyleSheet.create({
+    root: {
+      flex: 1,
+      backgroundColor: isDark ? HOME_BG_DARK : HOME_BG_LIGHT,
+    },
+    safe: {
+      flex: 1,
+      backgroundColor: 'transparent',
+    },
+    blurTarget: { flex: 1 },
+    scroll: { flex: 1, backgroundColor: 'transparent' },
+    centered: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: p.bg,
+      gap: 8,
+    },
+    content: {
+      padding: 16,
+      gap: 20,
+      backgroundColor: 'transparent',
+    },
+    bannerWrap: { marginBottom: -8 },
+    muted: { color: p.textMuted },
+    error: { color: p.red, marginBottom: 8 },
+  });
+}

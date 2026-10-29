@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import type { MoreStackParamList } from '../navigation/types';
 import {
   ActivityIndicator,
   FlatList,
@@ -68,7 +70,9 @@ type ReportTab = 'performance' | 'per-employee' | 'summary';
 import { AppText } from '../ui/AppText';
 import { ltrText } from '../ui/ltr';
 
-export function EmployeeReportScreen() {
+type Props = NativeStackScreenProps<MoreStackParamList, 'EmployeeReport'>;
+
+export function EmployeeReportScreen({ route }: Props) {
   const { t } = useTranslation('attendance');
   const canManage = useCanManageAttendance();
   const [tab, setTab] = useState<ReportTab>('performance');
@@ -235,6 +239,13 @@ export function EmployeeReportScreen() {
   useEffect(() => {
     void loadMeta();
   }, [loadMeta]);
+
+  useEffect(() => {
+    const id = route.params?.deviceUserId?.trim();
+    if (!id) return;
+    setTab('per-employee');
+    setSelectedId(id);
+  }, [route.params?.deviceUserId]);
 
   useEffect(() => {
     void loadPerformanceReport();

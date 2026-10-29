@@ -1,4 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import type { MoreStackParamList } from '../navigation/types';
+import { filterDailyAttentionRows } from '../attendance/daily-attention';
 import {
   ActivityIndicator,
   FlatList,
@@ -38,7 +41,10 @@ import { ltrText } from '../ui/ltr';
 import { useI18n } from '../i18n/I18nProvider';
 import { mirroredRow } from '../ui/rtlLayout';
 
-export function DailyAttendanceScreen() {
+type Props = NativeStackScreenProps<MoreStackParamList, 'Daily'>;
+
+export function DailyAttendanceScreen({ route }: Props) {
+  const attentionOnly = route.params?.attentionOnly === true;
   const { t } = useTranslation('attendance');
   const { mirrorLayout } = useI18n();
   const canManage = useCanManageAttendance();
@@ -87,16 +93,17 @@ export function DailyAttendanceScreen() {
   }, [load]);
 
   const filtered = useMemo(() => {
+    let list = attentionOnly ? filterDailyAttentionRows(rows) : rows;
     const q = search.trim().toLowerCase();
-    if (!q) return rows;
-    return rows.filter((row) => {
+    if (!q) return list;
+    return list.filter((row) => {
       const name = nameLookup.get(row.deviceUserId) || row.deviceUserId;
       return (
         row.deviceUserId.toLowerCase().includes(q) ||
         name.toLowerCase().includes(q)
       );
     });
-  }, [rows, search, nameLookup]);
+  }, [rows, search, nameLookup, attentionOnly]);
 
   async function handlePdf() {
     setExporting(true);

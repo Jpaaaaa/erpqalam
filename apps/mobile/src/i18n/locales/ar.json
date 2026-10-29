@@ -63,7 +63,7 @@
     "description": "تتبع البصمات وجداول الموظفين والإجازات والتقارير.",
     "accessDenied": "المدير فقط يمكنه الوصول إلى إدارة الحضور.",
     "tabs": {
-      "overview": "نظرة عامة",
+      "overview": "الرئيسية",
       "records": "السجلات",
       "report": "التقرير",
       "employees": "الموظفون",
@@ -80,7 +80,11 @@
       "manual": "بصمة يدوية",
       "viewOnly": "عرض فقط — لا يمكنك إضافة بصمات أو إجازات أو تغطية استئذان.",
       "profile": "مسجّل الدخول باسم",
-      "signOut": "تسجيل الخروج"
+      "signOut": "تسجيل الخروج",
+      "theme": "مظهر الرئيسية",
+      "themeLight": "فاتح",
+      "themeDark": "داكن",
+      "themeSystem": "النظام"
     },
     "calendar": {
       "pickDate": "اختر تاريخاً",
@@ -94,6 +98,15 @@
         "fri": "ج",
         "sat": "س",
         "sun": "ح"
+      },
+      "weekdaysLong": {
+        "sun": "الأحد",
+        "mon": "الاثنين",
+        "tue": "الثلاثاء",
+        "wed": "الأربعاء",
+        "thu": "الخميس",
+        "fri": "الجمعة",
+        "sat": "السبت"
       }
     },
     "daily": {
@@ -138,7 +151,9 @@
       "thisMonth": "هذا الشهر",
       "from": "من",
       "to": "إلى",
-      "clear": "مسح"
+      "clear": "مسح",
+      "custom": "مخصص",
+      "apply": "تطبيق"
     },
     "punchTypes": {
       "unknown": "غير معروف",
@@ -147,6 +162,33 @@
       "exit": "خروج",
       "early_exit": "خروج مبكر",
       "out_of_shift": "خارج الدوام"
+    },
+    "home": {
+      "heroTitle": "حضور اليوم",
+      "emptyNoEmployees": "لم يُسجَّل أي موظف بعد",
+      "pillLate": "متأخر",
+      "pillAbsent": "غائب",
+      "pillOnLeave": "إجازة",
+      "loadError": "تعذر تحميل لوحة الرئيسية.",
+      "live": "مباشر",
+      "attendance": "الحضور",
+      "punctuality": "الانضباط",
+      "weeklyAverage": "متوسط الأسبوع",
+      "needsAttention": "يحتاج انتباه",
+      "missingBadge": "{count} غائب",
+      "seeAllAttention": "عرض الكل ({count}) ›",
+      "allGood": "✓ كل شيء على ما يرام",
+      "cover": "تغطية",
+      "didNotCome": "لم يحضر",
+      "lateAt": "متأخر الساعة",
+      "thisWeek": "هذا الأسبوع",
+      "recentRecords": "آخر السجلات",
+      "seeAll": "عرض الكل",
+      "noRecent": "لا توجد بصمات مسجلة اليوم بعد.",
+      "actionManual": "بصمة يدوية",
+      "actionDaily": "يومي",
+      "actionReport": "تقرير",
+      "actionHolidays": "إجازات"
     },
     "overview": {
       "loadError": "تعذر تحميل نظرة الحضور.",

@@ -11,7 +11,7 @@ import * as Font from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { i18n, i18nReady } from './config';
-import { FONT_ASSETS, fontFamiliesForLocale } from './fonts';
+import { APP_TYPOGRAPHY, FONT_ASSETS, fontFamiliesForLocale, type AppTypography } from './fonts';
 import {
   DEFAULT_LOCALE,
   LOCALE_STORAGE_KEY,
@@ -30,6 +30,8 @@ interface I18nContextValue {
   mirrorLayout: boolean;
   fontFamily?: string;
   fontFamilyBold?: string;
+  /** Inter + Noto Sans Arabic (digits/Latin vs Arabic script). */
+  typography: AppTypography;
   setLocale: (locale: AppLocale) => Promise<void>;
 }
 
@@ -121,6 +123,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
       mirrorLayout: needsJsMirror(rtl),
       fontFamily: fonts.regular,
       fontFamilyBold: fonts.bold,
+      typography: APP_TYPOGRAPHY,
       setLocale,
     }),
     [locale, rtl, fonts.regular, fonts.bold, setLocale],

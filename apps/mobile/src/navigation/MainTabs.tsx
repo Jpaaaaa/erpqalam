@@ -1,5 +1,8 @@
+import { useMemo, useRef, useState } from 'react';
+import { View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { HomeBlurTargetContext } from '../components/home/HomeBlurTargetContext';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useTranslation } from 'react-i18next';
 import { EmployeeDetailScreen } from '../screens/EmployeeDetailScreen';
@@ -11,6 +14,8 @@ import { DailyAttendanceScreen } from '../screens/DailyAttendanceScreen';
 import { EmployeeReportScreen } from '../screens/EmployeeReportScreen';
 import { HolidaysScreen } from '../screens/HolidaysScreen';
 import { ManualPunchScreen } from '../screens/ManualPunchScreen';
+import { FloatingTabBar } from './FloatingTabBar';
+
 import type {
   EmployeesStackParamList,
   MainTabParamList,
@@ -48,7 +53,7 @@ function RecordsNavigator() {
       <RecordsStack.Screen
         name="RecordsList"
         component={RecordsScreen}
-        options={{ title: t('tabs.records') }}
+        options={{ headerShown: false }}
       />
       <RecordsStack.Screen
         name="EmployeeDetail"
@@ -99,12 +104,24 @@ function MoreNavigator() {
 
 export function MainTabs() {
   const { t } = useTranslation('attendance');
+  const homeBlurTargetRef = useRef<View>(null);
+  const [homeBlurReady, setHomeBlurReady] = useState(false);
+  const homeBlurContext = useMemo(
+    () => ({
+      ref: homeBlurTargetRef,
+      ready: homeBlurReady,
+      setReady: setHomeBlurReady,
+    }),
+    [homeBlurReady],
+  );
+
   return (
+    <HomeBlurTargetContext.Provider value={homeBlurContext}>
     <Tab.Navigator
+      tabBar={(props) => <FloatingTabBar {...props} />}
       screenOptions={{
-        tabBarActiveTintColor: '#0f766e',
-        tabBarInactiveTintColor: '#94a3b8',
         headerShown: false,
+        tabBarShowLabel: true,
       }}
     >
       <Tab.Screen
@@ -113,18 +130,9 @@ export function MainTabs() {
         options={{
           title: t('tabs.overview'),
           headerShown: false,
+          tabBarLabel: t('tabs.overview'),
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="grid-outline" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="EmployeesTab"
-        component={EmployeesNavigator}
-        options={{
-          title: t('tabs.employees'),
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="people-outline" size={size} color={color} />
+            <Ionicons name="home-outline" size={size} color={color} />
           ),
         }}
       />
@@ -133,8 +141,20 @@ export function MainTabs() {
         component={RecordsNavigator}
         options={{
           title: t('tabs.records'),
+          tabBarLabel: t('tabs.records'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="list-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="EmployeesTab"
+        component={EmployeesNavigator}
+        options={{
+          title: t('tabs.employees'),
+          tabBarLabel: t('tabs.employees'),
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="people-outline" size={size} color={color} />
           ),
         }}
       />
@@ -143,11 +163,14 @@ export function MainTabs() {
         component={MoreNavigator}
         options={{
           title: t('tabs.more'),
+          tabBarLabel: t('tabs.more'),
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="ellipsis-horizontal-circle-outline" size={size} color={color} />
+            <Ionicons name="ellipsis-horizontal-outline" size={size} color={color} />
           ),
         }}
       />
     </Tab.Navigator>
+    </HomeBlurTargetContext.Provider>
   );
 }
+

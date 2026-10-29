@@ -63,7 +63,7 @@
     "description": "Track punches, employee schedules, holidays, and reports.",
     "accessDenied": "Only managers can access attendance management.",
     "tabs": {
-      "overview": "Overview",
+      "overview": "Home",
       "records": "Records",
       "report": "Report",
       "employees": "Employees",
@@ -80,7 +80,11 @@
       "manual": "Manual punch",
       "viewOnly": "View only — you cannot add punches, holidays, or time-leave covers.",
       "profile": "Signed in as",
-      "signOut": "Sign out"
+      "signOut": "Sign out",
+      "theme": "Home appearance",
+      "themeLight": "Light",
+      "themeDark": "Dark",
+      "themeSystem": "System"
     },
     "calendar": {
       "pickDate": "Pick a date",
@@ -94,6 +98,15 @@
         "fri": "F",
         "sat": "S",
         "sun": "S"
+      },
+      "weekdaysLong": {
+        "sun": "Sunday",
+        "mon": "Monday",
+        "tue": "Tuesday",
+        "wed": "Wednesday",
+        "thu": "Thursday",
+        "fri": "Friday",
+        "sat": "Saturday"
       }
     },
     "daily": {
@@ -138,7 +151,9 @@
       "thisMonth": "This month",
       "from": "From",
       "to": "To",
-      "clear": "Clear"
+      "clear": "Clear",
+      "custom": "Custom",
+      "apply": "Apply"
     },
     "punchTypes": {
       "unknown": "Unknown",
@@ -147,6 +162,33 @@
       "exit": "Exit",
       "early_exit": "Early exit",
       "out_of_shift": "Out of shift"
+    },
+    "home": {
+      "heroTitle": "Today's attendance",
+      "emptyNoEmployees": "No employees registered yet",
+      "pillLate": "Late",
+      "pillAbsent": "Absent",
+      "pillOnLeave": "On leave",
+      "loadError": "Unable to load home dashboard.",
+      "live": "Live",
+      "attendance": "Attendance",
+      "punctuality": "Punctuality",
+      "weeklyAverage": "Weekly average",
+      "needsAttention": "Needs attention",
+      "missingBadge": "{count} absent",
+      "seeAllAttention": "See all {count} ›",
+      "allGood": "✓ Everything looks good",
+      "cover": "Cover",
+      "didNotCome": "Did not come",
+      "lateAt": "Late at",
+      "thisWeek": "This week",
+      "recentRecords": "Recent records",
+      "seeAll": "See all",
+      "noRecent": "No punches recorded today yet.",
+      "actionManual": "Manual punch",
+      "actionDaily": "Daily",
+      "actionReport": "Report",
+      "actionHolidays": "Holidays"
     },
     "overview": {
       "loadError": "Unable to load attendance overview.",

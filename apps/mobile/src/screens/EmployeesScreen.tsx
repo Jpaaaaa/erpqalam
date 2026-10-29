@@ -24,6 +24,7 @@ import { ViewOnlyBanner } from '../components/ViewOnlyBanner';
 import { useCanManageAttendance } from '../hooks/useCanManageAttendance';
 import type { MergedAttendanceEmployee } from '../types/attendance';
 import type { EmployeesStackParamList } from '../navigation/types';
+import { TAB_SCENE_BOTTOM_PAD } from '../theme/homeTheme';
 import { AppText } from '../ui/AppText';
 import { ltrText } from '../ui/ltr';
 
@@ -156,7 +157,12 @@ export function EmployeesScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff', padding: 16 },
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+    padding: 16,
+    paddingBottom: TAB_SCENE_BOTTOM_PAD,
+  },
   centered: {
     flex: 1,
     alignItems: 'center',

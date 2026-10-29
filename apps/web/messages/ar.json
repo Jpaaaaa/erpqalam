@@ -497,6 +497,7 @@
     "accessDenied": "المدير فقط يمكنه الوصول إلى إدارة الحضور.",
     "tabs": {
       "overview": "نظرة عامة",
+      "daily": "يومي",
       "records": "السجلات",
       "report": "التقرير",
       "employees": "الموظفون",
@@ -536,8 +537,49 @@
       "linkHolidays": "الإجازات والمغادرات",
       "linkSettings": "إعدادات الحضور"
     },
+    "daily": {
+      "loadError": "تعذر تحميل التقرير اليومي.",
+      "pickDate": "التاريخ",
+      "exportPdf": "تنزيل PDF يومي",
+      "pdfExporting": "جاري إنشاء PDF...",
+      "pdfError": "تعذر إنشاء PDF اليومي.",
+      "search": "بحث",
+      "searchPlaceholder": "تصفية بالاسم أو المعرف...",
+      "empty": "لا يوجد موظفون مطابقون.",
+      "employee": "الموظف",
+      "id": "المعرّف",
+      "statusLabel": "الحالة",
+      "entry": "وقت الدخول",
+      "exit": "وقت الخروج",
+      "entryType": "نوع الدخول",
+      "exitType": "نوع الخروج",
+      "dateHeading": "تقرير {date}",
+      "summary": {
+        "present": "حاضر",
+        "late": "متأخر",
+        "absent": "غائب",
+        "onLeave": "إجازة"
+      },
+      "status": {
+        "on_time": "في الوقت",
+        "late": "متأخر",
+        "early_exit": "خروج مبكر",
+        "absent": "غائب",
+        "on_leave": "إجازة",
+        "official_holiday": "عطلة رسمية",
+        "day_off": "يوم عطلة"
+      }
+    },
     "records": {
       "loadError": "تعذر تحميل سجلات الحضور.",
+      "groupByDate": "تجميع بالتاريخ",
+      "daySummary": {
+        "present": "حاضر",
+        "late": "متأخر",
+        "absent": "غائب",
+        "onLeave": "إجازة",
+        "loading": "جاري تحميل ملخص اليوم…"
+      },
       "search": "بحث",
       "searchPlaceholder": "ابحث بالاسم أو المعرف...",
       "addManual": "إضافة بصمة يدوية",

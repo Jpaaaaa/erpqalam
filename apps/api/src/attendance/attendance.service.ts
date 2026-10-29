@@ -14,11 +14,14 @@ import { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
 import {
   AttendanceSettingsMap,
   AttendanceUserScheduleInput,
+  AttendanceRecordInput,
+  buildDailyAttendanceReport,
   buildEmployeeDayRows,
   buildEmployeeReport,
   classifyPunch,
   dateRangeBounds,
   DEFAULT_ATTENDANCE_SETTINGS,
+  enumerateLocalDateKeys,
   findEarlyExitOccurrences,
   findLateOccurrences,
   formatDateLocal,
@@ -43,6 +46,11 @@ import {
   CreateEmployeeHolidayRangeDto,
   CreateTimeLeaveUsageDto,
   EmployeeHolidayResponseDto,
+  DAILY_SUMMARY_MAX_RANGE_DAYS,
+  DailyReportQueryDto,
+  DailyReportResponseDto,
+  DailySummaryQueryDto,
+  DailySummaryResponseDto,
   EmployeeReportPdfQueryDto,
   EmployeeReportQueryDto,
   EmployeeReportResponseDto,
@@ -77,6 +85,23 @@ const TIME_LEAVE_TYPE_MAP: Record<string, TimeLeaveUsageType> = {
 const TIME_LEAVE_TYPE_REVERSE: Record<TimeLeaveUsageType, string> = {
   [TimeLeaveUsageType.LATE_ARRIVAL]: 'late_arrival',
   [TimeLeaveUsageType.EARLY_EXIT]: 'early_exit',
+};
+
+type DailyReportContext = {
+  userInputs: AttendanceUserScheduleInput[];
+  recordInputs: AttendanceRecordInput[];
+  settings: AttendanceSettingsMap;
+  orgDayOffDates: Set<string>;
+  earlyExitHolidayDates: Set<string>;
+  lateEntryHolidayDates: Set<string>;
+  employeeHolidayUserIdsByDate: Map<string, Set<string>>;
+  lateOccurrences: { deviceUserId: string; date: string }[];
+  earlyExitOccurrences: {
+    deviceUserId: string;
+    date: string;
+    timestamp: string;
+  }[];
+  nameByDeviceUserId: Map<string, string>;
 };
 
 const SETTINGS_DTO_TO_DB: Record<string, string> = {
@@ -1103,6 +1128,174 @@ export class AttendanceService {
     };
   }
 
+  async getDailyReport(
+    user: JwtPayload,
+    query: DailyReportQueryDto,
+  ): Promise<DailyReportResponseDto> {
+    const schoolId = this.schoolId(user);
+    const date = query.date.trim();
+    const ctx = await this.loadDailyReportContext(schoolId, date, date);
+    const built = this.buildDailyReportFromContext(ctx, date);
+    return {
+      date,
+      rows: built.rows,
+      summary: built.summary,
+    };
+  }
+
+  async getDailySummariesForRange(
+    user: JwtPayload,
+    query: DailySummaryQueryDto,
+  ): Promise<DailySummaryResponseDto> {
+    const schoolId = this.schoolId(user);
+    const fromDate = query.fromDate.trim();
+    const toDate = query.toDate.trim();
+    this.assertDailySummaryRange(fromDate, toDate);
+
+    const ctx = await this.loadDailyReportContext(
+      schoolId,
+      fromDate,
+      toDate,
+    );
+    const dates = enumerateLocalDateKeys(fromDate, toDate);
+    return {
+      fromDate,
+      toDate,
+      summaries: dates.map((date) => ({
+        date,
+        summary: this.buildDailyReportFromContext(ctx, date).summary,
+      })),
+    };
+  }
+
+  private assertDailySummaryRange(fromDate: string, toDate: string): void {
+    const dates = enumerateLocalDateKeys(fromDate, toDate);
+    if (dates.length === 0) {
+      throw new BadRequestException('Invalid date range');
+    }
+    if (dates.length > DAILY_SUMMARY_MAX_RANGE_DAYS) {
+      throw new BadRequestException(
+        `Date range must not exceed ${DAILY_SUMMARY_MAX_RANGE_DAYS} days`,
+      );
+    }
+  }
+
+  private async loadDailyReportContext(
+    schoolId: string,
+    fromDate: string,
+    toDate: string,
+  ): Promise<DailyReportContext> {
+    const [
+      records,
+      users,
+      settings,
+      holidays,
+      timeLeaveUsage,
+      employeeHolidays,
+    ] = await Promise.all([
+      this.prisma.attendanceRecord.findMany({
+        where: {
+          schoolId,
+          ...this.recordTimestampWhere(fromDate, toDate),
+        },
+        orderBy: { timestamp: 'asc' },
+      }),
+      this.prisma.attendanceUser.findMany({ where: { schoolId } }),
+      this.loadSettingsMap(schoolId),
+      this.prisma.attendanceHoliday.findMany({ where: { schoolId } }),
+      this.prisma.timeLeaveUsage.findMany({ where: { schoolId } }),
+      this.prisma.employeeHoliday.findMany({ where: { schoolId } }),
+    ]);
+
+    const userInputs = users.map(toUserScheduleInput);
+    const recordInputs = records.map((r) => ({
+      deviceUserId: r.deviceUserId,
+      timestamp: r.timestamp,
+      verifyType: r.verifyType,
+    }));
+
+    const earlyExitDates = holidays
+      .filter((h) => h.type === AttendanceHolidayType.EARLY_EXIT)
+      .map((h) => ({ date: formatDateLocal(h.date), type: 'early_exit' }));
+    const lateEntryDates = holidays
+      .filter((h) => h.type === AttendanceHolidayType.ENTRY_LATE)
+      .map((h) => ({ date: formatDateLocal(h.date), type: 'entry_late' }));
+    const dayOffDates = holidays
+      .filter((h) => h.type === AttendanceHolidayType.DAY_OFF)
+      .map((h) => formatDateLocal(h.date));
+
+    const reportInput = {
+      records: recordInputs,
+      settings,
+      users: userInputs,
+      timeLeaveUsage: timeLeaveUsage.map((t) => ({
+        deviceUserId: t.deviceUserId,
+        date: formatDateLocal(t.date),
+        timestamp: formatLocalTimestamp(t.timestamp),
+        type:
+          t.type === TimeLeaveUsageType.LATE_ARRIVAL
+            ? 'late_arrival'
+            : 'early_exit',
+      })),
+      earlyExitDates,
+      lateEntryDates,
+      dayOffDates: dayOffDates.map((d) => ({ date: d })),
+      employeeHolidays: employeeHolidays.map((h) => ({
+        deviceUserId: h.deviceUserId,
+        date: formatDateLocal(h.date),
+      })),
+      fromDate,
+      toDate,
+    };
+
+    const employeeHolidayUserIdsByDate = new Map<string, Set<string>>();
+    for (const h of employeeHolidays) {
+      const dateKey = formatDateLocal(h.date);
+      const set = employeeHolidayUserIdsByDate.get(dateKey) ?? new Set();
+      set.add(h.deviceUserId);
+      employeeHolidayUserIdsByDate.set(dateKey, set);
+    }
+
+    return {
+      userInputs,
+      recordInputs,
+      settings,
+      orgDayOffDates: new Set(dayOffDates),
+      earlyExitHolidayDates: new Set(earlyExitDates.map((h) => h.date)),
+      lateEntryHolidayDates: new Set(lateEntryDates.map((h) => h.date)),
+      employeeHolidayUserIdsByDate,
+      lateOccurrences: findLateOccurrences(reportInput),
+      earlyExitOccurrences: findEarlyExitOccurrences(reportInput),
+      nameByDeviceUserId: new Map(
+        users.map((row) => [row.deviceUserId, row.name]),
+      ),
+    };
+  }
+
+  private buildDailyReportFromContext(ctx: DailyReportContext, date: string) {
+    return buildDailyAttendanceReport({
+      date,
+      users: ctx.userInputs,
+      records: ctx.recordInputs,
+      settings: ctx.settings,
+      orgDayOffDates: ctx.orgDayOffDates,
+      earlyExitHolidayDates: ctx.earlyExitHolidayDates,
+      lateEntryHolidayDates: ctx.lateEntryHolidayDates,
+      employeeHolidayUserIds:
+        ctx.employeeHolidayUserIdsByDate.get(date) ?? new Set(),
+      lateUserIds: new Set(
+        ctx.lateOccurrences
+          .filter((o) => o.date === date)
+          .map((o) => o.deviceUserId),
+      ),
+      earlyExitUserIds: new Set(
+        ctx.earlyExitOccurrences
+          .filter((o) => o.date === date)
+          .map((o) => o.deviceUserId),
+      ),
+    });
+  }
+
   async getEmployeeReportPdf(
     user: JwtPayload,
     query: EmployeeReportPdfQueryDto,
@@ -1116,6 +1309,47 @@ export class AttendanceService {
       throw new BadRequestException(
         'deviceUserId is required for per-employee reports',
       );
+    }
+
+    if (query.type === 'daily') {
+      const date = fromDate || toDate;
+      if (!date) {
+        throw new BadRequestException('fromDate is required for daily PDF');
+      }
+      if (fromDate && toDate && fromDate !== toDate) {
+        throw new BadRequestException(
+          'fromDate and toDate must be the same day for daily PDF',
+        );
+      }
+      const ctx = await this.loadDailyReportContext(schoolId, date, date);
+      const built = this.buildDailyReportFromContext(ctx, date);
+      return this.reportPdf.render({
+        type: 'daily',
+        fromDate: date,
+        toDate: date,
+        generatedAt: formatLocalTimestamp(new Date())
+          .slice(0, 16)
+          .replace('T', ' '),
+        rows: [],
+        totals: {
+          empCount: 0,
+          totalPresent: 0,
+          totalExpected: 0,
+          totalAbsent: 0,
+          totalLate: 0,
+          avgRate: 0,
+        },
+        daily: {
+          date,
+          rows: built.rows.map((row) => ({
+            ...row,
+            name:
+              ctx.nameByDeviceUserId.get(row.deviceUserId) ||
+              row.deviceUserId,
+          })),
+          summary: built.summary,
+        },
+      });
     }
 
     const report = await this.getEmployeeReport(user, { fromDate, toDate });

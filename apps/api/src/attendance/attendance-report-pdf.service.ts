@@ -9,8 +9,12 @@ import {
   type PDFPage,
   type RGB,
 } from 'pdf-lib';
-import type { PunchType } from './attendance-rules';
-import type { EmployeeDayRow } from './attendance-rules';
+import type {
+  DailyAttendanceRow,
+  DailyAttendanceSummary,
+  EmployeeDayRow,
+  PunchType,
+} from './attendance-rules';
 import type { EmployeeReportPdfType } from './dto/attendance.dto';
 
 const COLORS = {
@@ -73,6 +77,21 @@ export type EmployeeReportPdfPayload = {
     notComing: number;
     days: EmployeeDayRow[];
   };
+  daily?: {
+    date: string;
+    rows: (DailyAttendanceRow & { name: string })[];
+    summary: DailyAttendanceSummary;
+  };
+};
+
+const DAILY_STATUS_LABELS: Record<string, string> = {
+  on_time: 'حاضر',
+  late: 'متأخر',
+  early_exit: 'خروج مبكر',
+  absent: 'غائب',
+  on_leave: 'إجازة',
+  official_holiday: 'عطلة رسمية',
+  day_off: 'يوم عطلة',
 };
 
 @Injectable()
@@ -99,7 +118,10 @@ export class AttendanceReportPdfService {
     state.y -= 20;
     this.drawText(state.page, title, margin, state.y, 13, font, COLORS.ink);
     state.y -= 16;
-    const period = [payload.fromDate, payload.toDate].filter(Boolean).join(' – ') || '—';
+    const period =
+      payload.type === 'daily' && payload.daily
+        ? this.formatDate(payload.daily.date)
+        : [payload.fromDate, payload.toDate].filter(Boolean).join(' – ') || '—';
     this.drawText(
       state.page,
       `الفترة: ${period}    |    تاريخ التصدير: ${payload.generatedAt}`,
@@ -111,7 +133,62 @@ export class AttendanceReportPdfService {
     );
     state.y -= 22;
 
-    if (payload.type === 'per-employee' && payload.selectedEmployee) {
+    if (payload.type === 'daily' && payload.daily) {
+      const { daily } = payload;
+      const summary = daily.summary;
+      this.drawStatCards(
+        state,
+        [
+          { label: 'عدد الموظفين', value: String(summary.employeeCount) },
+          { label: 'حاضر', value: String(summary.present) },
+          { label: 'غائب', value: String(summary.absent) },
+          { label: 'إجازة', value: String(summary.onLeave) },
+          ...(summary.dayOff > 0
+            ? [{ label: 'يوم عطلة', value: String(summary.dayOff) }]
+            : []),
+          ...(summary.officialHoliday > 0
+            ? [
+                {
+                  label: 'عطلة رسمية',
+                  value: String(summary.officialHoliday),
+                },
+              ]
+            : []),
+          { label: 'متأخر', value: String(summary.late) },
+          { label: 'خروج مبكر', value: String(summary.earlyExit) },
+        ],
+        margin,
+        contentWidth,
+        font,
+      );
+      this.drawTable(
+        state,
+        {
+          title: 'تفاصيل الحضور والانصراف',
+          emptyText: 'لا توجد بيانات لهذا اليوم.',
+          columns: [
+            { key: 'id', label: 'المعرّف', width: 70 },
+            { key: 'name', label: 'الاسم', width: 120 },
+            { key: 'status', label: 'الحالة', width: 90 },
+            { key: 'entryTime', label: 'وقت الدخول', width: 80 },
+            { key: 'entryType', label: 'نوع الدخول', width: 100 },
+            { key: 'exitTime', label: 'وقت الخروج', width: 80 },
+            { key: 'exitType', label: 'نوع الخروج', width: contentWidth - 540 },
+          ],
+          rows: daily.rows.map((row) => this.dailyRowToCells(row)),
+          colors: daily.rows.map((row) => this.dailyRowColor(row)),
+        },
+        {
+          pdfDoc,
+          pageWidth,
+          pageHeight,
+          margin,
+          contentWidth,
+          font,
+          title,
+        },
+      );
+    } else if (payload.type === 'per-employee' && payload.selectedEmployee) {
       const emp = payload.selectedEmployee;
       this.drawText(
         state.page,
@@ -223,14 +300,57 @@ export class AttendanceReportPdfService {
     }
 
     const bytes = await pdfDoc.save();
-    const fileName = `attendance-report-${payload.type}-${payload.fromDate || 'all'}-${payload.toDate || 'all'}.pdf`;
+    const fileName =
+      payload.type === 'daily'
+        ? `attendance-daily-${payload.fromDate || payload.daily?.date || 'day'}.pdf`
+        : `attendance-report-${payload.type}-${payload.fromDate || 'all'}-${payload.toDate || 'all'}.pdf`;
     return { buffer: Buffer.from(bytes), fileName };
   }
 
   private titleFor(type: EmployeeReportPdfType): string {
+    if (type === 'daily') return 'تقرير يومي';
     if (type === 'per-employee') return 'تقرير لكل موظف';
     if (type === 'summary') return 'ملخص عام لجميع الموظفين';
     return 'مقارنة أداء الموظفين';
+  }
+
+  private dailyRowToCells(
+    row: DailyAttendanceRow & { name: string },
+  ): Record<string, string> {
+    const inactive =
+      row.status === 'absent' ||
+      row.status === 'on_leave' ||
+      row.status === 'official_holiday' ||
+      row.status === 'day_off';
+    return {
+      id: row.deviceUserId,
+      name: row.name,
+      status: DAILY_STATUS_LABELS[row.status] ?? row.status,
+      entryTime: inactive ? '–' : this.formatTime(row.entryTime),
+      entryType: inactive
+        ? '–'
+        : row.entryType
+          ? PUNCH_LABELS[row.entryType]
+          : '–',
+      exitTime: inactive ? '–' : this.formatTime(row.exitTime),
+      exitType: inactive
+        ? '–'
+        : row.exitType
+          ? PUNCH_LABELS[row.exitType]
+          : '–',
+    };
+  }
+
+  private dailyRowColor(row: DailyAttendanceRow): RGB | undefined {
+    if (row.status === 'on_leave' || row.status === 'official_holiday') {
+      return COLORS.holiday;
+    }
+    if (row.status === 'absent') return COLORS.late;
+    if (row.status === 'late' || row.status === 'early_exit') {
+      return COLORS.absent;
+    }
+    if (row.status === 'on_time') return COLORS.ok;
+    return undefined;
   }
 
   private dayToRow(day: EmployeeDayRow): Record<string, string> {

@@ -495,6 +495,7 @@
     "accessDenied": "تەنها بەڕێوەبەر دەتوانێت بەڕێوەبردنی ئامادەبوون بکات.",
     "tabs": {
       "overview": "پوختە",
+      "daily": "ڕۆژانە",
       "records": "تۆمارەکان",
       "report": "ڕاپۆرت",
       "employees": "کارمەندان",
@@ -534,8 +535,49 @@
       "linkHolidays": "پشوو و مۆڵەت",
       "linkSettings": "ڕێکخستنی ئامادەبوون"
     },
+    "daily": {
+      "loadError": "نەتوانرا ڕاپۆرتی ڕۆژانە بار بکرێت.",
+      "pickDate": "بەروار",
+      "exportPdf": "داگرتنی PDF ـی ڕۆژانە",
+      "pdfExporting": "دروستکردنی PDF...",
+      "pdfError": "نەتوانرا PDF ـی ڕۆژانە دروست بکرێت.",
+      "search": "گەڕان",
+      "searchPlaceholder": "فیلتر بە ناو یان ئایدی...",
+      "empty": "هیچ کارمەندێک ناگونجێت.",
+      "employee": "کارمەند",
+      "id": "ئایدی",
+      "statusLabel": "دۆخ",
+      "entry": "کاتی هاتن",
+      "exit": "کاتی چوون",
+      "entryType": "جۆری هاتن",
+      "exitType": "جۆری چوون",
+      "dateHeading": "ڕاپۆرت بۆ {date}",
+      "summary": {
+        "present": "ئامادە",
+        "late": "دواکەوتوو",
+        "absent": "غایب",
+        "onLeave": "پشوو"
+      },
+      "status": {
+        "on_time": "لە کاتدا",
+        "late": "دواکەوتوو",
+        "early_exit": "چوونی زوو",
+        "absent": "غایب",
+        "on_leave": "پشوو",
+        "official_holiday": "پشووی فەرمی",
+        "day_off": "ڕۆژی پشوو"
+      }
+    },
     "records": {
       "loadError": "نەتوانرا تۆمارەکانی ئامادەبوون بار بکرێن.",
+      "groupByDate": "کۆکردنەوە بە بەروار",
+      "daySummary": {
+        "present": "ئامادە",
+        "late": "دواکەوتوو",
+        "absent": "غایب",
+        "onLeave": "پشوو",
+        "loading": "بارکردنی پوختەی ڕۆژ…"
+      },
       "search": "گەڕان",
       "searchPlaceholder": "گەڕان بە ناو یان ئایدی...",
       "addManual": "زیادکردنی پەنجەی دەستی",

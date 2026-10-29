@@ -42,6 +42,10 @@ import {
   DeleteEmployeeHolidaysDto,
   EmployeeHolidayResponseDto,
   EmployeeReportPdfQueryDto,
+  DailyReportQueryDto,
+  DailyReportResponseDto,
+  DailySummaryQueryDto,
+  DailySummaryResponseDto,
   EmployeeReportQueryDto,
   EmployeeReportResponseDto,
   LeaveBalanceResponseDto,
@@ -342,6 +346,28 @@ export class AttendanceController {
     @CurrentUser() user: JwtPayload,
   ): Promise<LeaveBalanceResponseDto> {
     return this.attendanceService.setLeaveBalance(user, deviceUserId, dto);
+  }
+
+  @Get('daily-report')
+  @RequirePermission(PERMISSIONS.ATTENDANCE_VIEW)
+  @ApiOperation({ summary: 'Daily attendance report for all employees' })
+  @ApiResponse({ status: 200, type: DailyReportResponseDto })
+  getDailyReport(
+    @Query() query: DailyReportQueryDto,
+    @CurrentUser() user: JwtPayload,
+  ): Promise<DailyReportResponseDto> {
+    return this.attendanceService.getDailyReport(user, query);
+  }
+
+  @Get('daily-summary')
+  @RequirePermission(PERMISSIONS.ATTENDANCE_VIEW)
+  @ApiOperation({ summary: 'Daily attendance summaries for a date range' })
+  @ApiResponse({ status: 200, type: DailySummaryResponseDto })
+  getDailySummaries(
+    @Query() query: DailySummaryQueryDto,
+    @CurrentUser() user: JwtPayload,
+  ): Promise<DailySummaryResponseDto> {
+    return this.attendanceService.getDailySummariesForRange(user, query);
   }
 
   @Get('employee-report')

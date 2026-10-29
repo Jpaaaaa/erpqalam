@@ -538,6 +538,7 @@ export const EMPLOYEE_REPORT_PDF_TYPES = [
   'performance',
   'per-employee',
   'summary',
+  'daily',
 ] as const;
 
 export type EmployeeReportPdfType = (typeof EMPLOYEE_REPORT_PDF_TYPES)[number];
@@ -595,6 +596,104 @@ export class EmployeeReportResponseDto {
     date: string;
     timestamp: string;
   }[];
+}
+
+export class DailyReportQueryDto {
+  @ApiProperty({ example: '2026-01-15' })
+  @IsString()
+  @Matches(DATE_PATTERN)
+  date!: string;
+}
+
+export class DailyAttendanceRowDto {
+  @ApiProperty()
+  deviceUserId!: string;
+
+  @ApiProperty()
+  status!: string;
+
+  @ApiPropertyOptional()
+  entryTime?: string | null;
+
+  @ApiPropertyOptional()
+  exitTime?: string | null;
+
+  @ApiPropertyOptional()
+  entryType?: string | null;
+
+  @ApiPropertyOptional()
+  exitType?: string | null;
+}
+
+export class DailyAttendanceSummaryDto {
+  @ApiProperty()
+  employeeCount!: number;
+
+  @ApiProperty()
+  present!: number;
+
+  @ApiProperty()
+  late!: number;
+
+  @ApiProperty()
+  earlyExit!: number;
+
+  @ApiProperty()
+  absent!: number;
+
+  @ApiProperty()
+  onLeave!: number;
+
+  @ApiProperty()
+  officialHoliday!: number;
+
+  @ApiProperty()
+  dayOff!: number;
+}
+
+export class DailyReportResponseDto {
+  @ApiProperty()
+  date!: string;
+
+  @ApiProperty({ type: [DailyAttendanceRowDto] })
+  rows!: DailyAttendanceRowDto[];
+
+  @ApiProperty({ type: DailyAttendanceSummaryDto })
+  summary!: DailyAttendanceSummaryDto;
+}
+
+/** Max inclusive days for `GET /attendance/daily-summary`. */
+export const DAILY_SUMMARY_MAX_RANGE_DAYS = 93;
+
+export class DailySummaryQueryDto {
+  @ApiProperty({ example: '2026-01-01' })
+  @IsString()
+  @Matches(DATE_PATTERN)
+  fromDate!: string;
+
+  @ApiProperty({ example: '2026-01-31' })
+  @IsString()
+  @Matches(DATE_PATTERN)
+  toDate!: string;
+}
+
+export class DailySummaryItemDto {
+  @ApiProperty()
+  date!: string;
+
+  @ApiProperty({ type: DailyAttendanceSummaryDto })
+  summary!: DailyAttendanceSummaryDto;
+}
+
+export class DailySummaryResponseDto {
+  @ApiProperty()
+  fromDate!: string;
+
+  @ApiProperty()
+  toDate!: string;
+
+  @ApiProperty({ type: [DailySummaryItemDto] })
+  summaries!: DailySummaryItemDto[];
 }
 
 export class SuccessResponseDto {

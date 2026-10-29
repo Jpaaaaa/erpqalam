@@ -1,19 +1,26 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
 import {
   ApiClientError,
   addManualPunch,
+  getDailySummaries,
   listAttendanceDevices,
   listAttendanceRecords,
   listAttendanceUsers,
 } from '@/lib/api/attendance';
-import type { AttendanceRecord, DateFilter, PunchType } from '@/lib/types/attendance';
+import type {
+  AttendanceRecord,
+  DailyAttendanceSummary,
+  DateFilter,
+  PunchType,
+} from '@/lib/types/attendance';
 import {
   buildLocalTimestamp,
   formatDisplayDate,
   formatDisplayTime,
+  timestampToDateKey,
   todayDateKey,
 } from '@/lib/attendance/formatters';
 import {
@@ -55,6 +62,10 @@ export function AttendanceRecordsPanel() {
   const [deviceNameLookup, setDeviceNameLookup] = useState<Map<string, string>>(
     new Map(),
   );
+  const [groupByDate, setGroupByDate] = useState(true);
+  const [daySummaries, setDaySummaries] = useState<
+    Map<string, DailyAttendanceSummary>
+  >(new Map());
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -66,7 +77,7 @@ export function AttendanceRecordsPanel() {
         listAttendanceRecords({
           fromDate: filter.fromDate || undefined,
           toDate: filter.toDate || undefined,
-          limit: 500,
+          limit: 5000,
         }),
       ]);
       const merged = mergeEmployeesWithPunchIds(users, rows);
@@ -102,6 +113,48 @@ export function AttendanceRecordsPanel() {
       );
     });
   }, [records, search, nameLookup]);
+
+  const groupedByDate = useMemo(() => {
+    if (!groupByDate) return null;
+    const map = new Map<string, AttendanceRecord[]>();
+    for (const record of filtered) {
+      const key = timestampToDateKey(record.timestamp);
+      const list = map.get(key) ?? [];
+      list.push(record);
+      map.set(key, list);
+    }
+    return Array.from(map.entries())
+      .sort((a, b) => b[0].localeCompare(a[0]))
+      .map(([date, items]) => ({
+        date,
+        items: [...items].sort((a, b) => b.timestamp.localeCompare(a.timestamp)),
+      }));
+  }, [filtered, groupByDate]);
+
+  useEffect(() => {
+    const fromDate = filter.fromDate?.trim();
+    const toDate = filter.toDate?.trim();
+    if (!groupByDate || !fromDate || !toDate) {
+      setDaySummaries(new Map());
+      return;
+    }
+    let cancelled = false;
+    getDailySummaries({ fromDate, toDate })
+      .then((response) => {
+        if (cancelled) return;
+        const next = new Map<string, DailyAttendanceSummary>();
+        for (const item of response.summaries) {
+          next.set(item.date, item.summary);
+        }
+        setDaySummaries(next);
+      })
+      .catch(() => {
+        if (!cancelled) setDaySummaries(new Map());
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [filter.fromDate, filter.toDate, groupByDate]);
 
   async function handleManualPunch(e: React.FormEvent) {
     e.preventDefault();
@@ -163,13 +216,24 @@ export function AttendanceRecordsPanel() {
             placeholder={t('searchPlaceholder')}
           />
         </div>
-        <Button
-          type="button"
-          className="w-full sm:w-auto"
-          onClick={() => setShowManual(true)}
-        >
-          {t('addManual')}
-        </Button>
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+          <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700">
+            <input
+              type="checkbox"
+              checked={groupByDate}
+              onChange={(e) => setGroupByDate(e.target.checked)}
+              className="rounded border-slate-300"
+            />
+            {t('groupByDate')}
+          </label>
+          <Button
+            type="button"
+            className="w-full sm:w-auto"
+            onClick={() => setShowManual(true)}
+          >
+            {t('addManual')}
+          </Button>
+        </div>
       </div>
 
       {loading ? (
@@ -178,6 +242,110 @@ export function AttendanceRecordsPanel() {
         <p className="rounded-2xl bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">
           {t('empty')}
         </p>
+      ) : groupByDate && groupedByDate ? (
+        <>
+          <div className="space-y-4 md:hidden">
+            {groupedByDate.map(({ date, items }) => (
+              <DayGroup
+                key={date}
+                date={date}
+                summary={daySummaries.get(date)}
+                t={t}
+                defaultOpen
+              >
+                <div className="space-y-3 pt-2">
+                  {items.map((record) => {
+                    const view = getRecordView(record);
+                    return (
+                      <MobileCard key={record.id}>
+                        <div className="space-y-3">
+                          <div className="flex items-start justify-between gap-2">
+                            <div>
+                              <p className="text-base font-semibold text-slate-900">
+                                {view.displayName}
+                              </p>
+                              {view.showId && (
+                                <p className="mt-0.5 text-xs text-slate-500">
+                                  {record.deviceUserId}
+                                </p>
+                              )}
+                            </div>
+                            <span
+                              className={`shrink-0 rounded-lg px-2 py-1 text-xs font-medium ${view.styles.badge}`}
+                            >
+                              {punchLabel(view.punchType)}
+                            </span>
+                          </div>
+                          <div className="grid grid-cols-2 gap-3">
+                            <DetailRow label={t('time')}>
+                              {formatDisplayTime(record.timestamp)}
+                            </DetailRow>
+                            <DetailRow label={t('verify')}>{record.verifyType}</DetailRow>
+                          </div>
+                        </div>
+                      </MobileCard>
+                    );
+                  })}
+                </div>
+              </DayGroup>
+            ))}
+          </div>
+
+          <div className="hidden space-y-2 md:block">
+            {groupedByDate.map(({ date, items }) => (
+              <DayGroup
+                key={date}
+                date={date}
+                summary={daySummaries.get(date)}
+                t={t}
+                defaultOpen
+              >
+                <div className="overflow-x-auto border-t border-slate-100">
+                  <table className="min-w-full text-sm">
+                    <tbody>
+                      {items.map((record) => {
+                        const view = getRecordView(record);
+                        return (
+                          <tr
+                            key={record.id}
+                            className={`border-b border-slate-50 last:border-0 ${view.styles.row}`}
+                          >
+                            <td className="px-4 py-3">
+                              <div className="font-medium text-slate-800">
+                                {view.displayName}
+                              </div>
+                              {view.showId && (
+                                <div className="text-xs text-slate-500">
+                                  {record.deviceUserId}
+                                </div>
+                              )}
+                            </td>
+                            <td className="px-4 py-3">
+                              {formatDisplayTime(record.timestamp)}
+                            </td>
+                            <td className="px-4 py-3">
+                              <span
+                                className={`rounded-lg px-2 py-1 text-xs font-medium ${view.styles.badge}`}
+                              >
+                                {punchLabel(view.punchType)}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-slate-600">
+                              {record.verifyType}
+                            </td>
+                            <td className="px-4 py-3">
+                              <div className="text-slate-700">{view.deviceLabel}</div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </DayGroup>
+            ))}
+          </div>
+        </>
       ) : (
         <>
           <div className="space-y-3 md:hidden">
@@ -339,5 +507,53 @@ export function AttendanceRecordsPanel() {
         </form>
       </Modal>
     </div>
+  );
+}
+
+function DayGroup({
+  date,
+  summary,
+  t,
+  defaultOpen,
+  children,
+}: {
+  date: string;
+  summary?: DailyAttendanceSummary;
+  t: ReturnType<typeof useTranslations>;
+  defaultOpen?: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <details
+      open={defaultOpen}
+      className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-card"
+    >
+      <summary className="cursor-pointer list-none px-4 py-3 sm:px-5">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <span className="text-sm font-semibold text-slate-800">
+            {formatDisplayDate(date)}
+          </span>
+          {summary ? (
+            <span className="flex flex-wrap gap-2 text-xs text-slate-600">
+              <span className="rounded-lg bg-emerald-50 px-2 py-1 text-emerald-800">
+                {t('daySummary.present')}: {summary.present}
+              </span>
+              <span className="rounded-lg bg-amber-50 px-2 py-1 text-amber-800">
+                {t('daySummary.late')}: {summary.late}
+              </span>
+              <span className="rounded-lg bg-red-50 px-2 py-1 text-red-800">
+                {t('daySummary.absent')}: {summary.absent}
+              </span>
+              <span className="rounded-lg bg-blue-50 px-2 py-1 text-blue-800">
+                {t('daySummary.onLeave')}: {summary.onLeave}
+              </span>
+            </span>
+          ) : (
+            <span className="text-xs text-slate-400">{t('daySummary.loading')}</span>
+          )}
+        </div>
+      </summary>
+      {children}
+    </details>
   );
 }

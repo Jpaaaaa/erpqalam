@@ -21,6 +21,7 @@ export function AttendancePanel({ children }: { children: React.ReactNode }) {
 
   const tabs = [
     { key: 'overview', label: t('tabs.overview'), href: `${TAB_BASE}/overview` },
+    { key: 'daily', label: t('tabs.daily'), href: `${TAB_BASE}/daily` },
     { key: 'records', label: t('tabs.records'), href: `${TAB_BASE}/records` },
     { key: 'report', label: t('tabs.report'), href: `${TAB_BASE}/report` },
     { key: 'employees', label: t('tabs.employees'), href: `${TAB_BASE}/employees` },
@@ -33,7 +34,9 @@ export function AttendancePanel({ children }: { children: React.ReactNode }) {
       ?.key ??
     (pathname.includes('/overview')
       ? 'overview'
-      : pathname.includes('/records')
+      : pathname.includes('/daily')
+        ? 'daily'
+        : pathname.includes('/records')
         ? 'records'
         : pathname.includes('/report')
           ? 'report'

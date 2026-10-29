@@ -107,6 +107,47 @@ export interface EmployeeReport {
   }[];
 }
 
+export type DailyAttendanceStatus =
+  | 'day_off'
+  | 'official_holiday'
+  | 'on_leave'
+  | 'absent'
+  | 'on_time'
+  | 'late'
+  | 'early_exit';
+
+export interface DailyAttendanceRow {
+  deviceUserId: string;
+  status: DailyAttendanceStatus;
+  entryTime: string | null;
+  exitTime: string | null;
+  entryType: PunchType | null;
+  exitType: PunchType | null;
+}
+
+export interface DailyAttendanceSummary {
+  employeeCount: number;
+  present: number;
+  late: number;
+  earlyExit: number;
+  absent: number;
+  onLeave: number;
+  officialHoliday: number;
+  dayOff: number;
+}
+
+export interface DailyReport {
+  date: string;
+  rows: DailyAttendanceRow[];
+  summary: DailyAttendanceSummary;
+}
+
+export interface DailySummaryResponse {
+  fromDate: string;
+  toDate: string;
+  summaries: { date: string; summary: DailyAttendanceSummary }[];
+}
+
 export interface DateFilter {
   fromDate: string;
   toDate: string;

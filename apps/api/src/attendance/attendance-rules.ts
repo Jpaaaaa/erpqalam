@@ -434,6 +434,24 @@ export function getExpectedWorkingDates(
   return result;
 }
 
+/** Inclusive local calendar dates from `fromDate` through `toDate` (YYYY-MM-DD). */
+export function enumerateLocalDateKeys(
+  fromDate: string,
+  toDate: string,
+): string[] {
+  const from = parseDateLocal(fromDate);
+  const to = parseDateLocal(toDate);
+  if (!from || !to || from > to) return [];
+
+  const result: string[] = [];
+  const cur = new Date(from.getTime());
+  while (cur <= to) {
+    result.push(formatDateLocal(cur));
+    cur.setDate(cur.getDate() + 1);
+  }
+  return result;
+}
+
 export function isRecordInDateRange(
   record: AttendanceRecordInput,
   fromDate: string,
@@ -966,4 +984,208 @@ export function buildEmployeeDayRows(input: {
   }
 
   return rows;
+}
+
+export type DailyAttendanceStatus =
+  | 'day_off'
+  | 'official_holiday'
+  | 'on_leave'
+  | 'absent'
+  | 'on_time'
+  | 'late'
+  | 'early_exit';
+
+export interface DailyAttendanceRow {
+  deviceUserId: string;
+  status: DailyAttendanceStatus;
+  entryTime: string | null;
+  exitTime: string | null;
+  entryType: PunchType | null;
+  exitType: PunchType | null;
+}
+
+export interface DailyAttendanceSummary {
+  employeeCount: number;
+  present: number;
+  late: number;
+  earlyExit: number;
+  absent: number;
+  onLeave: number;
+  officialHoliday: number;
+  dayOff: number;
+}
+
+function dayOfWeekFromDateKey(dateKey: string): number {
+  const d = parseDateLocal(dateKey);
+  return d ? d.getDay() : 0;
+}
+
+export function buildDailyAttendanceReport(input: {
+  date: string;
+  users: AttendanceUserScheduleInput[];
+  records: AttendanceRecordInput[];
+  settings: AttendanceSettingsMap;
+  orgDayOffDates: Set<string>;
+  earlyExitHolidayDates: Set<string>;
+  lateEntryHolidayDates: Set<string>;
+  employeeHolidayUserIds: Set<string>;
+  lateUserIds: Set<string>;
+  earlyExitUserIds: Set<string>;
+}): { rows: DailyAttendanceRow[]; summary: DailyAttendanceSummary } {
+  const {
+    date,
+    users,
+    records,
+    settings,
+    orgDayOffDates,
+    earlyExitHolidayDates,
+    lateEntryHolidayDates,
+    employeeHolidayUserIds,
+    lateUserIds,
+    earlyExitUserIds,
+  } = input;
+
+  const dayOfWeek = dayOfWeekFromDateKey(date);
+  const usersById = new Map(users.map((u) => [u.deviceUserId, u]));
+  const ctx: ClassifyPunchContext = {
+    settings,
+    usersById,
+    earlyExitDates: earlyExitHolidayDates,
+    lateEntryDates: lateEntryHolidayDates,
+  };
+
+  const dayRecords = records.filter(
+    (r) => getDateKeyFromTimestamp(r.timestamp) === date,
+  );
+  const byUser = new Map<string, AttendanceRecordInput[]>();
+  for (const r of dayRecords) {
+    const list = byUser.get(r.deviceUserId) ?? [];
+    list.push(r);
+    byUser.set(r.deviceUserId, list);
+  }
+
+  const rows: DailyAttendanceRow[] = [];
+  let present = 0;
+  let late = 0;
+  let earlyExit = 0;
+  let absent = 0;
+  let onLeave = 0;
+  let officialHoliday = 0;
+  let dayOff = 0;
+
+  for (const user of users) {
+    const sched = getEffectiveSchedule(user, settings);
+    const isWorkingDay = sched.working_days.includes(dayOfWeek);
+
+    if (!isWorkingDay) {
+      rows.push({
+        deviceUserId: user.deviceUserId,
+        status: 'day_off',
+        entryTime: null,
+        exitTime: null,
+        entryType: null,
+        exitType: null,
+      });
+      dayOff++;
+      continue;
+    }
+
+    if (orgDayOffDates.has(date)) {
+      rows.push({
+        deviceUserId: user.deviceUserId,
+        status: 'official_holiday',
+        entryTime: null,
+        exitTime: null,
+        entryType: null,
+        exitType: null,
+      });
+      officialHoliday++;
+      continue;
+    }
+
+    if (employeeHolidayUserIds.has(user.deviceUserId)) {
+      rows.push({
+        deviceUserId: user.deviceUserId,
+        status: 'on_leave',
+        entryTime: null,
+        exitTime: null,
+        entryType: null,
+        exitType: null,
+      });
+      onLeave++;
+      continue;
+    }
+
+    const punches = [...(byUser.get(user.deviceUserId) ?? [])].sort(
+      (a, b) => a.timestamp.getTime() - b.timestamp.getTime(),
+    );
+    const types = punches.map((punch) => classifyPunch(punch, ctx));
+    const allOutOfShift =
+      punches.length > 0 &&
+      types.every((type) => type === 'out_of_shift' || type == null);
+
+    if (punches.length === 0 || allOutOfShift) {
+      rows.push({
+        deviceUserId: user.deviceUserId,
+        status: 'absent',
+        entryTime: null,
+        exitTime: null,
+        entryType: null,
+        exitType: null,
+      });
+      absent++;
+      continue;
+    }
+
+    const entryPunches = punches.filter((_, index) => {
+      const type = types[index];
+      return type === 'entry_on_time' || type === 'entry_late';
+    });
+    const exitPunches = punches.filter((_, index) => {
+      const type = types[index];
+      return type === 'exit' || type === 'early_exit';
+    });
+    const entry = entryPunches[0] ?? null;
+    const exit =
+      exitPunches.length > 0 ? exitPunches[exitPunches.length - 1] : null;
+    const entryType = entry ? classifyPunch(entry, ctx) : null;
+    const exitType = exit ? classifyPunch(exit, ctx) : null;
+    const entryTime = entry ? formatLocalTimestamp(entry.timestamp) : null;
+    const exitTime = exit ? formatLocalTimestamp(exit.timestamp) : null;
+
+    const isLate =
+      lateUserIds.has(user.deviceUserId) || entryType === 'entry_late';
+    const isEarly =
+      earlyExitUserIds.has(user.deviceUserId) || exitType === 'early_exit';
+
+    let status: DailyAttendanceStatus = 'on_time';
+    if (isLate) status = 'late';
+    else if (isEarly) status = 'early_exit';
+
+    rows.push({
+      deviceUserId: user.deviceUserId,
+      status,
+      entryTime,
+      exitTime,
+      entryType,
+      exitType,
+    });
+    present++;
+    if (status === 'late') late++;
+    if (status === 'early_exit') earlyExit++;
+  }
+
+  return {
+    rows,
+    summary: {
+      employeeCount: users.length,
+      present,
+      late,
+      earlyExit,
+      absent,
+      onLeave,
+      officialHoliday,
+      dayOff,
+    },
+  };
 }

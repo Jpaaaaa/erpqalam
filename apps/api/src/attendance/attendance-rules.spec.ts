@@ -7,6 +7,7 @@ import {
   dateRangeBounds,
   findEarlyExitOccurrences,
   findLateOccurrences,
+  enumerateLocalDateKeys,
   isRecordInDateRange,
 } from './attendance-rules';
 
@@ -180,5 +181,16 @@ describe('attendance-rules date window', () => {
     );
     expect(punch('101', DAY, '23:59').timestamp <= to!).toBe(true);
     expect(punch('101', DAY_AFTER, '00:00').timestamp <= to!).toBe(false);
+  });
+});
+
+describe('enumerateLocalDateKeys', () => {
+  it('returns inclusive local dates', () => {
+    expect(enumerateLocalDateKeys('2026-01-01', '2026-01-03')).toEqual([
+      '2026-01-01',
+      '2026-01-02',
+      '2026-01-03',
+    ]);
+    expect(enumerateLocalDateKeys('2026-01-03', '2026-01-01')).toEqual([]);
   });
 });

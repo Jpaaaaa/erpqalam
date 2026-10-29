@@ -9,6 +9,8 @@ import type {
   AttendanceSettings,
   AttendanceUser,
   EmployeeHoliday,
+  DailyReport,
+  DailySummaryResponse,
   EmployeeReport,
   LeaveBalance,
   TimeLeaveType,
@@ -240,6 +242,24 @@ export async function setLeaveBalance(
   );
 }
 
+export async function getDailyReport(date: string): Promise<DailyReport> {
+  const search = new URLSearchParams();
+  search.set('date', date);
+  return apiRequest<DailyReport>(`/attendance/daily-report?${search.toString()}`);
+}
+
+export async function getDailySummaries(params: {
+  fromDate: string;
+  toDate: string;
+}): Promise<DailySummaryResponse> {
+  const search = new URLSearchParams();
+  search.set('fromDate', params.fromDate);
+  search.set('toDate', params.toDate);
+  return apiRequest<DailySummaryResponse>(
+    `/attendance/daily-summary?${search.toString()}`,
+  );
+}
+
 export async function getEmployeeReport(params?: {
   fromDate?: string;
   toDate?: string;
@@ -253,7 +273,11 @@ export async function getEmployeeReport(params?: {
   );
 }
 
-export type EmployeeReportPdfType = 'performance' | 'per-employee' | 'summary';
+export type EmployeeReportPdfType =
+  | 'performance'
+  | 'per-employee'
+  | 'summary'
+  | 'daily';
 
 export async function downloadEmployeeReportPdf(params: {
   type: EmployeeReportPdfType;

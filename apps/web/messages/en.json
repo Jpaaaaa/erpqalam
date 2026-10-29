@@ -499,6 +499,7 @@
       "overview": "Overview",
       "records": "Records",
       "report": "Report",
+      "daily": "Daily",
       "employees": "Employees",
       "holidays": "Holidays",
       "settings": "Settings"
@@ -536,8 +537,49 @@
       "linkHolidays": "Holidays & leave",
       "linkSettings": "Attendance settings"
     },
+    "daily": {
+      "loadError": "Unable to load daily report.",
+      "pickDate": "Date",
+      "exportPdf": "Download daily PDF",
+      "pdfExporting": "Generating PDF...",
+      "pdfError": "Unable to generate daily PDF.",
+      "search": "Search",
+      "searchPlaceholder": "Filter by name or ID...",
+      "empty": "No employees match your search.",
+      "employee": "Employee",
+      "id": "ID",
+      "statusLabel": "Status",
+      "entry": "In time",
+      "exit": "Out time",
+      "entryType": "In type",
+      "exitType": "Out type",
+      "dateHeading": "Report for {date}",
+      "summary": {
+        "present": "Present",
+        "late": "Late",
+        "absent": "Absent",
+        "onLeave": "On leave"
+      },
+      "status": {
+        "on_time": "On time",
+        "late": "Late",
+        "early_exit": "Early exit",
+        "absent": "Absent",
+        "on_leave": "On leave",
+        "official_holiday": "Official holiday",
+        "day_off": "Day off"
+      }
+    },
     "records": {
       "loadError": "Unable to load attendance records.",
+      "groupByDate": "Group by date",
+      "daySummary": {
+        "present": "Present",
+        "late": "Late",
+        "absent": "Absent",
+        "onLeave": "On leave",
+        "loading": "Loading day summary…"
+      },
       "search": "Search",
       "searchPlaceholder": "Search by name or ID...",
       "addManual": "Add manual punch",

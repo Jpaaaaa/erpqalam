@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import {
   ApiClientError,
+  addTimeLeaveUsage,
   downloadEmployeeReportPdf,
   getAttendanceSettings,
   getEmployeeReport,
@@ -12,6 +13,8 @@ import {
   listEmployeeHolidays,
   listHolidays,
   listLeaveBalances,
+  listTimeLeaveUsage,
+  removeTimeLeaveUsage,
 } from '@/lib/api/attendance';
 import type {
   AttendanceHoliday,
@@ -23,8 +26,19 @@ import type {
   EmployeeReportRow,
   LeaveBalance,
   PunchType,
+  TimeLeaveUsage,
 } from '@/lib/types/attendance';
+import { canCoverWithTimeLeave } from '@/lib/attendance/leave-balance';
 import { buildNameLookup } from '@/lib/attendance/employees';
+import {
+  earlyExitCoverId,
+  isEarlyExitCovered,
+  isLateArrivalCovered,
+  lateArrivalCoverId,
+} from '@/lib/attendance/time-leave-cover';
+import { useAuth } from '@/lib/auth/context';
+import { canManageAttendance } from '@/lib/permissions';
+import { TimeLeaveCoverSection } from '@/components/attendance/TimeLeaveCoverSection';
 import {
   formatDisplayDate,
   formatDisplayTime,
@@ -44,6 +58,10 @@ export function EmployeeReportPanel() {
   const t = useTranslations('attendance.report');
   const tPunch = useTranslations('attendance.punchTypes');
   const tCommon = useTranslations('common');
+  const { user } = useAuth();
+  const canManage = Boolean(
+    user && canManageAttendance(user.role, user.permissions),
+  );
   const [subtab, setSubtab] = useState<ReportSubtab>('performance');
   const [rows, setRows] = useState<EmployeeReportRow[]>([]);
   const [users, setUsers] = useState<AttendanceUser[]>([]);
@@ -70,6 +88,14 @@ export function EmployeeReportPanel() {
   );
   const [employeeLoading, setEmployeeLoading] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [timeLeaveUsage, setTimeLeaveUsage] = useState<TimeLeaveUsage[]>([]);
+  const [lateOccurrences, setLateOccurrences] = useState<
+    { deviceUserId: string; date: string }[]
+  >([]);
+  const [earlyExitOccurrences, setEarlyExitOccurrences] = useState<
+    { deviceUserId: string; date: string; timestamp: string }[]
+  >([]);
+  const [coverBusy, setCoverBusy] = useState<string | null>(null);
 
   const nameLookup = useMemo(
     () => buildNameLookup(users.map((user) => ({ ...user, isUnregistered: false }))),
@@ -84,7 +110,7 @@ export function EmployeeReportPanel() {
     setLoading(true);
     setError('');
     try {
-      const [userRows, report, leaveRows, holidayRows, empHolidayRows, settingsRow] =
+      const [userRows, report, leaveRows, holidayRows, empHolidayRows, settingsRow, tl] =
         await Promise.all([
           listAttendanceUsers(),
           getEmployeeReport({
@@ -95,6 +121,7 @@ export function EmployeeReportPanel() {
           listHolidays(),
           listEmployeeHolidays(),
           getAttendanceSettings(),
+          listTimeLeaveUsage(),
         ]);
       setUsers(userRows);
       setRows(report.rows);
@@ -102,6 +129,7 @@ export function EmployeeReportPanel() {
       setHolidays(holidayRows);
       setEmployeeHolidays(empHolidayRows);
       setSettings(settingsRow);
+      setTimeLeaveUsage(tl);
     } catch (err) {
       setError(err instanceof ApiClientError ? err.message : t('loadError'));
     } finally {
@@ -112,6 +140,30 @@ export function EmployeeReportPanel() {
   useEffect(() => {
     load();
   }, [load]);
+
+  useEffect(() => {
+    if (subtab !== 'per-employee') return;
+    let cancelled = false;
+    getEmployeeReport({
+      fromDate: employeeFilter.fromDate || undefined,
+      toDate: employeeFilter.toDate || undefined,
+    })
+      .then((report) => {
+        if (!cancelled) {
+          setLateOccurrences(report.lateOccurrences);
+          setEarlyExitOccurrences(report.earlyExitOccurrences);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setLateOccurrences([]);
+          setEarlyExitOccurrences([]);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [subtab, employeeFilter.fromDate, employeeFilter.toDate]);
 
   useEffect(() => {
     if (!selectedEmployeeId) {
@@ -191,6 +243,62 @@ export function EmployeeReportPanel() {
         })
       : [];
   const notComingCount = dayRows.filter((day) => day.isNotComing).length;
+
+  const employeeLateOccurrences = useMemo(
+    () =>
+      selectedEmployeeId
+        ? lateOccurrences.filter((o) => o.deviceUserId === selectedEmployeeId)
+        : [],
+    [lateOccurrences, selectedEmployeeId],
+  );
+  const employeeEarlyOccurrences = useMemo(
+    () =>
+      selectedEmployeeId
+        ? earlyExitOccurrences.filter((o) => o.deviceUserId === selectedEmployeeId)
+        : [],
+    [earlyExitOccurrences, selectedEmployeeId],
+  );
+
+  async function refreshAfterCover() {
+    const [tl, report] = await Promise.all([
+      listTimeLeaveUsage(),
+      getEmployeeReport({
+        fromDate: employeeFilter.fromDate || undefined,
+        toDate: employeeFilter.toDate || undefined,
+      }),
+    ]);
+    setTimeLeaveUsage(tl);
+    setLateOccurrences(report.lateOccurrences);
+    setEarlyExitOccurrences(report.earlyExitOccurrences);
+    if (selectedEmployeeId) {
+      const records = await listAttendanceRecords({
+        deviceUserId: selectedEmployeeId,
+        fromDate: employeeFilter.fromDate || undefined,
+        toDate: employeeFilter.toDate || undefined,
+        limit: 5000,
+      });
+      setEmployeeRecords(records);
+    }
+    await load();
+  }
+
+  const leaveCtx = settings
+    ? {
+        tempHolidaysPerFullHoliday: settings.tempHolidaysPerFullHoliday,
+        annualHolidaysDays: settings.annualHolidaysDays,
+      }
+    : null;
+
+  function canAddCover(deviceUserId: string) {
+    if (!leaveCtx) return false;
+    return canCoverWithTimeLeave(
+      deviceUserId,
+      leaveCtx,
+      balances,
+      timeLeaveUsage,
+      employeeHolidays,
+    );
+  }
 
   async function handleExportPdf() {
     if (subtab === 'per-employee' && !selectedEmployeeId) {
@@ -335,6 +443,34 @@ export function EmployeeReportPanel() {
                 />
               </div>
 
+              {settings &&
+                selectedEmployeeId &&
+                (employeeLateOccurrences.length > 0 ||
+                  employeeEarlyOccurrences.length > 0) && (
+                  <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-card">
+                    <TimeLeaveCoverSection
+                      lateOccurrences={employeeLateOccurrences}
+                      earlyExitOccurrences={employeeEarlyOccurrences}
+                      records={employeeRecords}
+                      settings={settings}
+                      timeLeaveUsage={timeLeaveUsage}
+                      leaveBalances={balances}
+                      employeeHolidays={employeeHolidays}
+                      nameLookup={nameLookup}
+                      canManage={canManage}
+                      showUsageList={false}
+                      onCover={async (payload) => {
+                        await addTimeLeaveUsage(payload);
+                        await refreshAfterCover();
+                      }}
+                      onRemove={async (id) => {
+                        await removeTimeLeaveUsage(id);
+                        await refreshAfterCover();
+                      }}
+                    />
+                  </div>
+                )}
+
               {dayRows.length === 0 ? (
                 <p className="rounded-2xl bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">
                   {t('emptyDays')}
@@ -376,6 +512,38 @@ export function EmployeeReportPanel() {
                               </DetailRow>
                             </div>
                           )}
+                          {canManage &&
+                            selectedEmployeeId &&
+                            settings &&
+                            !day.isHoliday &&
+                            !day.isNotComing && (
+                              <DayCoverActions
+                                day={day}
+                                deviceUserId={selectedEmployeeId}
+                                timeLeaveUsage={timeLeaveUsage}
+                                canAdd={canAddCover(selectedEmployeeId)}
+                                busyKey={coverBusy}
+                                t={t}
+                                onCover={async (payload) => {
+                                  setCoverBusy(payload.timestamp);
+                                  try {
+                                    await addTimeLeaveUsage(payload);
+                                    await refreshAfterCover();
+                                  } finally {
+                                    setCoverBusy(null);
+                                  }
+                                }}
+                                onRemove={async (id) => {
+                                  setCoverBusy(id);
+                                  try {
+                                    await removeTimeLeaveUsage(id);
+                                    await refreshAfterCover();
+                                  } finally {
+                                    setCoverBusy(null);
+                                  }
+                                }}
+                              />
+                            )}
                         </div>
                       </MobileCard>
                     ))}
@@ -391,6 +559,9 @@ export function EmployeeReportPanel() {
                           <th className="px-4 py-3">{t('exitTime')}</th>
                           <th className="px-4 py-3">{t('exitType')}</th>
                           <th className="px-4 py-3">{t('status')}</th>
+                          {canManage && (
+                            <th className="px-4 py-3">{t('actions')}</th>
+                          )}
                         </tr>
                       </thead>
                       <tbody>
@@ -435,6 +606,38 @@ export function EmployeeReportPanel() {
                                   ? t('notComingHint')
                                   : ''}
                             </td>
+                            {canManage && selectedEmployeeId && settings && (
+                              <td className="px-4 py-3">
+                                {!day.isHoliday && !day.isNotComing && (
+                                  <DayCoverActions
+                                    day={day}
+                                    deviceUserId={selectedEmployeeId}
+                                    timeLeaveUsage={timeLeaveUsage}
+                                    canAdd={canAddCover(selectedEmployeeId)}
+                                    busyKey={coverBusy}
+                                    t={t}
+                                    onCover={async (payload) => {
+                                      setCoverBusy(payload.timestamp);
+                                      try {
+                                        await addTimeLeaveUsage(payload);
+                                        await refreshAfterCover();
+                                      } finally {
+                                        setCoverBusy(null);
+                                      }
+                                    }}
+                                    onRemove={async (id) => {
+                                      setCoverBusy(id);
+                                      try {
+                                        await removeTimeLeaveUsage(id);
+                                        await refreshAfterCover();
+                                      } finally {
+                                        setCoverBusy(null);
+                                      }
+                                    }}
+                                  />
+                                )}
+                              </td>
+                            )}
                           </tr>
                         ))}
                       </tbody>
@@ -458,6 +661,113 @@ export function EmployeeReportPanel() {
           balanceLookup={balanceLookup}
           t={t}
         />
+      )}
+    </div>
+  );
+}
+
+function DayCoverActions({
+  day,
+  deviceUserId,
+  timeLeaveUsage,
+  canAdd,
+  busyKey,
+  t,
+  onCover,
+  onRemove,
+}: {
+  day: {
+    date: string;
+    entryTime: string | null;
+    exitTime: string | null;
+    entryType: PunchType | null;
+    exitType: PunchType | null;
+  };
+  deviceUserId: string;
+  timeLeaveUsage: TimeLeaveUsage[];
+  canAdd: boolean;
+  busyKey: string | null;
+  t: ReturnType<typeof useTranslations>;
+  onCover: (payload: {
+    deviceUserId: string;
+    date: string;
+    timestamp: string;
+    type: 'late_arrival' | 'early_exit';
+  }) => Promise<void>;
+  onRemove: (id: string) => Promise<void>;
+}) {
+  const isLate = day.entryType === 'entry_late';
+  const isEarly = day.exitType === 'early_exit';
+  const entryCovered =
+    isLate && day.entryTime
+      ? isLateArrivalCovered(day.entryTime, timeLeaveUsage)
+      : false;
+  const exitCovered = isEarly
+    ? isEarlyExitCovered(deviceUserId, day.date, timeLeaveUsage)
+    : false;
+  const entryCoverId =
+    day.entryTime && isLate
+      ? lateArrivalCoverId(day.entryTime, timeLeaveUsage)
+      : null;
+  const exitCoverId = isEarly
+    ? earlyExitCoverId(deviceUserId, day.date, timeLeaveUsage)
+    : null;
+
+  return (
+    <div className="flex flex-wrap gap-2">
+      {isLate && day.entryTime && (
+        entryCovered && entryCoverId ? (
+          <Button
+            type="button"
+            variant="danger"
+            disabled={busyKey === entryCoverId}
+            onClick={() => void onRemove(entryCoverId)}
+          >
+            {t('uncoverLate')}
+          </Button>
+        ) : (
+          <Button
+            type="button"
+            disabled={!canAdd || busyKey === day.entryTime}
+            onClick={() =>
+              void onCover({
+                deviceUserId,
+                date: day.date,
+                timestamp: day.entryTime!,
+                type: 'late_arrival',
+              })
+            }
+          >
+            {t('coverLate')}
+          </Button>
+        )
+      )}
+      {isEarly && day.exitTime && (
+        exitCovered && exitCoverId ? (
+          <Button
+            type="button"
+            variant="danger"
+            disabled={busyKey === exitCoverId}
+            onClick={() => void onRemove(exitCoverId)}
+          >
+            {t('uncoverEarly')}
+          </Button>
+        ) : (
+          <Button
+            type="button"
+            disabled={!canAdd || busyKey === day.exitTime}
+            onClick={() =>
+              void onCover({
+                deviceUserId,
+                date: day.date,
+                timestamp: day.exitTime!,
+                type: 'early_exit',
+              })
+            }
+          >
+            {t('coverEarly')}
+          </Button>
+        )
       )}
     </div>
   );

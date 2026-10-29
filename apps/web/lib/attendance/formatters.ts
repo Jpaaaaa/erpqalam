@@ -59,6 +59,15 @@ export function buildLocalTimestamp(date: string, time: string): string {
   return `${date}T${(h || '00').padStart(2, '0')}:${(mi || '00').padStart(2, '0')}:00.000`;
 }
 
+/** Local calendar date from an attendance timestamp string (no UTC conversion). */
+export function timestampToDateKey(ts: string): string {
+  const head = ts.trim().slice(0, 10);
+  if (/^\d{4}-\d{2}-\d{2}$/.test(head)) return head;
+  const d = new Date(ts);
+  if (Number.isNaN(d.getTime())) return head;
+  return formatLocalDateKey(d);
+}
+
 export function getQuickRange(
   type: 'today' | 'yesterday' | 'week' | 'month',
 ): { from: string; to: string } {

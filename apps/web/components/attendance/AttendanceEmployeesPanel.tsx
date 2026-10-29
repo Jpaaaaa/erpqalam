@@ -6,12 +6,16 @@ import {
   ApiClientError,
   bulkImportAttendanceUsers,
   createAttendanceUser,
+  getAttendanceSettings,
   listAttendanceRecords,
   listAttendanceUsers,
   updateAttendanceUser,
 } from '@/lib/api/attendance';
 import { parseEmployeeCsv } from '@/lib/attendance/csv-import';
-import type { MergedAttendanceEmployee } from '@/lib/types/attendance';
+import { parseWorkingDays } from '@/lib/attendance/report-days';
+import type { AttendanceSettings, MergedAttendanceEmployee } from '@/lib/types/attendance';
+import { useAuth } from '@/lib/auth/context';
+import { canManageAttendance } from '@/lib/permissions';
 import {
   buildNameLookup,
   mergeEmployeesWithPunchIds,
@@ -22,9 +26,20 @@ import { Input } from '@/components/ui/Input';
 import { MobileCard } from '@/components/ui/MobileCard';
 import { Modal } from '@/components/ui/Modal';
 
+const DAY_KEYS = ['0', '1', '2', '3', '4', '5', '6'] as const;
+
+function emptyToNull(value: string): string | null {
+  return value.trim() ? value.trim() : null;
+}
+
 export function AttendanceEmployeesPanel() {
   const t = useTranslations('attendance.employees');
+  const tSettings = useTranslations('attendance.settings');
   const tCommon = useTranslations('common');
+  const { user } = useAuth();
+  const canManage = Boolean(
+    user && canManageAttendance(user.role, user.permissions),
+  );
   const [employees, setEmployees] = useState<MergedAttendanceEmployee[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -32,9 +47,21 @@ export function AttendanceEmployeesPanel() {
   const [search, setSearch] = useState('');
   const [editing, setEditing] = useState<MergedAttendanceEmployee | null>(null);
   const [editName, setEditName] = useState('');
-  const [customSchedule, setCustomSchedule] = useState(false);
+  const [globalSettings, setGlobalSettings] = useState<AttendanceSettings | null>(
+    null,
+  );
+  const [useGlobalWorkingDays, setUseGlobalWorkingDays] = useState(true);
+  const [workingDays, setWorkingDays] = useState<number[]>([]);
   const [shiftStart, setShiftStart] = useState('');
   const [shiftEnd, setShiftEnd] = useState('');
+  const [entryZoneStart, setEntryZoneStart] = useState('');
+  const [entryZoneEnd, setEntryZoneEnd] = useState('');
+  const [exitZoneStart, setExitZoneStart] = useState('');
+  const [exitZoneEnd, setExitZoneEnd] = useState('');
+  const [lateZoneStart, setLateZoneStart] = useState('');
+  const [lateZoneEnd, setLateZoneEnd] = useState('');
+  const [earlyZoneStart, setEarlyZoneStart] = useState('');
+  const [earlyZoneEnd, setEarlyZoneEnd] = useState('');
   const [saving, setSaving] = useState(false);
   const [newUserId, setNewUserId] = useState('');
   const [newUserName, setNewUserName] = useState('');
@@ -44,11 +71,13 @@ export function AttendanceEmployeesPanel() {
     setLoading(true);
     setError('');
     try {
-      const [users, records] = await Promise.all([
+      const [users, records, settings] = await Promise.all([
         listAttendanceUsers(),
         listAttendanceRecords({ limit: 500 }),
+        getAttendanceSettings(),
       ]);
       setEmployees(mergeEmployeesWithPunchIds(users, records));
+      setGlobalSettings(settings);
     } catch (err) {
       setError(err instanceof ApiClientError ? err.message : t('loadError'));
     } finally {
@@ -73,14 +102,50 @@ export function AttendanceEmployeesPanel() {
   function openEdit(employee: MergedAttendanceEmployee) {
     setEditing(employee);
     setEditName(employee.name);
-    const hasSchedule =
-      Boolean(employee.shiftStartTime?.trim()) ||
-      Boolean(employee.shiftEndTime?.trim());
-    setCustomSchedule(hasSchedule);
+    const parsedDays = parseWorkingDays(employee.workingDays);
+    setUseGlobalWorkingDays(parsedDays == null);
+    setWorkingDays(
+      parsedDays ?? globalSettings?.workingDays ?? [0, 1, 2, 3, 4, 5],
+    );
     setShiftStart(employee.shiftStartTime || '');
     setShiftEnd(employee.shiftEndTime || '');
+    setEntryZoneStart(employee.entryZoneStart || '');
+    setEntryZoneEnd(employee.entryZoneEnd || '');
+    setExitZoneStart(employee.exitZoneStart || '');
+    setExitZoneEnd(employee.exitZoneEnd || '');
+    setLateZoneStart(employee.lateZoneStartTime || '');
+    setLateZoneEnd(employee.lateZoneEndTime || '');
+    setEarlyZoneStart(employee.earlyLeftZoneStartTime || '');
+    setEarlyZoneEnd(employee.earlyLeftZoneEndTime || '');
     setSuccess('');
     setError('');
+  }
+
+  function toggleWorkingDay(day: number) {
+    setWorkingDays((prev) => {
+      const next = new Set(prev);
+      if (next.has(day)) next.delete(day);
+      else next.add(day);
+      return Array.from(next).sort((a, b) => a - b);
+    });
+  }
+
+  function schedulePayload() {
+    return {
+      workingDays: useGlobalWorkingDays
+        ? null
+        : JSON.stringify(workingDays),
+      shiftStartTime: emptyToNull(shiftStart),
+      shiftEndTime: emptyToNull(shiftEnd),
+      entryZoneStart: emptyToNull(entryZoneStart),
+      entryZoneEnd: emptyToNull(entryZoneEnd),
+      exitZoneStart: emptyToNull(exitZoneStart),
+      exitZoneEnd: emptyToNull(exitZoneEnd),
+      lateZoneStartTime: emptyToNull(lateZoneStart),
+      lateZoneEndTime: emptyToNull(lateZoneEnd),
+      earlyLeftZoneStartTime: emptyToNull(earlyZoneStart),
+      earlyLeftZoneEndTime: emptyToNull(earlyZoneEnd),
+    };
   }
 
   async function saveEmployee(e: React.FormEvent) {
@@ -96,18 +161,14 @@ export function AttendanceEmployeesPanel() {
           deviceUserId: editing.deviceUserId,
           name,
         });
-        if (customSchedule) {
-          await updateAttendanceUser(editing.deviceUserId, {
-            name,
-            shiftStartTime: shiftStart || null,
-            shiftEndTime: shiftEnd || null,
-          });
-        }
+        await updateAttendanceUser(editing.deviceUserId, {
+          name,
+          ...schedulePayload(),
+        });
       } else {
         await updateAttendanceUser(editing.deviceUserId, {
           name,
-          shiftStartTime: customSchedule ? shiftStart || null : null,
-          shiftEndTime: customSchedule ? shiftEnd || null : null,
+          ...schedulePayload(),
         });
       }
       setSuccess(t('saved'));
@@ -181,6 +242,7 @@ export function AttendanceEmployeesPanel() {
     <div className="space-y-6">
       {error && <Alert variant="error">{error}</Alert>}
       {success && <Alert variant="success">{success}</Alert>}
+      {!canManage && <Alert variant="info">{t('viewOnly')}</Alert>}
 
       <form
         onSubmit={handleCreate}
@@ -197,7 +259,12 @@ export function AttendanceEmployeesPanel() {
           onChange={(e) => setNewUserName(e.target.value)}
         />
         <div className="flex items-end">
-          <Button type="submit" className="w-full sm:w-auto" isLoading={saving}>
+          <Button
+            type="submit"
+            className="w-full sm:w-auto"
+            isLoading={saving}
+            disabled={!canManage}
+          >
             {t('addEmployee')}
           </Button>
         </div>
@@ -210,7 +277,7 @@ export function AttendanceEmployeesPanel() {
             type="file"
             accept=".csv,.txt,text/csv,text/plain"
             className="sr-only"
-            disabled={importing}
+            disabled={importing || !canManage}
             onChange={handleCsvImport}
           />
           <span className="rounded-xl border border-teal-200 bg-white px-4 py-2 shadow-sm">
@@ -255,14 +322,16 @@ export function AttendanceEmployeesPanel() {
                       </span>
                     )}
                   </div>
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    className="w-full"
-                    onClick={() => openEdit(employee)}
-                  >
-                    {t('edit')}
-                  </Button>
+                  {canManage && (
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      className="w-full"
+                      onClick={() => openEdit(employee)}
+                    >
+                      {t('edit')}
+                    </Button>
+                  )}
                 </div>
               </MobileCard>
             ))}
@@ -302,13 +371,15 @@ export function AttendanceEmployeesPanel() {
                       )}
                     </td>
                     <td className="px-4 py-3">
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        onClick={() => openEdit(employee)}
-                      >
-                        {t('edit')}
-                      </Button>
+                      {canManage && (
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          onClick={() => openEdit(employee)}
+                        >
+                          {t('edit')}
+                        </Button>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -327,7 +398,12 @@ export function AttendanceEmployeesPanel() {
             <Button type="button" variant="secondary" onClick={() => setEditing(null)}>
               {t('cancel')}
             </Button>
-            <Button type="submit" form="edit-employee-form" isLoading={saving}>
+            <Button
+              type="submit"
+              form="edit-employee-form"
+              isLoading={saving}
+              disabled={!canManage}
+            >
               {t('save')}
             </Button>
           </>
@@ -344,31 +420,127 @@ export function AttendanceEmployeesPanel() {
               onChange={(e) => setEditName(e.target.value)}
               required
             />
-            <label className="flex items-center gap-2 text-sm text-slate-700">
-              <input
-                type="checkbox"
-                checked={customSchedule}
-                onChange={(e) => setCustomSchedule(e.target.checked)}
-                className="rounded border-slate-300"
-              />
-              {t('customSchedule')}
-            </label>
-            {customSchedule && (
+            <p className="text-xs text-slate-500">{t('scheduleHint')}</p>
+            <section className="space-y-3 rounded-xl border border-slate-100 bg-slate-50/50 p-4">
+              <h4 className="text-sm font-semibold text-slate-800">
+                {tSettings('workingDaysSection')}
+              </h4>
+              <label className="flex items-center gap-2 text-sm text-slate-700">
+                <input
+                  type="checkbox"
+                  checked={useGlobalWorkingDays}
+                  onChange={(e) => setUseGlobalWorkingDays(e.target.checked)}
+                  className="rounded border-slate-300"
+                />
+                {t('useGlobalWorkingDays')}
+              </label>
+              {!useGlobalWorkingDays && (
+                <div className="flex flex-wrap gap-2">
+                  {DAY_KEYS.map((key) => {
+                    const day = Number(key);
+                    const active = workingDays.includes(day);
+                    return (
+                      <button
+                        key={key}
+                        type="button"
+                        onClick={() => toggleWorkingDay(day)}
+                        className={`rounded-lg px-3 py-1.5 text-xs font-medium ${
+                          active
+                            ? 'bg-teal-600 text-white'
+                            : 'bg-white text-slate-600 ring-1 ring-slate-200'
+                        }`}
+                      >
+                        {tSettings(`days.${key}` as 'days.0')}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </section>
+            <section className="space-y-3">
+              <h4 className="text-sm font-semibold text-slate-800">
+                {tSettings('shiftSection')}
+              </h4>
               <div className="grid gap-4 sm:grid-cols-2">
                 <Input
-                  label={t('shiftStart')}
+                  label={tSettings('shiftStart')}
                   type="time"
                   value={shiftStart}
+                  placeholder={globalSettings?.shiftStartTime}
                   onChange={(e) => setShiftStart(e.target.value)}
                 />
                 <Input
-                  label={t('shiftEnd')}
+                  label={tSettings('shiftEnd')}
                   type="time"
                   value={shiftEnd}
+                  placeholder={globalSettings?.shiftEndTime}
                   onChange={(e) => setShiftEnd(e.target.value)}
                 />
               </div>
-            )}
+            </section>
+            <section className="space-y-3">
+              <h4 className="text-sm font-semibold text-slate-800">
+                {tSettings('zonesSection')}
+              </h4>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Input
+                  label={tSettings('entryStart')}
+                  type="time"
+                  value={entryZoneStart}
+                  placeholder={globalSettings?.entryZoneStart}
+                  onChange={(e) => setEntryZoneStart(e.target.value)}
+                />
+                <Input
+                  label={tSettings('entryEnd')}
+                  type="time"
+                  value={entryZoneEnd}
+                  placeholder={globalSettings?.entryZoneEnd}
+                  onChange={(e) => setEntryZoneEnd(e.target.value)}
+                />
+                <Input
+                  label={tSettings('lateStart')}
+                  type="time"
+                  value={lateZoneStart}
+                  placeholder={globalSettings?.lateZoneStartTime}
+                  onChange={(e) => setLateZoneStart(e.target.value)}
+                />
+                <Input
+                  label={tSettings('lateEnd')}
+                  type="time"
+                  value={lateZoneEnd}
+                  placeholder={globalSettings?.lateZoneEndTime}
+                  onChange={(e) => setLateZoneEnd(e.target.value)}
+                />
+                <Input
+                  label={tSettings('exitStart')}
+                  type="time"
+                  value={exitZoneStart}
+                  placeholder={globalSettings?.exitZoneStart}
+                  onChange={(e) => setExitZoneStart(e.target.value)}
+                />
+                <Input
+                  label={tSettings('exitEnd')}
+                  type="time"
+                  value={exitZoneEnd}
+                  placeholder={globalSettings?.exitZoneEnd}
+                  onChange={(e) => setExitZoneEnd(e.target.value)}
+                />
+                <Input
+                  label={tSettings('earlyStart')}
+                  type="time"
+                  value={earlyZoneStart}
+                  placeholder={globalSettings?.earlyLeftZoneStartTime}
+                  onChange={(e) => setEarlyZoneStart(e.target.value)}
+                />
+                <Input
+                  label={tSettings('earlyEnd')}
+                  type="time"
+                  value={earlyZoneEnd}
+                  placeholder={globalSettings?.earlyLeftZoneEndTime}
+                  onChange={(e) => setEarlyZoneEnd(e.target.value)}
+                />
+              </div>
+            </section>
           </form>
         )}
       </Modal>

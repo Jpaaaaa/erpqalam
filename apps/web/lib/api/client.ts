@@ -9,8 +9,10 @@ import type {
   ApiError,
   AuthResponse,
   AuthUser,
+  ChangePasswordPayload,
   LoginPayload,
   RegisterPayload,
+  SetCredentialsPayload,
   Session,
 } from '@/lib/types/auth';
 
@@ -175,6 +177,40 @@ export async function login(payload: LoginPayload): Promise<Session> {
     method: 'POST',
     body: JSON.stringify(payload),
   }, false);
+
+  const session = { user: data.user, tokens: data.tokens };
+  saveSession(session);
+  return session;
+}
+
+export async function setCredentials(
+  payload: SetCredentialsPayload,
+): Promise<Session> {
+  const data = await apiRequest<AuthResponse>(
+    '/auth/set-credentials',
+    {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    },
+    false,
+  );
+
+  const session = { user: data.user, tokens: data.tokens };
+  saveSession(session);
+  return session;
+}
+
+export async function changePassword(
+  payload: ChangePasswordPayload,
+): Promise<Session> {
+  const data = await apiRequest<AuthResponse>(
+    '/auth/change-password',
+    {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    },
+    false,
+  );
 
   const session = { user: data.user, tokens: data.tokens };
   saveSession(session);

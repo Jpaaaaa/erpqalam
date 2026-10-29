@@ -41,9 +41,11 @@ interface AuthContextValue {
   user: AuthUser | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (payload: LoginPayload) => Promise<void>;
+  login: (payload: LoginPayload) => Promise<Session>;
+  refreshUser: () => Promise<void>;
   loginWithGoogle: (idToken: string) => Promise<void>;
   logout: () => Promise<void>;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -60,15 +62,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     async function bootstrap() {
-      console.log('[auth] bootstrap start');
       const session = await getSession();
       if (!session) {
-        console.log('[auth] no stored session');
         setIsLoading(false);
         return;
       }
 
-      console.log('[auth] /auth/me start');
       try {
         const freshUser = await withTimeout(
           getCurrentUser(),
@@ -81,23 +80,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           tokens: latest?.tokens ?? session.tokens,
         });
         setUser(freshUser);
-        console.log('[auth] /auth/me done');
-      } catch (err) {
-        console.warn('[auth] /auth/me failed', err);
+      } catch {
         await clearSession();
         setUser(null);
       } finally {
         setIsLoading(false);
-        console.log('[auth] bootstrap done');
       }
     }
 
     void bootstrap();
   }, []);
 
+  const refreshUser = useCallback(async () => {
+    const session = await getSession();
+    if (!session) return;
+
+    try {
+      const freshUser = await getCurrentUser();
+      const latest = await getSession();
+      await saveSession({
+        user: freshUser,
+        tokens: latest?.tokens ?? session.tokens,
+      });
+      setUser(freshUser);
+    } catch {
+      await clearSession();
+      setUser(null);
+    }
+  }, []);
+
   const login = useCallback(async (payload: LoginPayload) => {
     const session: Session = await apiLogin(payload);
     setUser(session.user);
+    return session;
   }, []);
 
   const loginWithGoogle = useCallback(async (idToken: string) => {
@@ -119,8 +134,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       login,
       loginWithGoogle,
       logout,
+      refreshUser,
     }),
-    [user, isLoading, login, loginWithGoogle, logout],
+    [user, isLoading, login, loginWithGoogle, logout, refreshUser],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

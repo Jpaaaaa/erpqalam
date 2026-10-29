@@ -24,7 +24,8 @@ export function planRtlSync(opts: {
   isExpoGo: boolean;
   /** Local expo-dev-client — never reloadAsync (crashes DevLauncher). */
   isDevClient: boolean;
-  updatesEnabled: boolean;
+  /** Release standalone can reload even when expo-updates fetch is disabled. */
+  reloadAvailable: boolean;
   reloadAlreadyTried: boolean;
 }): RtlSyncPlan {
   if (opts.wantRtl === opts.nativeRtl) {
@@ -36,7 +37,7 @@ export function planRtlSync(opts: {
   if (opts.isDevClient) {
     return { action: 'force_and_prompt_restart', reason: 'dev_client' };
   }
-  if (!opts.updatesEnabled) {
+  if (!opts.reloadAvailable) {
     return { action: 'force_and_prompt_restart', reason: 'reload_unavailable' };
   }
   if (opts.reloadAlreadyTried) {

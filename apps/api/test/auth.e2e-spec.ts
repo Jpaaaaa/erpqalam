@@ -102,7 +102,7 @@ describe('Auth (e2e)', () => {
     it('rejects login for pending employee', async () => {
       await request(app.getHttpServer())
         .post('/api/v1/auth/login')
-        .send({ email: employeeEmail, password })
+        .send({ login: employeeEmail, password })
         .expect(403);
     });
   });
@@ -111,7 +111,7 @@ describe('Auth (e2e)', () => {
     it('logs in active manager', async () => {
       const res = await request(app.getHttpServer())
         .post('/api/v1/auth/login')
-        .send({ email: managerEmail, password })
+        .send({ login: managerEmail, password })
         .expect(200);
 
       expect(res.body.user.email).toBe(managerEmail);
@@ -125,7 +125,7 @@ describe('Auth (e2e)', () => {
     it('rejects invalid credentials', async () => {
       await request(app.getHttpServer())
         .post('/api/v1/auth/login')
-        .send({ email: managerEmail, password: 'WrongPass123!' })
+        .send({ login: managerEmail, password: 'WrongPass123!' })
         .expect(401);
     });
   });

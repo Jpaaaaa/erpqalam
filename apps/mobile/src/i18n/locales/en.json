@@ -34,7 +34,23 @@
     "signInWithGoogle": "Sign in with Google",
     "orContinueWith": "Or continue with",
     "googleSigningIn": "Signing in with Google…",
-    "googleCallbackError": "Google sign-in failed. Please try again."
+    "googleCallbackError": "Google sign-in failed. Please try again.",
+    "usernameOrEmail": "Username or email",
+    "usernameOrEmailPlaceholder": "jane.doe or you@school.com",
+    "username": "Username",
+    "usernamePlaceholder": "jane.doe",
+    "confirmPassword": "Confirm password",
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "setCredentialsTitle": "Set username & password",
+    "setCredentialsDescription": "Choose a username and password to use alongside Google sign-in.",
+    "saveCredentials": "Save credentials",
+    "setCredentialsError": "Unable to save credentials. Please try again.",
+    "changePasswordTitle": "Change password",
+    "changePasswordDescription": "You must set a new password before continuing.",
+    "changePassword": "Change password",
+    "changePasswordError": "Unable to change password. Please try again.",
+    "passwordMismatch": "Passwords do not match."
   },
   "hr": {
     "accessDenied": "You do not have access to this module."

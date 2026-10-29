@@ -67,6 +67,7 @@ describe('Users (e2e)', () => {
         .post('/api/v1/users')
         .set('Authorization', `Bearer ${managerToken}`)
         .send({
+          username: `created.${runId}`,
           email: employeeEmail,
           password,
           firstName: 'Created',
@@ -76,7 +77,9 @@ describe('Users (e2e)', () => {
         .expect(201);
 
       expect(res.body).toMatchObject({
+        username: `created.${runId}`,
         email: employeeEmail,
+        mustChangePassword: true,
         firstName: 'Created',
         lastName: 'Employee',
         role: 'EMPLOYEE',
@@ -91,6 +94,7 @@ describe('Users (e2e)', () => {
       await request(app.getHttpServer())
         .post('/api/v1/users')
         .send({
+          username: `noauth.${runId}`,
           email: `noauth-${runId}@e2e.test`,
           password,
           firstName: 'No',
@@ -165,7 +169,7 @@ describe('Users (e2e)', () => {
     it('approved employee can login', async () => {
       const res = await request(app.getHttpServer())
         .post('/api/v1/auth/login')
-        .send({ email: pendingEmail, password })
+        .send({ login: pendingEmail, password })
         .expect(200);
 
       expect(res.body.user.status).toBe('ACTIVE');
@@ -203,7 +207,7 @@ describe('Users (e2e)', () => {
     it('deactivated user cannot login', async () => {
       await request(app.getHttpServer())
         .post('/api/v1/auth/login')
-        .send({ email: employeeEmail, password })
+        .send({ login: employeeEmail, password })
         .expect(403);
     });
 

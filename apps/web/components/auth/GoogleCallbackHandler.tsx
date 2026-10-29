@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import { saveSession } from '@/lib/auth/storage';
+import { getPostAuthPath } from '@/lib/auth/post-auth-redirect';
 import type { AuthUser } from '@/lib/types/auth';
 import { Alert } from '@/components/ui/Alert';
 
@@ -42,7 +43,7 @@ export function GoogleCallbackHandler() {
         tokens: { accessToken, refreshToken },
       });
 
-      window.location.href = `/${locale}/dashboard`;
+      window.location.href = `/${locale}${getPostAuthPath(user)}`;
     } catch {
       setError(t('googleCallbackError'));
     }

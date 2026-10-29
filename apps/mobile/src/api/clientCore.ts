@@ -2,7 +2,9 @@ import type {
   ApiError,
   AuthResponse,
   AuthUser,
+  ChangePasswordPayload,
   LoginPayload,
+  SetCredentialsPayload,
   Session,
 } from '../types/auth';
 import { assertDatedAttendancePath } from './datedAttendanceGuard';
@@ -178,6 +180,38 @@ export function createApiClient(deps: ApiClientDeps) {
     return session;
   }
 
+  async function setCredentials(payload: SetCredentialsPayload): Promise<Session> {
+    const data = await apiRequest<AuthResponse>(
+      '/auth/set-credentials',
+      {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      },
+      false,
+    );
+
+    const session = { user: data.user, tokens: data.tokens };
+    await deps.saveSession(session);
+    return session;
+  }
+
+  async function changePassword(
+    payload: ChangePasswordPayload,
+  ): Promise<Session> {
+    const data = await apiRequest<AuthResponse>(
+      '/auth/change-password',
+      {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      },
+      false,
+    );
+
+    const session = { user: data.user, tokens: data.tokens };
+    await deps.saveSession(session);
+    return session;
+  }
+
   async function googleLogin(idToken: string): Promise<Session> {
     const data = await apiRequest<AuthResponse>(
       '/auth/google/mobile',
@@ -217,6 +251,8 @@ export function createApiClient(deps: ApiClientDeps) {
     apiRequest,
     getCurrentUser,
     login,
+    setCredentials,
+    changePassword,
     googleLogin,
     logout,
     onSessionInvalidated,

@@ -10,15 +10,27 @@ interface AuthGuardProps {
 }
 
 export function AuthGuard({ children }: AuthGuardProps) {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { user, isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
   const t = useTranslations('common');
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
+    if (isLoading) return;
+
+    if (!isAuthenticated) {
       router.replace('/login');
+      return;
     }
-  }, [isAuthenticated, isLoading, router]);
+
+    if (user?.needsSetupCredentials) {
+      router.replace('/set-credentials');
+      return;
+    }
+
+    if (user?.mustChangePassword) {
+      router.replace('/change-password');
+    }
+  }, [user, isAuthenticated, isLoading, router]);
 
   if (isLoading) {
     return (

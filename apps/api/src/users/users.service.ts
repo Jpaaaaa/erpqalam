@@ -14,6 +14,7 @@ import {
   resolvePermissions,
   sanitizePermissions,
 } from '../common/permissions/permissions';
+import { normalizeUsername } from '../auth/username.util';
 import {
   CreateUserDto,
   ListUsersQueryDto,
@@ -30,6 +31,8 @@ const BCRYPT_ROUNDS = 12;
 const userSelect = {
   id: true,
   email: true,
+  username: true,
+  mustChangePassword: true,
   firstName: true,
   lastName: true,
   phone: true,
@@ -74,20 +77,29 @@ export class UsersService {
       throw new ForbiddenException('Only managers can create manager accounts');
     }
 
-    const existing = await this.prisma.user.findUnique({
-      where: { email: dto.email },
-    });
+    const username = normalizeUsername(dto.username);
 
-    if (existing) {
+    const [existingEmail, existingUsername] = await Promise.all([
+      this.prisma.user.findUnique({ where: { email: dto.email } }),
+      this.prisma.user.findUnique({ where: { username } }),
+    ]);
+
+    if (existingEmail) {
       throw new ConflictException('Email already registered');
+    }
+
+    if (existingUsername) {
+      throw new ConflictException('Username is already taken');
     }
 
     const passwordHash = await bcrypt.hash(dto.password, BCRYPT_ROUNDS);
 
     const user = await this.prisma.user.create({
       data: {
+        username,
         email: dto.email,
         passwordHash,
+        mustChangePassword: true,
         firstName: dto.firstName,
         lastName: dto.lastName,
         phone: dto.phone,

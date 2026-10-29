@@ -13,16 +13,19 @@ import { AuthGuard } from '@nestjs/passport';
 import { ConfigService } from '@nestjs/config';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
+import { getClientIp } from './client-ip.util';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
 import {
   GoogleMobileLoginDto,
+  ChangePasswordDto,
   LoginDto,
   RefreshTokenDto,
   RegisterDto,
   RegisterSchoolDto,
+  SetCredentialsDto,
 } from './dto/auth.dto';
 import {
   AuthResponseDto,
@@ -55,10 +58,41 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Login with email and password' })
+  @ApiOperation({ summary: 'Login with username or email and password' })
   @ApiResponse({ status: 200, type: AuthResponseDto })
-  login(@Body() dto: LoginDto): Promise<AuthResponseDto> {
-    return this.authService.login(dto);
+  login(
+    @Body() dto: LoginDto,
+    @Req() req: Request,
+  ): Promise<AuthResponseDto> {
+    const ip = getClientIp(req);
+    const rateLimitKey = `${ip}:${dto.login.trim().toLowerCase()}`;
+    return this.authService.login(dto, rateLimitKey);
+  }
+
+  @Post('set-credentials')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Set username and password after Google sign-in' })
+  @ApiResponse({ status: 200, type: AuthResponseDto })
+  setCredentials(
+    @CurrentUser() user: JwtPayload,
+    @Body() dto: SetCredentialsDto,
+  ): Promise<AuthResponseDto> {
+    return this.authService.setCredentials(user.sub, dto);
+  }
+
+  @Post('change-password')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Change password (required when mustChangePassword)' })
+  @ApiResponse({ status: 200, type: AuthResponseDto })
+  changePassword(
+    @CurrentUser() user: JwtPayload,
+    @Body() dto: ChangePasswordDto,
+  ): Promise<AuthResponseDto> {
+    return this.authService.changePassword(user.sub, dto);
   }
 
   @Get('me')

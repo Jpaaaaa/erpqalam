@@ -5,6 +5,7 @@ import { useTranslations, useLocale } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
 import { Link, useRouter } from '@/i18n/navigation';
 import { useAuth } from '@/lib/auth/context';
+import { getPostAuthPath } from '@/lib/auth/post-auth-redirect';
 import { API_BASE_URL, ApiClientError } from '@/lib/api/client';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -22,9 +23,9 @@ export function LoginForm() {
   const tCommon = useTranslations('common');
   const locale = useLocale();
   const searchParams = useSearchParams();
-  const { login } = useAuth();
+  const { login: authLogin } = useAuth();
   const router = useRouter();
-  const [email, setEmail] = useState('');
+  const [login, setLogin] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -42,8 +43,8 @@ export function LoginForm() {
     setIsLoading(true);
 
     try {
-      await login({ email, password });
-      router.push('/dashboard');
+      const session = await authLogin({ login: login.trim(), password });
+      router.push(getPostAuthPath(session.user));
     } catch (err) {
       const message =
         err instanceof ApiClientError ? err.message : t('loginError');
@@ -64,14 +65,16 @@ export function LoginForm() {
       {error && <Alert variant="error">{error}</Alert>}
 
       <Input
-        label={t('email')}
-        name="email"
-        type="email"
-        autoComplete="email"
+        label={t('usernameOrEmail')}
+        name="login"
+        type="text"
+        autoComplete="username"
         required
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        placeholder={t('emailPlaceholder')}
+        dir="ltr"
+        className="text-start"
+        value={login}
+        onChange={(e) => setLogin(e.target.value)}
+        placeholder={t('usernameOrEmailPlaceholder')}
       />
 
       <Input

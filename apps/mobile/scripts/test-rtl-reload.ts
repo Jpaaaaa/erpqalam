@@ -12,7 +12,7 @@ assert(
     nativeRtl: true,
     isExpoGo: false,
     isDevClient: false,
-    updatesEnabled: false,
+    reloadAvailable: false,
     reloadAlreadyTried: false,
   }).action === 'ok',
   'matched direction should be ok',
@@ -24,7 +24,7 @@ assert(
     nativeRtl: true,
     isExpoGo: false,
     isDevClient: true,
-    updatesEnabled: true,
+    reloadAvailable: true,
     reloadAlreadyTried: false,
   }).action === 'force_and_prompt_restart' &&
     planRtlSync({
@@ -32,7 +32,7 @@ assert(
       nativeRtl: true,
       isExpoGo: false,
       isDevClient: true,
-      updatesEnabled: true,
+      reloadAvailable: true,
       reloadAlreadyTried: false,
     }).reason === 'dev_client',
   'dev client should prompt restart, not reloadAsync',
@@ -44,10 +44,22 @@ assert(
     nativeRtl: true,
     isExpoGo: false,
     isDevClient: false,
-    updatesEnabled: true,
+    reloadAvailable: true,
     reloadAlreadyTried: false,
   }).action === 'force_and_reload',
   'release build should try reloadAsync once',
+);
+
+assert(
+  planRtlSync({
+    wantRtl: false,
+    nativeRtl: true,
+    isExpoGo: false,
+    isDevClient: false,
+    reloadAvailable: true,
+    reloadAlreadyTried: false,
+  }).action === 'force_and_reload',
+  'release without EAS updates URL can still reloadAsync for RTL',
 );
 
 const already = planRtlSync({
@@ -55,7 +67,7 @@ const already = planRtlSync({
   nativeRtl: true,
   isExpoGo: false,
   isDevClient: false,
-  updatesEnabled: true,
+  reloadAvailable: true,
   reloadAlreadyTried: true,
 });
 assert(
@@ -64,18 +76,18 @@ assert(
   'second release attempt should prompt, not loop reloadAsync',
 );
 
-const disabled = planRtlSync({
+const unavailable = planRtlSync({
   wantRtl: true,
   nativeRtl: false,
   isExpoGo: false,
   isDevClient: false,
-  updatesEnabled: false,
+  reloadAvailable: false,
   reloadAlreadyTried: false,
 });
 assert(
-  disabled.action === 'force_and_prompt_restart' &&
-    disabled.reason === 'reload_unavailable',
-  'no Updates.reloadAsync → prompt close/reopen',
+  unavailable.action === 'force_and_prompt_restart' &&
+    unavailable.reason === 'reload_unavailable',
+  'reload unavailable → prompt close/reopen',
 );
 
 // Expo Go never calls planRtlSync — syncNativeRtlSwitch returns 'ok' before planning.
@@ -84,7 +96,7 @@ const expoGoPlanner = planRtlSync({
   nativeRtl: false,
   isExpoGo: true,
   isDevClient: false,
-  updatesEnabled: true,
+  reloadAvailable: true,
   reloadAlreadyTried: false,
 });
 assert(

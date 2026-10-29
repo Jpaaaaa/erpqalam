@@ -3,6 +3,9 @@ export type { UserRole, UserStatus } from '@/lib/types/user';
 export interface AuthUser {
   id: string;
   email: string;
+  username?: string | null;
+  mustChangePassword: boolean;
+  needsSetupCredentials: boolean;
   firstName: string;
   lastName: string;
   phone?: string | null;
@@ -23,8 +26,18 @@ export interface AuthResponse {
 }
 
 export interface LoginPayload {
-  email: string;
+  login: string;
   password: string;
+}
+
+export interface SetCredentialsPayload {
+  username: string;
+  password: string;
+}
+
+export interface ChangePasswordPayload {
+  currentPassword: string;
+  newPassword: string;
 }
 
 export interface RegisterPayload {

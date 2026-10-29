@@ -58,7 +58,7 @@ export async function syncNativeRtlSwitch(
     nativeRtl: I18nManager.isRTL,
     isExpoGo: false,
     isDevClient: __DEV__,
-    updatesEnabled: Updates.isEnabled,
+    reloadAvailable: !__DEV__ && !isExpoGo(),
     reloadAlreadyTried,
   });
 

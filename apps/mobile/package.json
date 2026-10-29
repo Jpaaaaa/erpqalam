@@ -9,6 +9,7 @@
     "test:single-flight": "npx tsx scripts/test-single-flight.ts",
     "test:dated-requests": "npx tsx scripts/test-dated-requests.ts",
     "test:rtl-reload": "npx tsx scripts/test-rtl-reload.ts",
+    "build:apk": "bash scripts/build-apk.sh",
     "build:preview": "eas build -p android --profile preview"
   },
   "dependencies": {

@@ -8,6 +8,17 @@ export class AuthUserDto {
   @ApiProperty()
   email: string;
 
+  @ApiProperty({ required: false, nullable: true })
+  username?: string | null;
+
+  @ApiProperty()
+  mustChangePassword: boolean;
+
+  @ApiProperty({
+    description: 'User must set username and password before using the app',
+  })
+  needsSetupCredentials: boolean;
+
   @ApiProperty()
   firstName: string;
 

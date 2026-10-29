@@ -27,7 +27,7 @@ export function LoginScreen() {
   const { fontFamily, mirrorLayout } = useI18n();
   const { t } = useTranslation();
   const { request, response, promptAsync, configured } = useGoogleAuthRequest();
-  const [email, setEmail] = useState('');
+  const [loginId, setLoginId] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -69,7 +69,7 @@ export function LoginScreen() {
     setError('');
     setSubmitting(true);
     try {
-      await login({ email: email.trim(), password });
+      await login({ login: loginId.trim(), password });
     } catch (err) {
       setError(
         err instanceof ApiClientError ? err.message : t('auth:loginError'),
@@ -121,16 +121,15 @@ export function LoginScreen() {
 
             {error ? <AppText style={styles.error}>{error}</AppText> : null}
 
-            <AppText style={styles.label}>{t('auth:email')}</AppText>
+            <AppText style={styles.label}>{t('auth:usernameOrEmail')}</AppText>
             <TextInput
               style={[styles.input, ltrText, inputFont]}
               autoCapitalize="none"
-              autoComplete="email"
-              keyboardType="email-address"
-              textContentType="emailAddress"
-              value={email}
-              onChangeText={setEmail}
-              placeholder={t('auth:emailPlaceholder')}
+              autoComplete="username"
+              textContentType="username"
+              value={loginId}
+              onChangeText={setLoginId}
+              placeholder={t('auth:usernameOrEmailPlaceholder')}
               editable={!busy}
             />
 

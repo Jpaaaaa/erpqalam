@@ -34,7 +34,23 @@
     "signInWithGoogle": "تسجيل الدخول عبر Google",
     "orContinueWith": "أو المتابعة باستخدام",
     "googleSigningIn": "جاري تسجيل الدخول عبر Google…",
-    "googleCallbackError": "فشل تسجيل الدخول عبر Google. يرجى المحاولة مرة أخرى."
+    "googleCallbackError": "فشل تسجيل الدخول عبر Google. يرجى المحاولة مرة أخرى.",
+    "usernameOrEmail": "اسم المستخدم أو البريد الإلكتروني",
+    "usernameOrEmailPlaceholder": "jane.doe أو you@school.com",
+    "username": "اسم المستخدم",
+    "usernamePlaceholder": "jane.doe",
+    "confirmPassword": "تأكيد كلمة المرور",
+    "currentPassword": "كلمة المرور الحالية",
+    "newPassword": "كلمة المرور الجديدة",
+    "setCredentialsTitle": "تعيين اسم المستخدم وكلمة المرور",
+    "setCredentialsDescription": "اختر اسم مستخدم وكلمة مرور للاستخدام مع تسجيل الدخول عبر Google.",
+    "saveCredentials": "حفظ بيانات الدخول",
+    "setCredentialsError": "تعذر حفظ بيانات الدخول. يرجى المحاولة مرة أخرى.",
+    "changePasswordTitle": "تغيير كلمة المرور",
+    "changePasswordDescription": "يجب تعيين كلمة مرور جديدة قبل المتابعة.",
+    "changePassword": "تغيير كلمة المرور",
+    "changePasswordError": "تعذر تغيير كلمة المرور. يرجى المحاولة مرة أخرى.",
+    "passwordMismatch": "كلمتا المرور غير متطابقتين."
   },
   "hr": {
     "accessDenied": "ليس لديك صلاحية للوصول إلى هذه الوحدة."

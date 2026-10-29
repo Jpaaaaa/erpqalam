@@ -34,7 +34,23 @@
     "signInWithGoogle": "چوونەژوورەوە بە Google",
     "orContinueWith": "یان بەردەوام بە",
     "googleSigningIn": "چوونەژوورەوە بە Google…",
-    "googleCallbackError": "چوونەژوورەوەی Google سەرکەوتوو نەبوو. تکایە دووبارە هەوڵ بدەرەوە."
+    "googleCallbackError": "چوونەژوورەوەی Google سەرکەوتوو نەبوو. تکایە دووبارە هەوڵ بدەرەوە.",
+    "usernameOrEmail": "ناوی بەکارهێنەر یان ئیمەیڵ",
+    "usernameOrEmailPlaceholder": "jane.doe یان you@school.com",
+    "username": "ناوی بەکارهێنەر",
+    "usernamePlaceholder": "jane.doe",
+    "confirmPassword": "پشتڕاستکردنەوەی وشەی نهێنی",
+    "currentPassword": "وشەی نهێنی ئێستا",
+    "newPassword": "وشەی نهێنی نوێ",
+    "setCredentialsTitle": "دانانی ناو و وشەی نهێنی",
+    "setCredentialsDescription": "ناوی بەکارهێنەر و وشەی نهێنی هەڵبژێرە بۆ بەکارهێنان لەگەڵ Google.",
+    "saveCredentials": "پاشەکەوتکردنی زانیاری چوونەژوورەوە",
+    "setCredentialsError": "نەتوانرا زانیارییەکان پاشەکەوت بکرێن. دووبارە هەوڵ بدەرەوە.",
+    "changePasswordTitle": "گۆڕینی وشەی نهێنی",
+    "changePasswordDescription": "پێویستە وشەی نهێنی نوێ دابنێیت پێش بەردەوامبوون.",
+    "changePassword": "گۆڕینی وشەی نهێنی",
+    "changePasswordError": "نەتوانرا وشەی نهێنی بگۆڕدرێت. دووبارە هەوڵ بدەرەوە.",
+    "passwordMismatch": "وشەکانی نهێنی یەک ناگرنەوە."
   },
   "hr": {
     "accessDenied": "دەسەڵاتت نییە بۆ ئەم بەشە."

@@ -10,13 +10,15 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { randomBytes } from 'crypto';
-import { UserRole, UserStatus } from '@generated/prisma/client';
+import { User, UserRole, UserStatus } from '@generated/prisma/client';
 import { resolvePermissions } from '../common/permissions/permissions';
 import { PrismaService } from '../database/prisma.service';
 import {
+  ChangePasswordDto,
   LoginDto,
   RegisterDto,
   RegisterSchoolDto,
+  SetCredentialsDto,
 } from './dto/auth.dto';
 import { AuthResponseDto, AuthUserDto } from './dto/auth-response.dto';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
@@ -29,8 +31,29 @@ import {
   GoogleIdTokenError,
   verifyGoogleAndroidIdToken,
 } from './google-id-token';
+import { LoginRateLimitService } from './login-rate-limit.service';
+import {
+  isValidUsername,
+  loginLooksLikeEmail,
+  normalizeUsername,
+} from './username.util';
 
 const BCRYPT_ROUNDS = 12;
+
+type AuthUserRecord = Pick<
+  User,
+  | 'id'
+  | 'email'
+  | 'username'
+  | 'mustChangePassword'
+  | 'firstName'
+  | 'lastName'
+  | 'phone'
+  | 'role'
+  | 'permissions'
+  | 'status'
+  | 'schoolId'
+>;
 
 @Injectable()
 export class AuthService {
@@ -38,6 +61,7 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
     private readonly config: ConfigService,
+    private readonly loginRateLimit: LoginRateLimitService,
     @Inject(REFRESH_TOKEN_STORE)
     private readonly refreshTokenStore: RefreshTokenStore,
   ) {}
@@ -121,22 +145,21 @@ export class AuthService {
     return this.toAuthUser(user);
   }
 
-  async login(dto: LoginDto): Promise<AuthResponseDto> {
-    const user = await this.prisma.user.findUnique({
-      where: { email: dto.email },
-    });
+  async login(dto: LoginDto, rateLimitKey: string): Promise<AuthResponseDto> {
+    await this.loginRateLimit.check(rateLimitKey);
 
-    if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
+    const login = dto.login.trim();
+    const user = await this.findUserByLogin(login);
 
-    if (!user.passwordHash) {
+    if (!user || !user.passwordHash) {
+      await this.loginRateLimit.recordFailure(rateLimitKey);
       throw new UnauthorizedException('Invalid credentials');
     }
 
     const passwordValid = await bcrypt.compare(dto.password, user.passwordHash);
 
     if (!passwordValid) {
+      await this.loginRateLimit.recordFailure(rateLimitKey);
       throw new UnauthorizedException('Invalid credentials');
     }
 
@@ -148,7 +171,79 @@ export class AuthService {
       );
     }
 
+    await this.loginRateLimit.clear(rateLimitKey);
+
     return this.buildAuthResponse(user);
+  }
+
+  async setCredentials(
+    userId: string,
+    dto: SetCredentialsDto,
+  ): Promise<AuthResponseDto> {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    if (user.username) {
+      throw new ConflictException('Credentials are already set');
+    }
+
+    const username = normalizeUsername(dto.username);
+    if (!isValidUsername(dto.username.trim())) {
+      throw new BadRequestException('Invalid username');
+    }
+
+    const taken = await this.prisma.user.findUnique({ where: { username } });
+    if (taken) {
+      throw new ConflictException('Username is already taken');
+    }
+
+    const passwordHash = await bcrypt.hash(dto.password, BCRYPT_ROUNDS);
+
+    const updated = await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        username,
+        passwordHash,
+        mustChangePassword: false,
+      },
+    });
+
+    return this.buildAuthResponse(updated);
+  }
+
+  async changePassword(
+    userId: string,
+    dto: ChangePasswordDto,
+  ): Promise<AuthResponseDto> {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+
+    if (!user || !user.passwordHash) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    const currentValid = await bcrypt.compare(
+      dto.currentPassword,
+      user.passwordHash,
+    );
+
+    if (!currentValid) {
+      throw new UnauthorizedException('Current password is incorrect');
+    }
+
+    const passwordHash = await bcrypt.hash(dto.newPassword, BCRYPT_ROUNDS);
+
+    const updated = await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        passwordHash,
+        mustChangePassword: false,
+      },
+    });
+
+    return this.buildAuthResponse(updated);
   }
 
   async loginWithGoogleIdToken(idToken: string): Promise<AuthResponseDto> {
@@ -223,23 +318,32 @@ export class AuthService {
       );
     }
 
-    const passwordHash = await bcrypt.hash(
-      randomBytes(32).toString('hex'),
-      BCRYPT_ROUNDS,
-    );
-
     const isAutoAdmin = this.isGoogleAutoAdmin(profile.email);
 
     return this.prisma.user.create({
       data: {
         email: profile.email,
-        passwordHash,
+        passwordHash: null,
         firstName: profile.firstName || 'Google',
         lastName: profile.lastName || 'User',
         role: isAutoAdmin ? UserRole.MANAGER : UserRole.EMPLOYEE,
         status: isAutoAdmin ? UserStatus.ACTIVE : UserStatus.PENDING,
         schoolId: school.id,
       },
+    });
+  }
+
+  private async findUserByLogin(login: string): Promise<User | null> {
+    if (loginLooksLikeEmail(login)) {
+      return this.prisma.user.findFirst({
+        where: {
+          email: { equals: login, mode: 'insensitive' },
+        },
+      });
+    }
+
+    return this.prisma.user.findUnique({
+      where: { username: normalizeUsername(login) },
     });
   }
 
@@ -283,17 +387,7 @@ export class AuthService {
     return this.toAuthUser(user);
   }
 
-  private async buildAuthResponse(user: {
-    id: string;
-    email: string;
-    firstName: string;
-    lastName: string;
-    phone: string | null;
-    role: UserRole;
-    permissions: string[];
-    status: UserStatus;
-    schoolId: string;
-  }): Promise<AuthResponseDto> {
+  private async buildAuthResponse(user: AuthUserRecord): Promise<AuthResponseDto> {
     const payload: JwtPayload = {
       sub: user.id,
       email: user.email,
@@ -314,20 +408,13 @@ export class AuthService {
     };
   }
 
-  private toAuthUser(user: {
-    id: string;
-    email: string;
-    firstName: string;
-    lastName: string;
-    phone: string | null;
-    role: UserRole;
-    permissions?: string[] | null;
-    status: UserStatus;
-    schoolId: string;
-  }): AuthUserDto {
+  private toAuthUser(user: AuthUserRecord): AuthUserDto {
     return {
       id: user.id,
       email: user.email,
+      username: user.username,
+      mustChangePassword: user.mustChangePassword,
+      needsSetupCredentials: user.username == null,
       firstName: user.firstName,
       lastName: user.lastName,
       phone: user.phone,

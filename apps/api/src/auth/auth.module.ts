@@ -8,6 +8,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { GoogleStrategy } from './strategies/google.strategy';
 import { DatabaseRefreshTokenStore } from './stores/database-refresh-token.store';
 import { REFRESH_TOKEN_STORE } from './interfaces/refresh-token.store';
+import { LoginRateLimitService } from './login-rate-limit.service';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { REFRESH_TOKEN_STORE } from './interfaces/refresh-token.store';
   controllers: [AuthController],
   providers: [
     AuthService,
+    LoginRateLimitService,
     JwtStrategy,
     GoogleStrategy,
     DatabaseRefreshTokenStore,

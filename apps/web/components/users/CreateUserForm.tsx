@@ -22,6 +22,7 @@ export function CreateUserForm({ actorRole, onCreated, onCancel }: CreateUserFor
   const tAuth = useTranslations('auth');
   const tCommon = useTranslations('common');
   const tRoles = useTranslations('roles');
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [firstName, setFirstName] = useState('');
@@ -39,6 +40,7 @@ export function CreateUserForm({ actorRole, onCreated, onCancel }: CreateUserFor
 
     try {
       await createUser({
+        username: username.trim(),
         email,
         password,
         firstName,
@@ -75,6 +77,19 @@ export function CreateUserForm({ actorRole, onCreated, onCancel }: CreateUserFor
           onChange={(e) => setLastName(e.target.value)}
         />
       </div>
+
+      <Input
+        label={tAuth('username')}
+        name="username"
+        required
+        minLength={3}
+        maxLength={30}
+        dir="ltr"
+        className="text-start"
+        value={username}
+        onChange={(e) => setUsername(e.target.value)}
+        placeholder={tAuth('usernamePlaceholder')}
+      />
 
       <Input
         label={tAuth('email')}
@@ -114,6 +129,7 @@ export function CreateUserForm({ actorRole, onCreated, onCancel }: CreateUserFor
         )}
       </SelectField>
 
+      <p className="text-sm text-slate-500">{t('tempPasswordNotice')}</p>
       <p className="text-sm text-slate-500">{t('permissionsManagedSeparately')}</p>
 
       <div className="flex flex-wrap gap-2">

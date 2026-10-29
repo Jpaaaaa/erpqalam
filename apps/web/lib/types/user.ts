@@ -4,6 +4,8 @@ export type UserStatus = 'ACTIVE' | 'INACTIVE' | 'PENDING';
 export interface UserRecord {
   id: string;
   email: string;
+  username?: string | null;
+  mustChangePassword: boolean;
   firstName: string;
   lastName: string;
   phone?: string | null;
@@ -24,6 +26,7 @@ export interface PaginatedUsers {
 }
 
 export interface CreateUserPayload {
+  username: string;
   email: string;
   password: string;
   firstName: string;

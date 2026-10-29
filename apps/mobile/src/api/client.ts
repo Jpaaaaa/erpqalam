@@ -23,6 +23,8 @@ export const {
   apiRequest,
   getCurrentUser,
   login,
+  setCredentials,
+  changePassword,
   googleLogin,
   logout,
   onSessionInvalidated,

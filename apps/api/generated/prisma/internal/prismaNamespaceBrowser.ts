@@ -231,7 +231,9 @@ export type DocumentRequestLetterScalarFieldEnum = (typeof DocumentRequestLetter
 export const UserScalarFieldEnum = {
   id: 'id',
   email: 'email',
+  username: 'username',
   passwordHash: 'passwordHash',
+  mustChangePassword: 'mustChangePassword',
   firstName: 'firstName',
   lastName: 'lastName',
   phone: 'phone',

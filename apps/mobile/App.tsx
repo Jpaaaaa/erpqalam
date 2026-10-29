@@ -8,6 +8,8 @@ import './src/i18n/config';
 import { canAccessAttendance } from './src/permissions';
 import { MainTabs } from './src/navigation/MainTabs';
 import { LoginScreen } from './src/screens/LoginScreen';
+import { SetCredentialsScreen } from './src/screens/SetCredentialsScreen';
+import { ChangePasswordScreen } from './src/screens/ChangePasswordScreen';
 import { NoAccessScreen } from './src/screens/NoAccessScreen';
 
 function Root() {
@@ -24,6 +26,14 @@ function Root() {
 
   if (!user) {
     return <LoginScreen />;
+  }
+
+  if (user.needsSetupCredentials) {
+    return <SetCredentialsScreen />;
+  }
+
+  if (user.mustChangePassword) {
+    return <ChangePasswordScreen />;
   }
 
   if (!canAccessAttendance(user.role, user.permissions)) {

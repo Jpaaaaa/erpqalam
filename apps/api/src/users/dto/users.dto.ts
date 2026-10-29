@@ -11,8 +11,15 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { UserRole, UserStatus } from '@generated/prisma/client';
 import { ALL_PERMISSIONS } from '../../common/permissions/permissions';
+import { IsUsername } from '../../auth/validators/is-username.validator';
 
 export class CreateUserDto {
+  @ApiProperty({ example: 'jane.doe' })
+  @IsString()
+  @IsNotEmpty()
+  @IsUsername()
+  username: string;
+
   @ApiProperty({ example: 'employee@school.com' })
   @IsEmail()
   email: string;
@@ -128,6 +135,12 @@ export class UserResponseDto {
 
   @ApiProperty()
   email: string;
+
+  @ApiProperty({ required: false, nullable: true })
+  username?: string | null;
+
+  @ApiProperty()
+  mustChangePassword: boolean;
 
   @ApiProperty()
   firstName: string;

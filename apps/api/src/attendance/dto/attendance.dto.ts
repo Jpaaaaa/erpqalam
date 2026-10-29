@@ -68,6 +68,12 @@ export class AttendanceRecordResponseDto {
 
   @ApiPropertyOptional()
   punchType?: string | null;
+
+  @ApiPropertyOptional({
+    description:
+      'True when this in-window entry/exit punch is not the counted first IN or last OUT for the day.',
+  })
+  ignoredDuplicate?: boolean;
 }
 
 export class ManualPunchDto {

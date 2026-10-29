@@ -1,17 +1,20 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import {
-  ActivityIndicator,
   FlatList,
-  Pressable,
+  Platform,
   RefreshControl,
-  ScrollView,
+  StatusBar as RNStatusBar,
   StyleSheet,
-  TextInput,
+  Text,
   View,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
+import { setStatusBarStyle } from 'expo-status-bar';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { resolveUserFacingError } from '../api/client';
-import { DateFieldPicker } from '../components/CalendarDatePicker';
+import { DateRangeChips } from '../components/DateRangeChips';
 import { NetworkErrorPanel } from '../components/NetworkErrorPanel';
 import {
   addEmployeeHoliday,
@@ -29,17 +32,34 @@ import {
   listTimeLeaveUsage,
   removeEmployeeHoliday,
   removeHoliday,
-  removeTimeLeaveUsage,
   setLeaveBalance,
   updateAttendanceSettings,
 } from '../api/attendance';
-import { displayName, formatDisplayDate, getQuickRange, isValidDateKey } from '../attendance/formatters';
+import { formatHolidayDateRangeWords } from '../attendance/holidayFormatters';
+import {
+  groupEmployeeLeaveByUser,
+  groupOfficialHolidayRanges,
+  upcomingOfficialRanges,
+} from '../attendance/holidayRanges';
+import { getQuickRange, isValidDateKey, todayDateKey } from '../attendance/formatters';
 import { buildNameLookup, mergeEmployeesWithPunchIds } from '../attendance/lookups';
-import { DateRangeChips } from '../components/DateRangeChips';
-import { EmployeePicker } from '../components/EmployeePicker';
-import { TimeLeaveCoverAllSection } from '../components/TimeLeaveCoverAllSection';
+import { GlassBackButton } from '../components/employeeDetail/GlassBackButton';
+import { RecordsFab } from '../components/records/RecordsFab';
+import { HolidaysAddSheet } from '../components/holidays/HolidaysAddSheet';
+import { HolidaysCoverListCard } from '../components/holidays/HolidaysCoverListCard';
+import { HolidaysEmployeeListCard } from '../components/holidays/HolidaysEmployeeListCard';
+import { HolidaysEmptyState } from '../components/holidays/HolidaysEmptyState';
+import { HolidaysMonthCalendar } from '../components/holidays/HolidaysMonthCalendar';
+import { HolidaysOfficialList } from '../components/holidays/HolidaysOfficialList';
+import { HolidaysSettingsCard } from '../components/holidays/HolidaysSettingsCard';
+import { HolidaysSkeleton } from '../components/holidays/HolidaysSkeleton';
+import {
+  HolidaysTabSegment,
+  type HolidaysTabKey,
+} from '../components/holidays/HolidaysTabSegment';
 import { ViewOnlyBanner } from '../components/ViewOnlyBanner';
 import { useCanManageAttendance } from '../hooks/useCanManageAttendance';
+import type { MoreStackParamList } from '../navigation/types';
 import type {
   AttendanceHoliday,
   AttendanceHolidayType,
@@ -51,19 +71,30 @@ import type {
   LeaveBalance,
   TimeLeaveUsage,
 } from '../types/attendance';
+import { overviewScrollPaddingBottom } from '../theme/homeTheme';
+import { useHomeTheme } from '../theme/HomeThemeProvider';
 import { useI18n } from '../i18n/I18nProvider';
+import type { AppTypography } from '../i18n/fonts';
 import { mirroredRow } from '../ui/rtlLayout';
-import { AppText } from '../ui/AppText';
-import { ltrText } from '../ui/ltr';
+import { HomeGlassBackground } from '../components/home/HomeGlassBackground';
+import { HOME_BG_DARK, HOME_BG_LIGHT } from '../components/home/homeGlass';
 
-type TabKey = 'official' | 'employee' | 'temporary' | 'settings';
+type Props = NativeStackScreenProps<MoreStackParamList, 'Holidays'>;
 
-export function HolidaysScreen() {
+export function HolidaysScreen({ navigation }: Props) {
   const { t } = useTranslation('attendance');
   const canManage = useCanManageAttendance();
-  const { fontFamily, mirrorLayout } = useI18n();
+  const insets = useSafeAreaInsets();
+  const { palette, isDark } = useHomeTheme();
+  const { locale, mirrorLayout, typography } = useI18n();
+  const styles = useMemo(
+    () => createStyles(isDark, typography),
+    [isDark, typography],
+  );
+  const scrollBottomPad = overviewScrollPaddingBottom(insets.bottom) + 16;
+
   const [errorIsNetwork, setErrorIsNetwork] = useState(false);
-  const [tab, setTab] = useState<TabKey>('official');
+  const [tab, setTab] = useState<HolidaysTabKey>('official');
   const [holidays, setHolidays] = useState<AttendanceHoliday[]>([]);
   const [employeeHolidays, setEmployeeHolidays] = useState<EmployeeHoliday[]>([]);
   const [users, setUsers] = useState<AttendanceUser[]>([]);
@@ -85,6 +116,11 @@ export function HolidaysScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [addSheetOpen, setAddSheetOpen] = useState(false);
+  const [calendarSelection, setCalendarSelection] = useState<{
+    date: string;
+    type: AttendanceHolidayType | null;
+  } | null>(null);
 
   const [orgType, setOrgType] = useState<AttendanceHolidayType>('day_off');
   const [orgFrom, setOrgFrom] = useState('');
@@ -94,14 +130,29 @@ export function HolidaysScreen() {
   const [empFrom, setEmpFrom] = useState('');
   const [empTo, setEmpTo] = useState('');
 
-  const [annualDays, setAnnualDays] = useState('7');
-  const [tempRatio, setTempRatio] = useState('3');
+  const [annualDays, setAnnualDays] = useState(7);
+  const [tempRatio, setTempRatio] = useState(3);
   const [balanceUserId, setBalanceUserId] = useState('');
-  const [balanceDays, setBalanceDaysInput] = useState('7');
+  const [balanceDays, setBalanceDays] = useState(7);
 
   const nameLookup = useMemo(
     () => buildNameLookup(mergeEmployeesWithPunchIds(users, coverRecords)),
     [users, coverRecords],
+  );
+
+  const balanceLookup = useMemo(
+    () => new Map(balances.map((b) => [b.deviceUserId, b.balanceDays])),
+    [balances],
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      if (Platform.OS === 'android') {
+        RNStatusBar.setTranslucent(true);
+        RNStatusBar.setBackgroundColor('transparent');
+      }
+      setStatusBarStyle(isDark ? 'light' : 'dark');
+    }, [isDark]),
   );
 
   const loadCore = useCallback(async () => {
@@ -122,8 +173,8 @@ export function HolidaysScreen() {
       setBalances(bal);
       setSettings(settingsRow);
       setUsers(userRows);
-      setAnnualDays(String(settingsRow.annualHolidaysDays));
-      setTempRatio(String(settingsRow.tempHolidaysPerFullHoliday));
+      setAnnualDays(settingsRow.annualHolidaysDays);
+      setTempRatio(settingsRow.tempHolidaysPerFullHoliday);
     } catch (err) {
       const resolved = resolveUserFacingError(err, t, 'holidays.loadError');
       if (resolved.sessionExpired) return;
@@ -186,6 +237,7 @@ export function HolidaysScreen() {
       setSuccess(t('holidays.orgAdded'));
       setOrgFrom('');
       setOrgTo('');
+      setAddSheetOpen(false);
       await refreshAfterMutation();
     } catch (err) {
       const resolved = resolveUserFacingError(err, t, 'holidays.saveError');
@@ -213,6 +265,7 @@ export function HolidaysScreen() {
       setSuccess(t('holidays.empAdded'));
       setEmpFrom('');
       setEmpTo('');
+      setAddSheetOpen(false);
       await refreshAfterMutation();
     } catch (err) {
       const resolved = resolveUserFacingError(err, t, 'holidays.saveError');
@@ -228,8 +281,8 @@ export function HolidaysScreen() {
     setSuccess('');
     try {
       await updateAttendanceSettings({
-        annualHolidaysDays: parseInt(annualDays, 10) || 0,
-        tempHolidaysPerFullHoliday: parseInt(tempRatio, 10) || 1,
+        annualHolidaysDays: annualDays,
+        tempHolidaysPerFullHoliday: tempRatio,
       });
       setSuccess(t('holidays.configSaved'));
       await refreshAfterMutation();
@@ -246,8 +299,9 @@ export function HolidaysScreen() {
     setError('');
     setSuccess('');
     try {
-      await setLeaveBalance(balanceUserId.trim(), parseFloat(balanceDays) || 0);
+      await setLeaveBalance(balanceUserId.trim(), balanceDays);
       setSuccess(t('holidays.balanceSaved'));
+      setAddSheetOpen(false);
       await refreshAfterMutation();
     } catch (err) {
       const resolved = resolveUserFacingError(err, t, 'holidays.saveError');
@@ -257,57 +311,71 @@ export function HolidaysScreen() {
     }
   }
 
-  const sortedOrg = useMemo(
-    () => [...holidays].sort((a, b) => b.date.localeCompare(a.date)),
+  async function handleSetBalanceRow(deviceUserId: string, days: number) {
+    if (!canManage) return;
+    try {
+      await setLeaveBalance(deviceUserId, days);
+      await refreshAfterMutation();
+    } catch (err) {
+      const resolved = resolveUserFacingError(err, t, 'holidays.saveError');
+      if (resolved.sessionExpired) return;
+      setError(resolved.message);
+    }
+  }
+
+  async function deleteOfficialIds(ids: string[]) {
+    for (const id of ids) {
+      await removeHoliday(id);
+    }
+    await refreshAfterMutation();
+  }
+
+  async function deleteEmployeeIds(ids: string[]) {
+    for (const id of ids) {
+      await removeEmployeeHoliday(id);
+    }
+    await refreshAfterMutation();
+  }
+
+  const tabItems = useMemo(
+    () => [
+      { key: 'official' as const, label: t('holidays.subtabs.official') },
+      { key: 'employee' as const, label: t('holidays.subtabs.employee') },
+      { key: 'temporary' as const, label: t('holidays.subtabs.temporary') },
+      { key: 'settings' as const, label: t('holidays.subtabs.settings') },
+    ],
+    [t],
+  );
+
+  const officialRanges = useMemo(
+    () => upcomingOfficialRanges(groupOfficialHolidayRanges(holidays), todayDateKey()),
     [holidays],
   );
-  const sortedEmp = useMemo(
-    () => [...employeeHolidays].sort((a, b) => b.date.localeCompare(a.date)),
+
+  const employeeGroups = useMemo(
+    () => groupEmployeeLeaveByUser(employeeHolidays),
     [employeeHolidays],
   );
 
-  const ORG_TYPES: AttendanceHolidayType[] = ['day_off', 'entry_late', 'early_exit'];
-  const tabItems: { key: TabKey; label: string }[] = [
-    { key: 'official', label: t('holidays.subtabs.official') },
-    { key: 'employee', label: t('holidays.subtabs.employee') },
-    { key: 'temporary', label: t('holidays.subtabs.temporary') },
-    { key: 'settings', label: t('holidays.subtabs.settings') },
-  ];
+  const showSkeleton = loading && !settings;
 
-  if (loading && !settings) {
-    return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#0f766e" />
-      </View>
-    );
-  }
-
-  return (
-    <View style={styles.container}>
-      {!canManage ? <ViewOnlyBanner /> : null}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.tabScroll}
-        contentContainerStyle={mirroredRow(mirrorLayout)}
-      >
-        <View style={[styles.tabs, mirroredRow(mirrorLayout)]}>
-          {tabItems.map((item) => (
-            <Pressable
-              key={item.key}
-              style={[styles.tab, tab === item.key && styles.tabActive]}
-              onPress={() => setTab(item.key)}
-            >
-              <AppText
-                style={[styles.tabText, tab === item.key && styles.tabTextActive]}
-                numberOfLines={1}
-              >
-                {item.label}
-              </AppText>
-            </Pressable>
-          ))}
+  const listHeader = (
+    <View style={[styles.headerBlock, { paddingTop: insets.top }]}>
+      {!canManage ? (
+        <View style={styles.bannerWrap}>
+          <ViewOnlyBanner />
         </View>
-      </ScrollView>
+      ) : null}
+
+      <View style={[styles.topRow, mirroredRow(mirrorLayout)]}>
+        <GlassBackButton onPress={() => navigation.goBack()} />
+        <Text style={styles.screenTitle} numberOfLines={1}>
+          {t('holidays.screenTitle')}
+        </Text>
+        <View style={styles.topSpacer} />
+      </View>
+
+      <HolidaysTabSegment tabs={tabItems} value={tab} onChange={setTab} />
 
       {errorIsNetwork ? (
         <NetworkErrorPanel
@@ -318,305 +386,241 @@ export function HolidaysScreen() {
           }}
         />
       ) : error ? (
-        <AppText style={styles.error}>{error}</AppText>
+        <Text style={styles.error}>{error}</Text>
       ) : null}
-      {success ? <AppText style={styles.success}>{success}</AppText> : null}
+      {success ? <Text style={styles.success}>{success}</Text> : null}
 
-      {tab === 'temporary' && settings ? (
-        <ScrollView
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={() => {
-                setRefreshing(true);
-                void refreshAfterMutation().finally(() => setRefreshing(false));
-              }}
-              tintColor="#0f766e"
-            />
-          }
-        >
-          <DateRangeChips filter={coverFilter} onChange={setCoverFilter} />
-          <TimeLeaveCoverAllSection
-            lateOccurrences={lateOccurrences}
-            earlyExitOccurrences={earlyOccurrences}
-            records={coverRecords}
-            settings={settings}
-            timeLeaveUsage={timeLeave}
-            leaveBalances={balances}
-            employeeHolidays={employeeHolidays}
-            nameLookup={nameLookup}
-            canManage={canManage}
-            onCover={async (payload) => {
-              await addTimeLeaveUsage(payload);
-              await refreshAfterMutation();
-            }}
-            onRemove={async (id) => {
-              await removeTimeLeaveUsage(id);
-              await refreshAfterMutation();
+      {showSkeleton ? <HolidaysSkeleton /> : null}
+    </View>
+  );
+
+  const refreshControl = (
+    <RefreshControl
+      refreshing={refreshing}
+      onRefresh={() => {
+        setRefreshing(true);
+        void refreshAfterMutation();
+      }}
+      tintColor={palette.teal}
+    />
+  );
+
+  function renderTabBody() {
+    if (showSkeleton) return null;
+
+    if (tab === 'official') {
+      return (
+        <View style={styles.tabBody}>
+          <HolidaysMonthCalendar
+            holidays={holidays}
+            selectedDate={calendarSelection?.date ?? null}
+            onSelectDate={(dateKey, type) => {
+              setCalendarSelection({ date: dateKey, type });
             }}
           />
-        </ScrollView>
-      ) : null}
-
-      {tab === 'settings' ? (
-        <ScrollView contentContainerStyle={styles.form}>
-          <AppText style={styles.formTitle}>{t('holidays.leaveConfig')}</AppText>
-          <AppText style={styles.fieldLabel}>{t('holidays.annualDays')}</AppText>
-          <TextInput
-            style={[styles.input, ltrText, fontFamily ? { fontFamily } : null]}
-            value={annualDays}
-            onChangeText={setAnnualDays}
-            keyboardType="number-pad"
-            editable={canManage}
-          />
-          <AppText style={styles.fieldLabel}>{t('holidays.tempRatio')}</AppText>
-          <TextInput
-            style={[styles.input, ltrText, fontFamily ? { fontFamily } : null]}
-            value={tempRatio}
-            onChangeText={setTempRatio}
-            keyboardType="number-pad"
-            editable={canManage}
-          />
-          {canManage ? (
-            <Pressable style={styles.saveBtn} onPress={() => void handleSaveLeaveConfig()}>
-              <AppText style={styles.saveBtnText}>{t('holidays.saveConfig')}</AppText>
-            </Pressable>
-          ) : null}
-
-          <AppText style={[styles.formTitle, styles.sectionGap]}>
-            {t('holidays.leaveBalances')}
-          </AppText>
-          <EmployeePicker users={users} value={balanceUserId} onChange={setBalanceUserId} />
-          <AppText style={styles.fieldLabel}>{t('holidays.balanceDays')}</AppText>
-          <TextInput
-            style={[styles.input, ltrText, fontFamily ? { fontFamily } : null]}
-            value={balanceDays}
-            onChangeText={setBalanceDaysInput}
-            keyboardType="decimal-pad"
-            editable={canManage}
-          />
-          {canManage ? (
-            <Pressable style={styles.saveBtn} onPress={() => void handleSetBalance()}>
-              <AppText style={styles.saveBtnText}>{t('holidays.setBalance')}</AppText>
-            </Pressable>
-          ) : null}
-
-          {balances.length > 0 ? (
-            <View style={styles.balanceList}>
-              {balances.map((b) => (
-                <AppText key={b.deviceUserId} style={styles.balanceRow} numberOfLines={1}>
-                  {displayName(nameLookup.get(b.deviceUserId), b.deviceUserId)}:{' '}
-                  {b.balanceDays}
-                </AppText>
-              ))}
+          {calendarSelection?.type ? (
+            <View style={styles.dayDetail}>
+              <Text style={styles.dayDetailDate}>
+                {formatHolidayDateRangeWords(
+                  locale,
+                  calendarSelection.date,
+                  calendarSelection.date,
+                )}
+              </Text>
+              <Text style={styles.dayDetailType}>
+                {t(`holidays.types.${calendarSelection.type}`)}
+              </Text>
             </View>
+          ) : null}
+          {officialRanges.length === 0 ? (
+            <HolidaysEmptyState message={t('holidays.emptyOfficial')} />
           ) : (
-            <AppText style={styles.muted}>{t('holidays.noBalances')}</AppText>
+            <HolidaysOfficialList
+              ranges={officialRanges}
+              canManage={canManage}
+              onDeleteRange={deleteOfficialIds}
+            />
           )}
-        </ScrollView>
+        </View>
+      );
+    }
+
+    if (tab === 'employee') {
+      return employeeGroups.length === 0 ? (
+        <HolidaysEmptyState message={t('holidays.noEmp')} />
+      ) : (
+        <HolidaysEmployeeListCard
+          groups={employeeGroups}
+          nameLookup={nameLookup}
+          balanceLookup={balanceLookup}
+          canManage={canManage}
+          onDeleteIds={deleteEmployeeIds}
+        />
+      );
+    }
+
+    if (tab === 'temporary' && settings) {
+      const hasCover =
+        lateOccurrences.length > 0 || earlyOccurrences.length > 0;
+      return (
+        <View style={styles.tabBody}>
+          <DateRangeChips filter={coverFilter} onChange={setCoverFilter} />
+          {!hasCover ? (
+            <HolidaysEmptyState message={t('holidays.noUncoveredLate')} />
+          ) : (
+            <HolidaysCoverListCard
+              lateOccurrences={lateOccurrences}
+              earlyExitOccurrences={earlyOccurrences}
+              records={coverRecords}
+              settings={settings}
+              timeLeaveUsage={timeLeave}
+              leaveBalances={balances}
+              employeeHolidays={employeeHolidays}
+              nameLookup={nameLookup}
+              canManage={canManage}
+              onCover={async (payload) => {
+                await addTimeLeaveUsage(payload);
+                await refreshAfterMutation();
+              }}
+            />
+          )}
+        </View>
+      );
+    }
+
+    if (tab === 'settings') {
+      return (
+        <HolidaysSettingsCard
+          annualDays={annualDays}
+          tempRatio={tempRatio}
+          onAnnualChange={setAnnualDays}
+          onTempRatioChange={setTempRatio}
+          onSaveConfig={() => void handleSaveLeaveConfig()}
+          canManage={canManage}
+          balances={balances}
+          users={users}
+          nameLookup={nameLookup}
+          onSetBalance={(id, days) => void handleSetBalanceRow(id, days)}
+        />
+      );
+    }
+
+    return null;
+  }
+
+  const showFab =
+    canManage && tab !== 'temporary';
+
+  return (
+    <View style={styles.root}>
+      <HomeGlassBackground isDark={isDark} />
+      <SafeAreaView style={styles.safe} edges={[]}>
+        <FlatList
+          data={[]}
+          renderItem={() => null}
+          style={styles.list}
+          contentContainerStyle={[
+            styles.scroll,
+            { paddingBottom: scrollBottomPad },
+          ]}
+          ListHeaderComponent={
+            <>
+              {listHeader}
+              {!showSkeleton ? renderTabBody() : null}
+            </>
+          }
+          refreshControl={refreshControl}
+        />
+      </SafeAreaView>
+
+      {showFab ? (
+        <RecordsFab onPress={() => setAddSheetOpen(true)} />
       ) : null}
 
-      {tab === 'official' ? (
-        <FlatList
-          data={sortedOrg}
-          keyExtractor={(item) => item.id}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={() => {
-                setRefreshing(true);
-                void loadCore();
-              }}
-              tintColor="#0f766e"
-            />
-          }
-          ListHeaderComponent={
-            canManage ? (
-              <View style={styles.form}>
-                <AppText style={styles.formTitle}>{t('holidays.addOrg')}</AppText>
-                <View style={[styles.typeRow, mirroredRow(mirrorLayout)]}>
-                  {ORG_TYPES.map((type) => (
-                    <Pressable
-                      key={type}
-                      style={[styles.typeChip, orgType === type && styles.typeChipActive]}
-                      onPress={() => setOrgType(type)}
-                    >
-                      <AppText
-                        style={[
-                          styles.typeChipText,
-                          orgType === type && styles.typeChipTextActive,
-                        ]}
-                        numberOfLines={1}
-                      >
-                        {t(`holidays.types.${type}`)}
-                      </AppText>
-                    </Pressable>
-                  ))}
-                </View>
-                <DateFieldPicker
-                  label={t('holidays.dateFrom')}
-                  value={orgFrom}
-                  onChange={setOrgFrom}
-                />
-                <DateFieldPicker
-                  label={t('holidays.dateTo')}
-                  value={orgTo}
-                  onChange={setOrgTo}
-                  optional
-                />
-                <Pressable style={styles.saveBtn} onPress={() => void handleAddOrg()}>
-                  <AppText style={styles.saveBtnText}>{t('holidays.addOrg')}</AppText>
-                </Pressable>
-              </View>
-            ) : null
-          }
-          ListEmptyComponent={
-            <AppText style={styles.empty}>{t('holidays.noOrg')}</AppText>
-          }
-          renderItem={({ item }) => (
-            <View style={[styles.row, mirroredRow(mirrorLayout)]}>
-              <View style={styles.rowBody}>
-                <AppText style={[ltrText]} numberOfLines={1}>
-                  {formatDisplayDate(item.date)}
-                </AppText>
-                <AppText style={styles.rowMeta} numberOfLines={1}>
-                  {t(`holidays.types.${item.type}`)}
-                </AppText>
-              </View>
-              {canManage ? (
-                <Pressable onPress={() => void removeHoliday(item.id).then(loadCore)}>
-                  <AppText style={styles.remove}>{t('holidays.remove')}</AppText>
-                </Pressable>
-              ) : null}
-            </View>
-          )}
-        />
-      ) : null}
-
-      {tab === 'employee' ? (
-        <FlatList
-          data={sortedEmp}
-          keyExtractor={(item) => item.id}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={() => {
-                setRefreshing(true);
-                void loadCore();
-              }}
-              tintColor="#0f766e"
-            />
-          }
-          ListHeaderComponent={
-            canManage ? (
-              <View style={styles.form}>
-                <AppText style={styles.formTitle}>{t('holidays.addEmp')}</AppText>
-                <EmployeePicker users={users} value={empUserId} onChange={setEmpUserId} />
-                <DateFieldPicker
-                  label={t('holidays.dateFrom')}
-                  value={empFrom}
-                  onChange={setEmpFrom}
-                />
-                <DateFieldPicker
-                  label={t('holidays.dateTo')}
-                  value={empTo}
-                  onChange={setEmpTo}
-                  optional
-                />
-                <Pressable style={styles.saveBtn} onPress={() => void handleAddEmp()}>
-                  <AppText style={styles.saveBtnText}>{t('holidays.addEmp')}</AppText>
-                </Pressable>
-              </View>
-            ) : null
-          }
-          ListEmptyComponent={
-            <AppText style={styles.empty}>{t('holidays.noEmp')}</AppText>
-          }
-          renderItem={({ item }) => (
-            <View style={[styles.row, mirroredRow(mirrorLayout)]}>
-              <View style={styles.rowBody}>
-                <AppText style={styles.rowName} numberOfLines={1}>
-                  {displayName(nameLookup.get(item.deviceUserId), item.deviceUserId)}
-                </AppText>
-                <AppText style={[styles.rowMeta, ltrText]}>
-                  {formatDisplayDate(item.date)}
-                </AppText>
-              </View>
-              {canManage ? (
-                <Pressable onPress={() => void removeEmployeeHoliday(item.id).then(loadCore)}>
-                  <AppText style={styles.remove}>{t('holidays.remove')}</AppText>
-                </Pressable>
-              ) : null}
-            </View>
-          )}
-        />
-      ) : null}
+      <HolidaysAddSheet
+        visible={addSheetOpen}
+        tab={tab}
+        onClose={() => setAddSheetOpen(false)}
+        orgType={orgType}
+        onOrgTypeChange={setOrgType}
+        orgFrom={orgFrom}
+        orgTo={orgTo}
+        onOrgFromChange={setOrgFrom}
+        onOrgToChange={setOrgTo}
+        onSubmitOrg={() => void handleAddOrg()}
+        users={users}
+        empUserId={empUserId}
+        onEmpUserIdChange={setEmpUserId}
+        empFrom={empFrom}
+        empTo={empTo}
+        onEmpFromChange={setEmpFrom}
+        onEmpToChange={setEmpTo}
+        onSubmitEmp={() => void handleAddEmp()}
+        balanceUserId={balanceUserId}
+        onBalanceUserIdChange={setBalanceUserId}
+        balanceDays={balanceDays}
+        onBalanceDaysChange={setBalanceDays}
+        onSubmitBalance={() => void handleSetBalance()}
+      />
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff', padding: 16 },
-  centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  tabScroll: { maxHeight: 44, marginBottom: 12 },
-  tabs: { flexDirection: 'row', gap: 6 },
-  tab: {
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderRadius: 8,
-    backgroundColor: '#f1f5f9',
-  },
-  tabActive: { backgroundColor: '#ccfbf1' },
-  tabText: { fontSize: 12, fontWeight: '600', color: '#64748b' },
-  tabTextActive: { color: '#0f766e' },
-  error: { color: '#b91c1c', marginBottom: 8 },
-  success: { color: '#047857', marginBottom: 8 },
-  form: { marginBottom: 16 },
-  formTitle: { fontSize: 15, fontWeight: '600', marginBottom: 8 },
-  sectionGap: { marginTop: 24 },
-  typeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 8 },
-  typeChip: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 8,
-    backgroundColor: '#f1f5f9',
-  },
-  typeChipActive: { backgroundColor: '#ffedd5' },
-  typeChipText: { fontSize: 12, color: '#475569' },
-  typeChipTextActive: { color: '#c2410c', fontWeight: '600' },
-  fieldLabel: { fontSize: 12, fontWeight: '600', color: '#64748b', marginTop: 8 },
-  input: {
-    borderWidth: 1,
-    borderColor: '#cbd5e1',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 16,
-    marginTop: 4,
-    backgroundColor: '#fff',
-  },
-  saveBtn: {
-    backgroundColor: '#0f766e',
-    borderRadius: 8,
-    paddingVertical: 12,
-    alignItems: 'center',
-    marginTop: 12,
-  },
-  saveBtnText: { color: '#fff', fontWeight: '600' },
-  empty: { textAlign: 'center', color: '#64748b', marginTop: 24 },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
-  },
-  rowBody: { flex: 1, minWidth: 0 },
-  rowName: { fontSize: 15, fontWeight: '600' },
-  rowMeta: { fontSize: 13, color: '#64748b', marginTop: 2 },
-  remove: { color: '#b91c1c', fontWeight: '600', fontSize: 13 },
-  balanceList: { marginTop: 16, gap: 6 },
-  balanceRow: { fontSize: 14, color: '#334155' },
-  muted: { fontSize: 13, color: '#94a3b8', marginTop: 8 },
-});
+function createStyles(isDark: boolean, typography: AppTypography) {
+  const text = isDark ? '#F1F5F9' : '#0F172A';
+
+  return StyleSheet.create({
+    root: {
+      flex: 1,
+      backgroundColor: isDark ? HOME_BG_DARK : HOME_BG_LIGHT,
+    },
+    safe: { flex: 1, backgroundColor: 'transparent' },
+    list: { flex: 1, backgroundColor: 'transparent' },
+    scroll: {
+      paddingHorizontal: 16,
+      gap: 16,
+    },
+    headerBlock: { gap: 16, marginBottom: 4 },
+    bannerWrap: { marginBottom: -8 },
+    topRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+    },
+    topSpacer: { width: 40 },
+    screenTitle: {
+      flex: 1,
+      fontFamily: typography.noto.bold,
+      fontSize: 20,
+      lineHeight: 28,
+      color: text,
+      textAlign: 'center',
+    },
+    error: {
+      fontFamily: typography.noto.medium,
+      fontSize: 14,
+      color: '#EF4444',
+    },
+    success: {
+      fontFamily: typography.noto.medium,
+      fontSize: 14,
+      color: '#059669',
+    },
+    tabBody: { gap: 16 },
+    dayDetail: {
+      paddingHorizontal: 4,
+      gap: 4,
+    },
+    dayDetailDate: {
+      fontFamily: typography.inter.semibold,
+      fontSize: 14,
+      color: isDark ? '#94A3B8' : '#64748B',
+      fontVariant: ['tabular-nums'],
+    },
+    dayDetailType: {
+      fontFamily: typography.noto.bold,
+      fontSize: 16,
+      color: text,
+    },
+  });
+}

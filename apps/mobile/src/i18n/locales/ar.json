@@ -70,17 +70,30 @@
       "holidays": "الإجازات",
       "settings": "الإعدادات",
       "more": "المزيد",
-      "daily": "يومي"
+      "daily": "يومي",
+      "shift": "الدوام"
+    },
+    "shift": {
+      "customSchedules": "جداول مخصصة",
+      "noCustomSchedules": "لا يوجد موظفون بجدول مخصص."
     },
     "more": {
       "subtitle": "تقارير يومية وتفاصيل الموظفين والإجازات والبصمات اليدوية.",
+      "sectionAttendance": "الحضور",
+      "sectionSettings": "الإعدادات",
       "daily": "الحضور اليومي",
       "report": "تقرير الموظف",
       "holidays": "الإجازات والمغادرات",
+      "employees": "الموظفون",
       "manual": "بصمة يدوية",
       "viewOnly": "عرض فقط — لا يمكنك إضافة بصمات أو إجازات أو تغطية استئذان.",
       "profile": "مسجّل الدخول باسم",
+      "roleManager": "مدير",
+      "roleEmployee": "موظف",
+      "appearance": "المظهر",
       "signOut": "تسجيل الخروج",
+      "signOutConfirmTitle": "تسجيل الخروج",
+      "signOutConfirmMessage": "هل أنت متأكد أنك تريد تسجيل الخروج؟",
       "theme": "مظهر الرئيسية",
       "themeLight": "فاتح",
       "themeDark": "داكن",
@@ -118,8 +131,18 @@
       "pdfExporting": "جاري التوليد...",
       "pdfError": "تعذر توليد PDF اليومي.",
       "search": "بحث",
-      "searchPlaceholder": "تصفية بالاسم أو المعرف...",
+      "searchPlaceholder": "بحث بالاسم أو الرقم",
       "empty": "لا يوجد موظفون مطابقون.",
+      "offDayBanner": "يوم عطلة",
+      "summaryFooter": "{{earlyExit}} خروج مبكر · {{onLeave}} مغادرة · {{holiday}} عطلة رسمية",
+      "filters": {
+        "all": "الكل",
+        "present": "حاضر",
+        "late": "متأخر",
+        "absent": "غائب",
+        "earlyExit": "خروج مبكر",
+        "onLeave": "مغادرة"
+      },
       "entry": "وقت الدخول",
       "exit": "وقت الخروج",
       "summary": {
@@ -127,7 +150,7 @@
         "late": "متأخر",
         "earlyExit": "خروج مبكر",
         "absent": "غائب",
-        "onLeave": "في إجازة",
+        "onLeave": "مغادرة",
         "officialHoliday": "عطلة رسمية",
         "dayOff": "يوم عطلة"
       },
@@ -138,7 +161,7 @@
         "late": "متأخر",
         "early_exit": "خروج مبكر",
         "absent": "غائب",
-        "on_leave": "في إجازة",
+        "on_leave": "مغادرة",
         "official_holiday": "عطلة رسمية",
         "day_off": "يوم عطلة"
       }
@@ -232,6 +255,7 @@
       "punchKind": "نوع البصمة",
       "punchIn": "دخول",
       "punchOut": "خروج",
+      "duplicateTag": "مكرر",
       "manualSuccess": "تم حفظ البصمة اليدوية.",
       "manualError": "تعذر حفظ البصمة اليدوية."
     },
@@ -256,6 +280,23 @@
       "absent": "غائب",
       "late": "متأخر",
       "leaveBalance": "رصيد الإجازات",
+      "leaveShort": "{{days}} مغادرة",
+      "leaderboardStats": "{{late}} تأخر · {{absent}} غائب",
+      "sort": {
+        "attendance": "الحضور",
+        "late": "التأخر",
+        "absent": "الغياب"
+      },
+      "summaryTile": {
+        "present": "الحضور",
+        "late": "التأخر",
+        "absent": "الغياب",
+        "early": "خروج مبكر"
+      },
+      "summary": {
+        "best": "الأفضل",
+        "needsAttention": "يحتاج انتباه"
+      },
       "empty": "لا توجد بيانات تقرير لهذه الفترة.",
       "emptyDays": "لا توجد أيام حضور في هذه الفترة.",
       "earlyExitCount": "{count} حالة خروج مبكر في هذه الفترة.",
@@ -282,23 +323,59 @@
         "summary": "ملخص عام"
       }
     },
+    "employeeDetail": {
+      "in": "دخول",
+      "out": "خروج",
+      "noEntry": "لا دخول",
+      "noExit": "لا خروج",
+      "manualTag": "يدوي",
+      "fullReport": "تقرير كامل",
+      "manualPunch": "بصمة يدوية",
+      "kpi": {
+        "presentDays": "أيام الحضور",
+        "late": "تأخر",
+        "earlyExit": "خروج مبكر",
+        "absent": "غياب",
+        "avgEntry": "متوسط وقت الحضور",
+        "leaveBalance": "رصيد الإجازة"
+      },
+      "trend": {
+        "attendance": "الحضور مقارنة بالفترة السابقة",
+        "late": "التأخر مقارنة بالفترة السابقة"
+      }
+    },
     "employees": {
       "loadError": "تعذر تحميل الموظفين.",
       "deviceUserId": "معرف المستخدم في الجهاز",
       "name": "الاسم",
       "addEmployee": "إضافة موظف",
       "search": "بحث",
-      "searchPlaceholder": "ابحث بالاسم أو المعرف...",
+      "searchPlaceholder": "ابحث بالاسم أو المعرف",
       "status": "الحالة",
       "actions": "إجراءات",
-      "empty": "لم يُعثر على موظفين.",
+      "empty": "لا يوجد موظفون",
       "unregistered": "غير مسجل",
+      "unregisteredLabel": "معرف #{id}",
+      "filters": {
+        "all": "الكل",
+        "present": "حاضر",
+        "late": "متأخر",
+        "absent": "غائب",
+        "onLeave": "في إجازة",
+        "unregistered": "غير مسجل"
+      },
       "registered": "مسجل",
       "edit": "تعديل",
       "editTitle": "تعديل موظف",
       "cancel": "إلغاء",
       "save": "حفظ",
       "customSchedule": "جدول مخصص (اختياري)",
+      "customScheduleTitle": "جدول مخصص",
+      "useGlobalSchedule": "استخدام الجدول العام",
+      "inheritGlobalSchedule": "يُستخدم جدول الدوام العام للمؤسسة.",
+      "saveSchedule": "حفظ الجدول",
+      "scheduleSaved": "تم حفظ جدول الموظف.",
+      "scheduleNeedsRegistered": "سجّل هذا الموظف قبل تعديل جدوله.",
       "shiftStart": "بداية الدوام",
       "shiftEnd": "نهاية الدوام",
       "saved": "تم تحديث الموظف.",
@@ -324,9 +401,35 @@
       "empty": "لم يتصل أي جهاز بعد. يظهر هنا بعد أول مزامنة iclock."
     },
     "settings": {
+      "screenTitle": "أوقات الدوام",
       "loadError": "تعذر تحميل إعدادات الحضور.",
       "saveError": "تعذر حفظ الإعدادات.",
       "saved": "تم حفظ الإعدادات.",
+      "saveConfirmTitle": "حفظ التغييرات",
+      "saveConfirmMessage": "ستُطبَّق هذه التغييرات على جميع الموظفين.",
+      "timePickerDone": "تم",
+      "timeAm": "ص",
+      "timePm": "م",
+      "zoneEntry": "نافذة الدخول",
+      "zoneLate": "التأخر",
+      "zoneExit": "نافذة الخروج",
+      "zoneEarly": "الخروج المبكر",
+      "timelineEntry": "دخول",
+      "timelineLate": "تأخر",
+      "timelineEarly": "مبكر",
+      "timelineExit": "خروج",
+      "timelineShift": "دوام",
+      "validation": {
+        "invalidTime": "أدخل وقتاً صالحاً (HH:mm).",
+        "shiftEndAfterStart": "يجب أن تكون نهاية الدوام بعد البداية.",
+        "zoneEndAfterStart": "يجب أن تكون نهاية الفترة بعد البداية.",
+        "entryBeforeShiftStart": "يجب أن تنتهي فترة الدخول عند بداية الدوام.",
+        "lateAfterShiftStart": "يجب أن تبدأ فترة التأخر عند أو بعد بداية الدوام.",
+        "lateBeforeShiftEnd": "يجب أن تنتهي فترة التأخر قبل نهاية الدوام.",
+        "earlyBeforeShiftEnd": "يجب أن ينتهي الخروج المبكر عند نهاية الدوام.",
+        "exitAfterShiftStart": "يجب أن تكون فترة الخروج ضمن الدوام.",
+        "workingDaysRequired": "اختر يوم عمل واحداً على الأقل."
+      },
       "shiftSection": "الدوام الافتراضي",
       "shiftStart": "بداية الدوام",
       "shiftEnd": "نهاية الدوام",
@@ -355,6 +458,12 @@
       }
     },
     "holidays": {
+      "screenTitle": "الإجازات والمغادرات",
+      "emptyOfficial": "لم تُحدَّد أي إجازات.",
+      "removeConfirmTitle": "حذف الإجازة",
+      "removeConfirmMessage": "هل أنت متأكد من حذف هذه الإجازة؟",
+      "daysUsed": "{{count}} يوم",
+      "coverPill": "تغطية",
       "loadError": "تعذر تحميل الإجازات.",
       "saveError": "تعذر الحفظ.",
       "orgAdded": "تمت إضافة إجازة المؤسسة.",
@@ -401,14 +510,14 @@
       "fullUsed": "أيام كاملة مستخدمة: {used} / {total}",
       "remaining": "المتبقي: {count}",
       "subtabs": {
-        "employee": "إجازات الموظفين",
-        "official": "العطل الرسمية",
-        "temporary": "إجازات مؤقتة",
+        "employee": "الموظفون",
+        "official": "الرسمية",
+        "temporary": "المؤقتة",
         "settings": "الإعدادات"
       },
       "dateFrom": "من تاريخ",
       "dateTo": "إلى تاريخ",
-      "dateToOptional": "اختياري — نفس تاريخ البداية ليوم واحد",
+      "dateToOptional": "يوم واحد",
       "summaryDayOff": "أيام العطلة",
       "summaryEarly": "خروج مبكر",
       "summaryLate": "دخول متأخر"

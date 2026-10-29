@@ -1,15 +1,17 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import type { MoreStackParamList } from '../navigation/types';
-import { filterDailyAttentionRows } from '../attendance/daily-attention';
 import {
-  ActivityIndicator,
   FlatList,
-  Pressable,
+  Platform,
   RefreshControl,
+  StatusBar as RNStatusBar,
   StyleSheet,
+  Text,
   View,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
+import { setStatusBarStyle } from 'expo-status-bar';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { resolveUserFacingError } from '../api/client';
 import {
@@ -17,48 +19,73 @@ import {
   listAttendanceUsers,
   shareAttendanceReportPdf,
 } from '../api/attendance';
-import { DAILY_STATUS_BADGE } from '../attendance/daily-status';
+import { filterDailyAttentionRows } from '../attendance/daily-attention';
 import {
-  displayName,
-  formatDisplayTime,
-  todayDateKey,
-} from '../attendance/formatters';
+  matchesDailyStatusFilter,
+  type DailyStatusFilter,
+} from '../attendance/dailyFilters';
+import { isNonWorkingSchoolDay } from '../attendance/dailyWeek';
+import { displayName, todayDateKey } from '../attendance/formatters';
 import { buildNameLookup, mergeEmployeesWithPunchIds } from '../attendance/lookups';
-import { SearchField } from '../components/SearchField';
-import { SingleDatePicker } from '../components/SingleDatePicker';
-import { MetricCard } from '../components/MetricCard';
-import { ViewOnlyBanner } from '../components/ViewOnlyBanner';
+import { DailyEmptyState } from '../components/daily/DailyEmptyState';
+import { DailyFilterChips } from '../components/daily/DailyFilterChips';
+import { DailyListCard } from '../components/daily/DailyListCard';
+import { DailySkeleton } from '../components/daily/DailySkeleton';
+import { DailySummaryCard } from '../components/daily/DailySummaryCard';
+import { DailyWeekStrip } from '../components/daily/DailyWeekStrip';
+import { GlassCircleIconButton } from '../components/daily/GlassCircleIconButton';
+import { GlassBackButton } from '../components/employeeDetail/GlassBackButton';
+import { HomeGlassBackground } from '../components/home/HomeGlassBackground';
+import { HOME_BG_DARK, HOME_BG_LIGHT } from '../components/home/homeGlass';
 import { NetworkErrorPanel } from '../components/NetworkErrorPanel';
-import {
-  LoadingListSkeleton,
-  LoadingMetricsSkeleton,
-} from '../components/LoadingMetricsSkeleton';
+import { RecordsSearchField } from '../components/records/RecordsSearchField';
+import { ViewOnlyBanner } from '../components/ViewOnlyBanner';
 import { useCanManageAttendance } from '../hooks/useCanManageAttendance';
-import type { PunchType } from '../types/attendance';
+import type { MoreStackParamList } from '../navigation/types';
 import type { DailyAttendanceRow, DailyAttendanceSummary } from '../types/attendance';
-import { AppText } from '../ui/AppText';
-import { ltrText } from '../ui/ltr';
+import { overviewScrollPaddingBottom } from '../theme/homeTheme';
+import { useHomeTheme } from '../theme/HomeThemeProvider';
 import { useI18n } from '../i18n/I18nProvider';
+import type { AppTypography } from '../i18n/fonts';
 import { mirroredRow } from '../ui/rtlLayout';
 
 type Props = NativeStackScreenProps<MoreStackParamList, 'Daily'>;
 
-export function DailyAttendanceScreen({ route }: Props) {
+export function DailyAttendanceScreen({ route, navigation }: Props) {
   const attentionOnly = route.params?.attentionOnly === true;
   const { t } = useTranslation('attendance');
-  const { mirrorLayout } = useI18n();
+  const { mirrorLayout, typography } = useI18n();
   const canManage = useCanManageAttendance();
+  const insets = useSafeAreaInsets();
+  const { palette, isDark } = useHomeTheme();
+  const styles = useMemo(
+    () => createStyles(isDark, typography),
+    [isDark, typography],
+  );
+  const scrollBottomPad = overviewScrollPaddingBottom(insets.bottom);
+
   const [date, setDate] = useState(todayDateKey());
   const [rows, setRows] = useState<DailyAttendanceRow[]>([]);
   const [summary, setSummary] = useState<DailyAttendanceSummary | null>(null);
   const [nameLookup, setNameLookup] = useState<Map<string, string>>(new Map());
   const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState<DailyStatusFilter>('all');
   const [loading, setLoading] = useState(true);
   const [dataReady, setDataReady] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [error, setError] = useState('');
   const [errorIsNetwork, setErrorIsNetwork] = useState(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (Platform.OS === 'android') {
+        RNStatusBar.setTranslucent(true);
+        RNStatusBar.setBackgroundColor('transparent');
+      }
+      setStatusBarStyle(isDark ? 'light' : 'dark');
+    }, [isDark]),
+  );
 
   const load = useCallback(async () => {
     setError('');
@@ -94,6 +121,9 @@ export function DailyAttendanceScreen({ route }: Props) {
 
   const filtered = useMemo(() => {
     let list = attentionOnly ? filterDailyAttentionRows(rows) : rows;
+    if (statusFilter !== 'all') {
+      list = list.filter((row) => matchesDailyStatusFilter(row, statusFilter));
+    }
     const q = search.trim().toLowerCase();
     if (!q) return list;
     return list.filter((row) => {
@@ -103,7 +133,10 @@ export function DailyAttendanceScreen({ route }: Props) {
         name.toLowerCase().includes(q)
       );
     });
-  }, [rows, search, nameLookup, attentionOnly]);
+  }, [rows, search, nameLookup, attentionOnly, statusFilter]);
+
+  const showOffDayBanner = isNonWorkingSchoolDay(date, summary);
+  const showSkeleton = loading || !dataReady;
 
   async function handlePdf() {
     setExporting(true);
@@ -125,71 +158,69 @@ export function DailyAttendanceScreen({ route }: Props) {
     }
   }
 
-  function statusLabel(status: DailyAttendanceRow['status']) {
-    return t(`daily.status.${status}`);
-  }
+  const listHeader = (
+    <View style={styles.headerBlock}>
+      {!canManage ? (
+        <View style={styles.bannerWrap}>
+          <ViewOnlyBanner />
+        </View>
+      ) : null}
 
-  function punchLabel(type: PunchType | null | undefined) {
-    if (!type) return '–';
-    return t(`punchTypes.${type}`);
-  }
+      <View style={[styles.topRow, mirroredRow(mirrorLayout)]}>
+        <GlassBackButton onPress={() => navigation.goBack()} />
+        <Text style={styles.screenTitle} numberOfLines={1}>
+          {t('tabs.daily')}
+        </Text>
+        <GlassCircleIconButton
+          icon="download-outline"
+          onPress={() => void handlePdf()}
+          loading={exporting}
+          disabled={exporting}
+          accessibilityLabel={t('daily.exportPdf')}
+        />
+      </View>
 
-  const showSkeleton = loading || refreshing || !dataReady;
-
-  return (
-    <View style={styles.container}>
-      {!canManage ? <ViewOnlyBanner /> : null}
-      <SingleDatePicker label={t('daily.pickDate')} value={date} onChange={setDate} />
-      <Pressable
-        style={[styles.pdfBtn, exporting && styles.pdfBtnDisabled]}
-        disabled={exporting}
-        onPress={() => void handlePdf()}
-      >
-        {exporting ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <AppText style={styles.pdfBtnText}>{t('daily.exportPdf')}</AppText>
-        )}
-      </Pressable>
+      <DailyWeekStrip value={date} onChange={setDate} />
 
       {errorIsNetwork ? (
         <NetworkErrorPanel message={error} onRetry={() => void load()} />
       ) : error ? (
-        <AppText style={styles.error}>{error}</AppText>
+        <Text style={styles.error}>{error}</Text>
       ) : null}
 
       {showSkeleton ? (
-        <>
-          <LoadingMetricsSkeleton count={7} />
-          <LoadingListSkeleton rows={5} />
-        </>
+        <DailySkeleton />
       ) : summary ? (
-        <View style={styles.metrics}>
-          <MetricCard label={t('daily.summary.present')} value={summary.present} />
-          <MetricCard label={t('daily.summary.late')} value={summary.late} />
-          <MetricCard label={t('daily.summary.earlyExit')} value={summary.earlyExit} />
-          <MetricCard label={t('daily.summary.absent')} value={summary.absent} />
-          <MetricCard label={t('daily.summary.onLeave')} value={summary.onLeave} />
-          <MetricCard
-            label={t('daily.summary.officialHoliday')}
-            value={summary.officialHoliday}
+        <>
+          <DailySummaryCard summary={summary} showOffDayBanner={showOffDayBanner} />
+          <DailyFilterChips value={statusFilter} onChange={setStatusFilter} />
+          <RecordsSearchField
+            value={search}
+            onChangeText={setSearch}
+            placeholder={t('daily.searchPlaceholder')}
           />
-          <MetricCard label={t('daily.summary.dayOff')} value={summary.dayOff} />
-        </View>
+        </>
       ) : null}
+    </View>
+  );
 
-      {!showSkeleton ? (
-        <SearchField
-          value={search}
-          onChangeText={setSearch}
-          placeholder={t('daily.searchPlaceholder')}
-        />
-      ) : null}
-
-      {!showSkeleton ? (
+  return (
+    <View style={styles.root}>
+      <HomeGlassBackground isDark={isDark} />
+      <SafeAreaView style={styles.safe} edges={[]}>
         <FlatList
-          data={filtered}
-          keyExtractor={(item) => item.deviceUserId}
+          data={[]}
+          keyExtractor={() => 'daily'}
+          style={styles.list}
+          contentContainerStyle={[
+            styles.scroll,
+            { paddingBottom: scrollBottomPad },
+            !showSkeleton && filtered.length === 0 && styles.listEmptyGrow,
+          ]}
+          ListHeaderComponent={
+            <View style={{ paddingTop: insets.top > 0 ? 0 : 8 }}>{listHeader}</View>
+          }
+          ListEmptyComponent={showSkeleton ? null : <DailyEmptyState />}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
@@ -198,97 +229,61 @@ export function DailyAttendanceScreen({ route }: Props) {
                 setDataReady(false);
                 void load();
               }}
-              tintColor="#0f766e"
+              tintColor={palette.teal}
             />
           }
-          ListEmptyComponent={
-            <AppText style={styles.empty}>{t('daily.empty')}</AppText>
+          renderItem={() => null}
+          ListFooterComponent={
+            !showSkeleton && filtered.length > 0 ? (
+              <DailyListCard
+                rows={filtered}
+                nameLookup={nameLookup}
+                onPressRow={(deviceUserId, name) =>
+                  navigation.navigate('EmployeeDetail', { deviceUserId, name })
+                }
+              />
+            ) : null
           }
-          renderItem={({ item }) => {
-            const name = displayName(
-              nameLookup.get(item.deviceUserId),
-              item.deviceUserId,
-            );
-            const badge = DAILY_STATUS_BADGE[item.status];
-            return (
-              <View style={styles.card}>
-                <View style={[styles.cardHeader, mirroredRow(mirrorLayout)]}>
-                  <AppText style={styles.name} numberOfLines={1}>
-                    {name}
-                  </AppText>
-                  <View style={[styles.badge, { backgroundColor: badge.backgroundColor }]}>
-                    <AppText style={[styles.badgeText, { color: badge.color }]}>
-                      {statusLabel(item.status)}
-                    </AppText>
-                  </View>
-                </View>
-                <AppText style={[styles.id, ltrText]} numberOfLines={1}>
-                  {item.deviceUserId}
-                </AppText>
-                {item.entryTime || item.exitTime || item.entryType || item.exitType ? (
-                  <>
-                    <AppText style={styles.times}>
-                      {t('daily.entry')}:{' '}
-                      <AppText style={ltrText}>
-                        {item.entryTime ? formatDisplayTime(item.entryTime) : '–'}
-                      </AppText>
-                      {' · '}
-                      {t('daily.entryType')}: {punchLabel(item.entryType)}
-                    </AppText>
-                    <AppText style={styles.times}>
-                      {t('daily.exit')}:{' '}
-                      <AppText style={ltrText}>
-                        {item.exitTime ? formatDisplayTime(item.exitTime) : '–'}
-                      </AppText>
-                      {' · '}
-                      {t('daily.exitType')}: {punchLabel(item.exitType)}
-                    </AppText>
-                  </>
-                ) : null}
-              </View>
-            );
-          }}
         />
-      ) : null}
+      </SafeAreaView>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff', padding: 16 },
-  pdfBtn: {
-    backgroundColor: '#0f766e',
-    borderRadius: 8,
-    paddingVertical: 12,
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  pdfBtnDisabled: { opacity: 0.7 },
-  pdfBtnText: { color: '#fff', fontWeight: '600' },
-  error: { color: '#b91c1c', marginBottom: 8 },
-  metrics: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    marginBottom: 12,
-  },
-  empty: { textAlign: 'center', color: '#64748b', marginTop: 24 },
-  card: {
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 10,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    gap: 8,
-  },
-  name: { fontSize: 16, fontWeight: '600', flex: 1, minWidth: 0 },
-  badge: { borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4 },
-  badgeText: { fontSize: 11, fontWeight: '600' },
-  id: { fontSize: 12, color: '#64748b', marginTop: 4 },
-  times: { fontSize: 13, color: '#334155', marginTop: 8 },
-});
+function createStyles(isDark: boolean, typography: AppTypography) {
+  const text = isDark ? '#F1F5F9' : '#0F172A';
+
+  return StyleSheet.create({
+    root: {
+      flex: 1,
+      backgroundColor: isDark ? HOME_BG_DARK : HOME_BG_LIGHT,
+    },
+    safe: { flex: 1, backgroundColor: 'transparent' },
+    list: { flex: 1, backgroundColor: 'transparent' },
+    scroll: {
+      paddingHorizontal: 16,
+      gap: 16,
+    },
+    listEmptyGrow: { flexGrow: 1 },
+    headerBlock: { gap: 16, marginBottom: 4 },
+    bannerWrap: { marginBottom: -8 },
+    topRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+    },
+    screenTitle: {
+      flex: 1,
+      fontFamily: typography.noto.bold,
+      fontSize: 20,
+      lineHeight: 28,
+      color: text,
+      minWidth: 0,
+    },
+    error: {
+      fontFamily: typography.noto.medium,
+      fontSize: 14,
+      color: '#EF4444',
+    },
+  });
+}

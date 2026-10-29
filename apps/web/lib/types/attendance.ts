@@ -16,6 +16,7 @@ export interface AttendanceRecord {
   deviceSerial: string;
   createdAt: string;
   punchType?: PunchType | null;
+  ignoredDuplicate?: boolean;
 }
 
 export interface AttendanceDevice {

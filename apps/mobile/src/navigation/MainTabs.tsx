@@ -9,42 +9,24 @@ import { EmployeeDetailScreen } from '../screens/EmployeeDetailScreen';
 import { EmployeesScreen } from '../screens/EmployeesScreen';
 import { OverviewScreen } from '../screens/OverviewScreen';
 import { RecordsScreen } from '../screens/RecordsScreen';
+import { ShiftScreen } from '../screens/ShiftScreen';
 import { MoreMenuScreen } from '../screens/MoreMenuScreen';
 import { DailyAttendanceScreen } from '../screens/DailyAttendanceScreen';
 import { EmployeeReportScreen } from '../screens/EmployeeReportScreen';
 import { HolidaysScreen } from '../screens/HolidaysScreen';
 import { ManualPunchScreen } from '../screens/ManualPunchScreen';
 import { FloatingTabBar } from './FloatingTabBar';
+import { nestedStackTabPressListener } from './nestedTabNavigation';
 
 import type {
-  EmployeesStackParamList,
   MainTabParamList,
   MoreStackParamList,
   RecordsStackParamList,
 } from './types';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
-const EmployeesStack = createNativeStackNavigator<EmployeesStackParamList>();
 const RecordsStack = createNativeStackNavigator<RecordsStackParamList>();
 const MoreStack = createNativeStackNavigator<MoreStackParamList>();
-
-function EmployeesNavigator() {
-  const { t } = useTranslation('attendance');
-  return (
-    <EmployeesStack.Navigator>
-      <EmployeesStack.Screen
-        name="EmployeesList"
-        component={EmployeesScreen}
-        options={{ title: t('tabs.employees') }}
-      />
-      <EmployeesStack.Screen
-        name="EmployeeDetail"
-        component={EmployeeDetailScreen}
-        options={({ route }) => ({ title: route.params.name })}
-      />
-    </EmployeesStack.Navigator>
-  );
-}
 
 function RecordsNavigator() {
   const { t } = useTranslation('attendance');
@@ -54,11 +36,6 @@ function RecordsNavigator() {
         name="RecordsList"
         component={RecordsScreen}
         options={{ headerShown: false }}
-      />
-      <RecordsStack.Screen
-        name="EmployeeDetail"
-        component={EmployeeDetailScreen}
-        options={({ route }) => ({ title: route.params.name })}
       />
       <RecordsStack.Screen
         name="ManualPunch"
@@ -76,22 +53,32 @@ function MoreNavigator() {
       <MoreStack.Screen
         name="MoreMenu"
         component={MoreMenuScreen}
-        options={{ title: t('tabs.more') }}
+        options={{ headerShown: false, title: t('tabs.more') }}
+      />
+      <MoreStack.Screen
+        name="EmployeesList"
+        component={EmployeesScreen}
+        options={{ headerShown: false }}
       />
       <MoreStack.Screen
         name="Daily"
         component={DailyAttendanceScreen}
-        options={{ title: t('tabs.daily') }}
+        options={{ headerShown: false, title: t('tabs.daily') }}
+      />
+      <MoreStack.Screen
+        name="EmployeeDetail"
+        component={EmployeeDetailScreen}
+        options={{ headerShown: false }}
       />
       <MoreStack.Screen
         name="EmployeeReport"
         component={EmployeeReportScreen}
-        options={{ title: t('tabs.report') }}
+        options={{ headerShown: false, title: t('tabs.report') }}
       />
       <MoreStack.Screen
         name="Holidays"
         component={HolidaysScreen}
-        options={{ title: t('tabs.holidays') }}
+        options={{ headerShown: false, title: t('tabs.holidays') }}
       />
       <MoreStack.Screen
         name="ManualPunch"
@@ -139,6 +126,7 @@ export function MainTabs() {
       <Tab.Screen
         name="RecordsTab"
         component={RecordsNavigator}
+        listeners={nestedStackTabPressListener('RecordsTab', 'RecordsList')}
         options={{
           title: t('tabs.records'),
           tabBarLabel: t('tabs.records'),
@@ -148,19 +136,20 @@ export function MainTabs() {
         }}
       />
       <Tab.Screen
-        name="EmployeesTab"
-        component={EmployeesNavigator}
+        name="ShiftTab"
+        component={ShiftScreen}
         options={{
-          title: t('tabs.employees'),
-          tabBarLabel: t('tabs.employees'),
+          title: t('tabs.shift'),
+          tabBarLabel: t('tabs.shift'),
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="people-outline" size={size} color={color} />
+            <Ionicons name="time-outline" size={size} color={color} />
           ),
         }}
       />
       <Tab.Screen
         name="MoreTab"
         component={MoreNavigator}
+        listeners={nestedStackTabPressListener('MoreTab', 'MoreMenu')}
         options={{
           title: t('tabs.more'),
           tabBarLabel: t('tabs.more'),
@@ -173,4 +162,3 @@ export function MainTabs() {
     </HomeBlurTargetContext.Provider>
   );
 }
-

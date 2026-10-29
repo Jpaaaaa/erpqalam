@@ -31,6 +31,13 @@ export function formatDisplayTime(ts: string): string {
   return '—';
 }
 
+/** Local wall-clock 24h (no UTC conversion). */
+export function formatTime24(ts: string): string {
+  const match = ts.match(/T(\d{2}):(\d{2})/);
+  if (match) return `${match[1]}:${match[2]}`;
+  return '—';
+}
+
 export function getQuickRange(type: QuickRangeKey): { from: string; to: string } {
   const now = new Date();
   const today = formatLocalDateKey(now);

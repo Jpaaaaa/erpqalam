@@ -14,7 +14,7 @@ import { HomeGlassBar } from '../components/home/HomeGlassBar';
 const ICONS: Record<string, { active: keyof typeof Ionicons.glyphMap; inactive: keyof typeof Ionicons.glyphMap }> = {
   Overview: { active: 'home', inactive: 'home-outline' },
   RecordsTab: { active: 'list', inactive: 'list-outline' },
-  EmployeesTab: { active: 'people', inactive: 'people-outline' },
+  ShiftTab: { active: 'time', inactive: 'time-outline' },
   MoreTab: { active: 'ellipsis-horizontal', inactive: 'ellipsis-horizontal-outline' },
 };
 

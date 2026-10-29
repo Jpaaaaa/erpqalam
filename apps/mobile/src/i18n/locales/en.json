@@ -70,17 +70,30 @@
       "holidays": "Holidays",
       "settings": "Settings",
       "more": "More",
-      "daily": "Daily"
+      "daily": "Daily",
+      "shift": "Shift"
+    },
+    "shift": {
+      "customSchedules": "Custom schedules",
+      "noCustomSchedules": "No employees use a custom schedule."
     },
     "more": {
       "subtitle": "Daily reports, employee details, holidays, and manual punches.",
+      "sectionAttendance": "Attendance",
+      "sectionSettings": "Settings",
       "daily": "Daily attendance",
       "report": "Employee report",
       "holidays": "Holidays & leave",
+      "employees": "Employees",
       "manual": "Manual punch",
       "viewOnly": "View only — you cannot add punches, holidays, or time-leave covers.",
       "profile": "Signed in as",
+      "roleManager": "Manager",
+      "roleEmployee": "Employee",
+      "appearance": "Appearance",
       "signOut": "Sign out",
+      "signOutConfirmTitle": "Sign out",
+      "signOutConfirmMessage": "Are you sure you want to sign out?",
       "theme": "Home appearance",
       "themeLight": "Light",
       "themeDark": "Dark",
@@ -118,8 +131,18 @@
       "pdfExporting": "Generating PDF...",
       "pdfError": "Unable to generate daily PDF.",
       "search": "Search",
-      "searchPlaceholder": "Filter by name or ID...",
+      "searchPlaceholder": "Search by name or ID",
       "empty": "No employees match your search.",
+      "offDayBanner": "Day off",
+      "summaryFooter": "{{earlyExit}} early exit · {{onLeave}} leave · {{holiday}} official holiday",
+      "filters": {
+        "all": "All",
+        "present": "Present",
+        "late": "Late",
+        "absent": "Absent",
+        "earlyExit": "Early exit",
+        "onLeave": "Leave"
+      },
       "entry": "In time",
       "exit": "Out time",
       "summary": {
@@ -127,7 +150,7 @@
         "late": "Late",
         "earlyExit": "Early exit",
         "absent": "Absent",
-        "onLeave": "On leave",
+        "onLeave": "Leave",
         "officialHoliday": "Official holiday",
         "dayOff": "Day off"
       },
@@ -138,7 +161,7 @@
         "late": "Late",
         "early_exit": "Early exit",
         "absent": "Absent",
-        "on_leave": "On leave",
+        "on_leave": "Leave",
         "official_holiday": "Official holiday",
         "day_off": "Day off"
       }
@@ -232,6 +255,7 @@
       "punchKind": "Punch type",
       "punchIn": "Check in",
       "punchOut": "Check out",
+      "duplicateTag": "Duplicate",
       "manualSuccess": "Manual punch saved.",
       "manualError": "Unable to save manual punch."
     },
@@ -256,6 +280,23 @@
       "absent": "Absent",
       "late": "Late",
       "leaveBalance": "Leave balance",
+      "leaveShort": "{{days}} leave",
+      "leaderboardStats": "{{late}} late · {{absent}} absent",
+      "sort": {
+        "attendance": "Attendance",
+        "late": "Late",
+        "absent": "Absent"
+      },
+      "summaryTile": {
+        "present": "Present",
+        "late": "Late",
+        "absent": "Absent",
+        "early": "Early exit"
+      },
+      "summary": {
+        "best": "Top performers",
+        "needsAttention": "Needs attention"
+      },
       "empty": "No report data for this period.",
       "emptyDays": "No attendance days in this period.",
       "earlyExitCount": "{count} early exit events in this period.",
@@ -282,23 +323,59 @@
         "summary": "Summary"
       }
     },
+    "employeeDetail": {
+      "in": "In",
+      "out": "Out",
+      "noEntry": "No check-in",
+      "noExit": "No check-out",
+      "manualTag": "Manual",
+      "fullReport": "Full report",
+      "manualPunch": "Manual punch",
+      "kpi": {
+        "presentDays": "Present days",
+        "late": "Late",
+        "earlyExit": "Early exit",
+        "absent": "Absent",
+        "avgEntry": "Avg. arrival",
+        "leaveBalance": "Leave balance"
+      },
+      "trend": {
+        "attendance": "Attendance vs prior period",
+        "late": "Late vs prior period"
+      }
+    },
     "employees": {
       "loadError": "Unable to load employees.",
       "deviceUserId": "Device user ID",
       "name": "Name",
       "addEmployee": "Add employee",
       "search": "Search",
-      "searchPlaceholder": "Search by name or ID...",
+      "searchPlaceholder": "Search by name or ID",
       "status": "Status",
       "actions": "Actions",
-      "empty": "No employees found.",
+      "empty": "No employees yet",
       "unregistered": "Unregistered",
+      "unregisteredLabel": "ID #{id}",
+      "filters": {
+        "all": "All",
+        "present": "Present",
+        "late": "Late",
+        "absent": "Absent",
+        "onLeave": "On leave",
+        "unregistered": "Unregistered"
+      },
       "registered": "Registered",
       "edit": "Edit",
       "editTitle": "Edit employee",
       "cancel": "Cancel",
       "save": "Save",
       "customSchedule": "Custom schedule (optional)",
+      "customScheduleTitle": "Custom schedule",
+      "useGlobalSchedule": "Use global schedule",
+      "inheritGlobalSchedule": "Using organization-wide shift settings.",
+      "saveSchedule": "Save schedule",
+      "scheduleSaved": "Employee schedule saved.",
+      "scheduleNeedsRegistered": "Register this employee before editing their schedule.",
       "shiftStart": "Shift start",
       "shiftEnd": "Shift end",
       "saved": "Employee updated.",
@@ -324,9 +401,35 @@
       "empty": "No devices have connected yet. They appear here after the first iclock push."
     },
     "settings": {
+      "screenTitle": "Shift hours",
       "loadError": "Unable to load attendance settings.",
       "saveError": "Unable to save settings.",
       "saved": "Settings saved.",
+      "saveConfirmTitle": "Save changes",
+      "saveConfirmMessage": "These changes apply to all employees.",
+      "timePickerDone": "Done",
+      "timeAm": "AM",
+      "timePm": "PM",
+      "zoneEntry": "Entry window",
+      "zoneLate": "Late after",
+      "zoneExit": "Exit window",
+      "zoneEarly": "Early leave",
+      "timelineEntry": "Entry",
+      "timelineLate": "Late",
+      "timelineEarly": "Early",
+      "timelineExit": "Exit",
+      "timelineShift": "Shift",
+      "validation": {
+        "invalidTime": "Enter a valid time (HH:mm).",
+        "shiftEndAfterStart": "Shift end must be after shift start.",
+        "zoneEndAfterStart": "Zone end must be after zone start.",
+        "entryBeforeShiftStart": "Entry window must end by shift start.",
+        "lateAfterShiftStart": "Late window must start at or after shift start.",
+        "lateBeforeShiftEnd": "Late window must end before shift end.",
+        "earlyBeforeShiftEnd": "Early leave must end by shift end.",
+        "exitAfterShiftStart": "Exit window must be within the shift.",
+        "workingDaysRequired": "Select at least one working day."
+      },
       "shiftSection": "Default shift",
       "shiftStart": "Shift start",
       "shiftEnd": "Shift end",
@@ -355,6 +458,12 @@
       }
     },
     "holidays": {
+      "screenTitle": "Holidays & leave",
+      "emptyOfficial": "No holidays have been set.",
+      "removeConfirmTitle": "Delete holiday",
+      "removeConfirmMessage": "Are you sure you want to delete this holiday?",
+      "daysUsed": "{{count}} days",
+      "coverPill": "Cover",
       "loadError": "Unable to load holidays.",
       "saveError": "Unable to save.",
       "orgAdded": "Organization holiday added.",
@@ -401,14 +510,14 @@
       "fullUsed": "Full days used: {used} / {total}",
       "remaining": "Remaining: {count}",
       "subtabs": {
-        "employee": "Employee leave",
-        "official": "Official holidays",
-        "temporary": "Temporary leave",
+        "employee": "Employee",
+        "official": "Official",
+        "temporary": "Temporary",
         "settings": "Settings"
       },
       "dateFrom": "From date",
       "dateTo": "To date",
-      "dateToOptional": "Optional — same as from for one day",
+      "dateToOptional": "One day",
       "summaryDayOff": "Days off",
       "summaryEarly": "Early exit",
       "summaryLate": "Late entry"

@@ -13,8 +13,6 @@ import { setStatusBarStyle } from 'expo-status-bar';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
-import type { CompositeNavigationProp } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTranslation } from 'react-i18next';
 import { NetworkErrorPanel } from '../components/NetworkErrorPanel';
 import { ViewOnlyBanner } from '../components/ViewOnlyBanner';
@@ -26,8 +24,12 @@ import { RecentRecordsFeed } from '../components/home/RecentRecordsFeed';
 import { useHomeDashboard } from '../hooks/useHomeDashboard';
 import { useCanManageAttendance } from '../hooks/useCanManageAttendance';
 import { useAuth } from '../auth/context';
+import {
+  navigateToEmployeeDetail,
+  navigateToMoreMenu,
+  navigateToMoreStackScreen,
+} from '../navigation/nestedTabNavigation';
 import type { MainTabParamList } from '../navigation/types';
-import type { MoreStackParamList } from '../navigation/types';
 import { overviewScrollPaddingBottom } from '../theme/homeTheme';
 import { useHomeTheme } from '../theme/HomeThemeProvider';
 import { AppText } from '../ui/AppText';
@@ -35,10 +37,7 @@ import { HomeGlassBackground } from '../components/home/HomeGlassBackground';
 import { HOME_BG_DARK, HOME_BG_LIGHT } from '../components/home/homeGlass';
 import { useHomeBlurTarget } from '../components/home/HomeBlurTargetContext';
 
-type HomeNav = CompositeNavigationProp<
-  BottomTabNavigationProp<MainTabParamList, 'Overview'>,
-  NativeStackNavigationProp<MoreStackParamList>
->;
+type HomeNav = BottomTabNavigationProp<MainTabParamList, 'Overview'>;
 
 export function OverviewScreen() {
   const { t } = useTranslation('attendance');
@@ -129,11 +128,10 @@ export function OverviewScreen() {
         <HomeHeader
           user={user}
           alertCount={attentionItems.length}
-          onAvatarPress={() => navigation.navigate('MoreTab', { screen: 'MoreMenu' })}
+          onAvatarPress={() => navigateToMoreMenu(navigation)}
           onBellPress={() =>
-            navigation.navigate('MoreTab', {
-              screen: 'Daily',
-              params: { attentionOnly: true },
+            navigateToMoreStackScreen(navigation, 'Daily', {
+              attentionOnly: true,
             })
           }
         />
@@ -151,35 +149,30 @@ export function OverviewScreen() {
               attendancePct={attendancePct}
               punctualityPct={punctualityPct}
               weeklyAvgPct={weeklyAvg}
-              onOpenDaily={() => navigation.navigate('MoreTab', { screen: 'Daily' })}
+              onOpenDaily={() => navigateToMoreStackScreen(navigation, 'Daily')}
             />
 
             <QuickActionsRow
               canManage={canManage}
-              onManual={() =>
-                navigation.navigate('MoreTab', { screen: 'ManualPunch' })
-              }
-              onDaily={() => navigation.navigate('MoreTab', { screen: 'Daily' })}
+              onManual={() => navigateToMoreStackScreen(navigation, 'ManualPunch')}
+              onDaily={() => navigateToMoreStackScreen(navigation, 'Daily')}
               onReport={() =>
-                navigation.navigate('MoreTab', { screen: 'EmployeeReport' })
+                navigateToMoreStackScreen(navigation, 'EmployeeReport')
               }
-              onHolidays={() =>
-                navigation.navigate('MoreTab', { screen: 'Holidays' })
-              }
+              onHolidays={() => navigateToMoreStackScreen(navigation, 'Holidays')}
             />
 
             <NeedsAttentionSection
               items={attentionItems}
               onRowPress={(deviceUserId) =>
-                navigation.navigate('MoreTab', {
-                  screen: 'EmployeeReport',
-                  params: { deviceUserId },
+                navigateToEmployeeDetail(navigation, {
+                  deviceUserId,
+                  name: nameLookup.get(deviceUserId) || deviceUserId,
                 })
               }
               onSeeAll={() =>
-                navigation.navigate('MoreTab', {
-                  screen: 'Daily',
-                  params: { attentionOnly: true },
+                navigateToMoreStackScreen(navigation, 'Daily', {
+                  attentionOnly: true,
                 })
               }
             />
@@ -187,7 +180,9 @@ export function OverviewScreen() {
             <RecentRecordsFeed
               records={recentRecords}
               nameLookup={nameLookup}
-              onSeeAll={() => navigation.navigate('RecordsTab')}
+              onSeeAll={() =>
+                navigation.navigate('RecordsTab', { screen: 'RecordsList' })
+              }
             />
           </>
         ) : null}

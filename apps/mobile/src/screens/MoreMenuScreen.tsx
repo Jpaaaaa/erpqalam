@@ -1,48 +1,94 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
+import Constants from 'expo-constants';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
+import {
+  Alert,
+  Platform,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  StatusBar as RNStatusBar,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
+import { setStatusBarStyle } from 'expo-status-bar';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
-import { LanguageSwitcher } from '../components/LanguageSwitcher';
-import { HomeThemeToggle } from '../components/HomeThemeToggle';
 import { useCanManageAttendance } from '../hooks/useCanManageAttendance';
 import type { MoreStackParamList } from '../navigation/types';
 import { useAuth } from '../auth/context';
-import { AppText } from '../ui/AppText';
+import { HomeHeader } from '../components/home/HomeHeader';
+import { HomeGlassBackground } from '../components/home/HomeGlassBackground';
+import { HomeGlassCard } from '../components/home/HomeGlassCard';
+import { HOME_BG_DARK, HOME_BG_LIGHT } from '../components/home/homeGlass';
+import { MoreLanguageSheet } from '../components/more/MoreLanguageSheet';
+import {
+  MoreMenuGroupedCard,
+  type MoreMenuRowConfig,
+} from '../components/more/MoreMenuRows';
+import { MoreProfileCard } from '../components/more/MoreProfileCard';
+import { MoreSettingsCard } from '../components/more/MoreSettingsCard';
+import { overviewScrollPaddingBottom } from '../theme/homeTheme';
+import { useHomeTheme } from '../theme/HomeThemeProvider';
 import { useI18n } from '../i18n/I18nProvider';
+import type { AppTypography } from '../i18n/fonts';
 import { mirroredRow } from '../ui/rtlLayout';
-import { rowChevron } from '../ui/chevronIcons';
-import { ltrText } from '../ui/ltr';
-import { TAB_SCENE_BOTTOM_PAD } from '../theme/homeTheme';
 
 type Props = NativeStackScreenProps<MoreStackParamList, 'MoreMenu'>;
 
+type MoreMenuRoute = Exclude<
+  keyof MoreStackParamList,
+  'MoreMenu' | 'EmployeeDetail' | 'EmployeesList'
+>;
+
 type MenuItem = {
-  key: keyof MoreStackParamList;
+  key: MoreMenuRoute;
   labelKey: string;
   icon: keyof typeof Ionicons.glyphMap;
   manageOnly?: boolean;
 };
 
 const ITEMS: MenuItem[] = [
-  { key: 'Daily', labelKey: 'more.daily', icon: 'calendar-outline' },
-  { key: 'EmployeeReport', labelKey: 'more.report', icon: 'stats-chart-outline' },
-  { key: 'Holidays', labelKey: 'more.holidays', icon: 'sunny-outline' },
+  { key: 'Daily', labelKey: 'more.daily', icon: 'calendar' },
+  { key: 'EmployeeReport', labelKey: 'more.report', icon: 'stats-chart' },
+  { key: 'Holidays', labelKey: 'more.holidays', icon: 'sunny' },
   {
     key: 'ManualPunch',
     labelKey: 'more.manual',
-    icon: 'create-outline',
+    icon: 'create',
     manageOnly: true,
   },
 ];
+
+const APP_VERSION = Constants.expoConfig?.version ?? '0.1.0';
 
 export function MoreMenuScreen({ navigation }: Props) {
   const { t } = useTranslation('attendance');
   const canManage = useCanManageAttendance();
   const { user, refreshUser, logout } = useAuth();
-  const { mirrorLayout, isRtl } = useI18n();
-  const rtl = isRtl || mirrorLayout;
+  const insets = useSafeAreaInsets();
+  const { palette, isDark } = useHomeTheme();
+  const { mirrorLayout, typography } = useI18n();
+  const styles = useMemo(
+    () => createStyles(isDark, typography),
+    [isDark, typography],
+  );
+  const scrollBottomPad = overviewScrollPaddingBottom(insets.bottom);
   const [refreshing, setRefreshing] = useState(false);
+  const [languageOpen, setLanguageOpen] = useState(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (Platform.OS === 'android') {
+        RNStatusBar.setTranslucent(true);
+        RNStatusBar.setBackgroundColor('transparent');
+      }
+      setStatusBarStyle(isDark ? 'light' : 'dark');
+    }, [isDark]),
+  );
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -53,100 +99,176 @@ export function MoreMenuScreen({ navigation }: Props) {
     }
   }, [refreshUser]);
 
-  const displayName = user
-    ? [user.firstName, user.lastName].filter(Boolean).join(' ').trim() || user.email
-    : '';
+  const attendanceRows = useMemo((): MoreMenuRowConfig[] => {
+    const employeesRow: MoreMenuRowConfig = {
+      key: 'EmployeesList',
+      label: t('more.employees'),
+      icon: 'people',
+      iconColor: palette.blue,
+      tileBg: isDark
+        ? 'rgba(37, 99, 235, 0.22)'
+        : 'rgba(37, 99, 235, 0.12)',
+      onPress: () => navigation.navigate('EmployeesList'),
+    };
+
+    const rest = ITEMS.filter((item) => !item.manageOnly || canManage).map(
+      (item) => {
+        const isManual = item.key === 'ManualPunch';
+        const isReport = item.key === 'EmployeeReport';
+        const isHolidays = item.key === 'Holidays';
+        const iconColor = isManual
+          ? palette.teal
+          : isReport
+            ? palette.blue
+            : isHolidays
+              ? '#D97706'
+              : palette.teal;
+        const tileBg = isManual
+          ? palette.teal
+          : isReport
+            ? isDark
+              ? 'rgba(37, 99, 235, 0.22)'
+              : 'rgba(37, 99, 235, 0.12)'
+            : isHolidays
+              ? isDark
+                ? 'rgba(217, 119, 6, 0.22)'
+                : 'rgba(245, 158, 11, 0.18)'
+              : isDark
+                ? 'rgba(20, 184, 166, 0.22)'
+                : 'rgba(20, 184, 166, 0.12)';
+
+        return {
+          key: item.key,
+          label: t(item.labelKey),
+          icon: item.icon,
+          iconColor,
+          tileBg,
+          filled: isManual,
+          onPress: () => navigation.navigate(item.key),
+        };
+      },
+    );
+
+    return [employeesRow, ...rest];
+  }, [canManage, isDark, navigation, palette, t]);
+
+  function openMoreDaily() {
+    navigation.navigate('Daily', { attentionOnly: true });
+  }
+
+  function confirmSignOut() {
+    Alert.alert(t('more.signOutConfirmTitle'), t('more.signOutConfirmMessage'), [
+      { text: t('records.cancel'), style: 'cancel' },
+      {
+        text: t('more.signOut'),
+        style: 'destructive',
+        onPress: () => void logout(),
+      },
+    ]);
+  }
 
   return (
-    <ScrollView
-      contentContainerStyle={styles.content}
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={() => void onRefresh()}
-          tintColor="#0f766e"
-        />
-      }
-    >
-      {user ? (
-        <View style={styles.profile}>
-          <AppText style={styles.profileLabel}>{t('more.profile')}</AppText>
-          <AppText style={styles.profileName} numberOfLines={1}>
-            {displayName}
-          </AppText>
-          <AppText style={[styles.profileEmail, ltrText]} numberOfLines={1}>
-            {user.email}
-          </AppText>
-        </View>
-      ) : null}
-
-      <View style={styles.switcher}>
-        <LanguageSwitcher />
-      </View>
-      <HomeThemeToggle />
-
-      <AppText style={styles.hint}>{t('more.subtitle')}</AppText>
-      {ITEMS.filter((item) => !item.manageOnly || canManage).map((item) => (
-        <Pressable
-          key={item.key}
-          style={[styles.row, mirroredRow(mirrorLayout)]}
-          onPress={() => navigation.navigate(item.key)}
+    <View style={styles.root}>
+      <HomeGlassBackground isDark={isDark} />
+      <SafeAreaView style={styles.safe} edges={[]}>
+        <ScrollView
+          contentContainerStyle={[
+            styles.scroll,
+            { paddingBottom: scrollBottomPad },
+          ]}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={() => void onRefresh()}
+              tintColor={palette.teal}
+            />
+          }
         >
-          <View style={[styles.rowInner, mirroredRow(mirrorLayout)]}>
-            <Ionicons name={item.icon} size={22} color="#0f766e" />
-            <AppText style={styles.rowLabel} numberOfLines={1}>
-              {t(item.labelKey)}
-            </AppText>
+          <View style={[styles.headerBlock, { paddingTop: insets.top }]}>
+            <HomeHeader
+              user={user}
+              alertCount={0}
+              onBellPress={openMoreDaily}
+            />
+            <Text style={styles.screenTitle}>{t('tabs.more')}</Text>
           </View>
-          <Ionicons name={rowChevron(rtl)} size={20} color="#94a3b8" />
-        </Pressable>
-      ))}
 
-      <Pressable style={styles.logoutBtn} onPress={() => void logout()}>
-        <AppText style={styles.logoutText}>{t('more.signOut')}</AppText>
-      </Pressable>
-    </ScrollView>
+          {user ? <MoreProfileCard user={user} /> : null}
+
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel}>{t('more.sectionAttendance')}</Text>
+            <MoreMenuGroupedCard rows={attendanceRows} />
+          </View>
+
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel}>{t('more.sectionSettings')}</Text>
+            <MoreSettingsCard onOpenLanguage={() => setLanguageOpen(true)} />
+          </View>
+
+          <HomeGlassCard padding={0}>
+            <Pressable
+              onPress={confirmSignOut}
+              style={({ pressed }) => [
+                styles.signOutRow,
+                mirroredRow(mirrorLayout),
+                pressed && styles.signOutPressed,
+              ]}
+            >
+              <Text style={styles.signOutText}>{t('more.signOut')}</Text>
+            </Pressable>
+          </HomeGlassCard>
+
+          <Text style={styles.version}>v{APP_VERSION}</Text>
+        </ScrollView>
+      </SafeAreaView>
+
+      <MoreLanguageSheet visible={languageOpen} onClose={() => setLanguageOpen(false)} />
+    </View>
   );
 }
 
-const styles = StyleSheet.create({
-  content: {
-    padding: 16,
-    backgroundColor: '#fff',
-    flexGrow: 1,
-    paddingBottom: TAB_SCENE_BOTTOM_PAD,
-  },
-  profile: {
-    marginBottom: 16,
-    padding: 14,
-    borderRadius: 12,
-    backgroundColor: '#f0fdfa',
-    borderWidth: 1,
-    borderColor: '#99f6e4',
-  },
-  profileLabel: { fontSize: 12, fontWeight: '600', color: '#64748b' },
-  profileName: { fontSize: 18, fontWeight: '700', color: '#0f172a', marginTop: 4 },
-  profileEmail: { fontSize: 14, color: '#475569', marginTop: 2 },
-  switcher: { marginBottom: 16 },
-  hint: { fontSize: 14, color: '#64748b', marginBottom: 16 },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
-  },
-  rowInner: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1, minWidth: 0 },
-  rowLabel: { fontSize: 17, fontWeight: '600', color: '#0f172a', flex: 1 },
-  logoutBtn: {
-    marginTop: 28,
-    borderWidth: 1,
-    borderColor: '#fecaca',
-    backgroundColor: '#fef2f2',
-    borderRadius: 8,
-    paddingVertical: 14,
-    alignItems: 'center',
-  },
-  logoutText: { color: '#b91c1c', fontWeight: '600', fontSize: 16 },
-});
+function createStyles(isDark: boolean, typography: AppTypography) {
+  const text = isDark ? '#F1F5F9' : '#0F172A';
+  const muted = isDark ? '#94A3B8' : '#64748B';
+
+  return StyleSheet.create({
+    root: {
+      flex: 1,
+      backgroundColor: isDark ? HOME_BG_DARK : HOME_BG_LIGHT,
+    },
+    safe: { flex: 1, backgroundColor: 'transparent' },
+    scroll: { paddingHorizontal: 16, gap: 16 },
+    headerBlock: { gap: 8, marginBottom: 4 },
+    screenTitle: {
+      fontFamily: typography.noto.bold,
+      fontSize: 28,
+      lineHeight: 36,
+      color: text,
+    },
+    section: { gap: 10 },
+    sectionLabel: {
+      fontFamily: typography.noto.bold,
+      fontSize: 13,
+      color: muted,
+      paddingHorizontal: 4,
+    },
+    signOutRow: {
+      paddingVertical: 16,
+      paddingHorizontal: 16,
+      alignItems: 'center',
+    },
+    signOutPressed: { opacity: 0.85 },
+    signOutText: {
+      fontFamily: typography.noto.bold,
+      fontSize: 16,
+      color: '#EF4444',
+    },
+    version: {
+      fontFamily: typography.noto.medium,
+      fontSize: 12,
+      color: muted,
+      textAlign: 'center',
+      marginTop: 8,
+    },
+  });
+}

@@ -9,6 +9,7 @@
     "test:single-flight": "npx tsx scripts/test-single-flight.ts",
     "test:dated-requests": "npx tsx scripts/test-dated-requests.ts",
     "test:rtl-reload": "npx tsx scripts/test-rtl-reload.ts",
+    "test:wall-clock-time": "npx tsx scripts/test-wall-clock-time.ts",
     "build:apk": "bash scripts/build-apk.sh",
     "build:preview": "eas build -p android --profile preview"
   },
@@ -17,6 +18,7 @@
     "@expo-google-fonts/noto-sans-arabic": "^0.4.3",
     "@expo/vector-icons": "^15.0.2",
     "@react-native-async-storage/async-storage": "2.2.0",
+    "@react-native-community/datetimepicker": "9.1.0",
     "@react-native-community/netinfo": "12.0.1",
     "@react-navigation/bottom-tabs": "^7.18.18",
     "@react-navigation/native": "^7.3.18",

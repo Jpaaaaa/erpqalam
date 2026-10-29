@@ -80,8 +80,17 @@ export function RecordsPunchRow({
     ink: '#64748B',
   };
 
+  const duplicate = record.ignoredDuplicate === true;
+
   const row = (
-    <View style={[styles.row, mirroredRow(mirrorLayout), !isLast && styles.rowDivider]}>
+    <View
+      style={[
+        styles.row,
+        mirroredRow(mirrorLayout),
+        !isLast && styles.rowDivider,
+        duplicate && styles.rowMuted,
+      ]}
+    >
       <View style={[styles.avatar, { backgroundColor: tint.bg }]}>
         <Text style={[styles.avatarLetter, { fontFamily: initialFont, color: tint.ink }]}>
           {initial}
@@ -97,10 +106,17 @@ export function RecordsPunchRow({
       </View>
       <View style={styles.end}>
         <Text style={styles.time}>{formatDisplayTime(record.timestamp)}</Text>
-        <View style={[styles.pill, { backgroundColor: pillStyle.bg }]}>
-          <Text style={[styles.pillText, { color: pillStyle.ink }]} numberOfLines={1}>
-            {pillLabel}
-          </Text>
+        <View style={styles.pillRow}>
+          {duplicate ? (
+            <View style={styles.dupPill}>
+              <Text style={styles.dupPillText}>{t('records.duplicateTag')}</Text>
+            </View>
+          ) : null}
+          <View style={[styles.pill, { backgroundColor: pillStyle.bg }]}>
+            <Text style={[styles.pillText, { color: pillStyle.ink }]} numberOfLines={1}>
+              {pillLabel}
+            </Text>
+          </View>
         </View>
       </View>
     </View>
@@ -148,6 +164,7 @@ function createStyles(isDark: boolean, typography: AppTypography) {
       minWidth: 0,
       backgroundColor: 'transparent',
     },
+    rowMuted: { opacity: 0.55 },
     name: {
       fontFamily: typography.noto.medium,
       fontSize: 14,
@@ -160,6 +177,24 @@ function createStyles(isDark: boolean, typography: AppTypography) {
       lineHeight: 18,
       color: muted,
       marginTop: 2,
+    },
+    pillRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+      flexWrap: 'wrap',
+      justifyContent: 'flex-end',
+    },
+    dupPill: {
+      paddingHorizontal: 6,
+      paddingVertical: 3,
+      borderRadius: 6,
+      backgroundColor: isDark ? 'rgba(100, 116, 139, 0.35)' : 'rgba(148, 163, 184, 0.35)',
+    },
+    dupPillText: {
+      fontFamily: typography.noto.medium,
+      fontSize: 9,
+      color: muted,
     },
     end: {
       alignItems: 'flex-end',

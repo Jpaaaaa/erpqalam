@@ -7,6 +7,7 @@ module.exports = () => {
 
   expo.plugins = [
     ...(appJson.expo.plugins ?? []),
+    '@react-native-community/datetimepicker',
     './plugins/withReleaseSigning',
     'expo-sharing',
   ];

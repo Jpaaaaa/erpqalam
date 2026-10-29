@@ -152,10 +152,14 @@ export function buildEmployeeDayRows(input: {
 
     const entryPunches = punches.filter(
       (punch) =>
-        punch.punchType === 'entry_on_time' || punch.punchType === 'entry_late',
+        !punch.ignoredDuplicate &&
+        (punch.punchType === 'entry_on_time' ||
+          punch.punchType === 'entry_late'),
     );
     const exitPunches = punches.filter(
-      (punch) => punch.punchType === 'exit' || punch.punchType === 'early_exit',
+      (punch) =>
+        !punch.ignoredDuplicate &&
+        (punch.punchType === 'exit' || punch.punchType === 'early_exit'),
     );
     const entry = entryPunches[0] ?? null;
     const exit = exitPunches.length > 0 ? exitPunches[exitPunches.length - 1] : null;

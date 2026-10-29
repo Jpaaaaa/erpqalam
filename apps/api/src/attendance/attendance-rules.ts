@@ -377,6 +377,55 @@ export interface ClassifyPunchContext {
   lateEntryDates: Set<string>;
 }
 
+export function pickCountableEntryExit(
+  punches: AttendanceRecordInput[],
+  ctx: ClassifyPunchContext,
+): { entry: AttendanceRecordInput | null; exit: AttendanceRecordInput | null } {
+  const sorted = [...punches].sort(
+    (a, b) => a.timestamp.getTime() - b.timestamp.getTime(),
+  );
+  const types = sorted.map((p) => classifyPunch(p, ctx));
+  const entryPunches: AttendanceRecordInput[] = [];
+  const exitPunches: AttendanceRecordInput[] = [];
+  sorted.forEach((p, index) => {
+    const type = types[index];
+    if (type === 'entry_on_time' || type === 'entry_late') {
+      entryPunches.push(p);
+    }
+    if (type === 'exit' || type === 'early_exit') {
+      exitPunches.push(p);
+    }
+  });
+  return {
+    entry: entryPunches[0] ?? null,
+    exit:
+      exitPunches.length > 0 ? exitPunches[exitPunches.length - 1] : null,
+  };
+}
+
+/** Extra in-window entry/exit punches that do not count (first IN, last OUT). */
+export function isIgnoredDuplicatePunch(
+  record: AttendanceRecordInput,
+  dayPunches: AttendanceRecordInput[],
+  ctx: ClassifyPunchContext,
+): boolean {
+  const type = classifyPunch(record, ctx);
+  if (
+    type !== 'entry_on_time' &&
+    type !== 'entry_late' &&
+    type !== 'exit' &&
+    type !== 'early_exit'
+  ) {
+    return false;
+  }
+  const { entry, exit } = pickCountableEntryExit(dayPunches, ctx);
+  const ts = record.timestamp.getTime();
+  if (type === 'entry_on_time' || type === 'entry_late') {
+    return !(entry && entry.timestamp.getTime() === ts);
+  }
+  return !(exit && exit.timestamp.getTime() === ts);
+}
+
 export function classifyPunch(
   record: AttendanceRecordInput,
   ctx: ClassifyPunchContext,
@@ -513,7 +562,8 @@ export function buildEmployeeReport(
       exitDates: Set<string>;
       firstEntryMinutesByDate: Record<string, number>;
       firstEntryLateByDate: Record<string, boolean>;
-      hasEarlyExitByDate: Record<string, boolean>;
+      lastExitMinutesByDate: Record<string, number>;
+      lastExitEarlyByDate: Record<string, boolean>;
     }
   > = {};
 
@@ -549,7 +599,8 @@ export function buildEmployeeReport(
         exitDates: new Set(),
         firstEntryMinutesByDate: {},
         firstEntryLateByDate: {},
-        hasEarlyExitByDate: {},
+        lastExitMinutesByDate: {},
+        lastExitEarlyByDate: {},
       };
     }
     const u = byUser[r.deviceUserId];
@@ -563,7 +614,11 @@ export function buildEmployeeReport(
       }
     } else if (punchType === 'exit' || punchType === 'early_exit') {
       u.exitDates.add(dateKey);
-      if (punchType === 'early_exit') u.hasEarlyExitByDate[dateKey] = true;
+      const prevMin = u.lastExitMinutesByDate[dateKey];
+      if (prevMin == null || timeMinutes >= prevMin) {
+        u.lastExitMinutesByDate[dateKey] = timeMinutes;
+        u.lastExitEarlyByDate[dateKey] = punchType === 'early_exit';
+      }
     }
   }
 
@@ -619,7 +674,7 @@ export function buildEmployeeReport(
       for (const dateKey of o.entryDates) {
         if (!o.exitDates.has(dateKey)) continue;
         const hasLate = o.firstEntryLateByDate[dateKey] === true;
-        const hasEarlyExit = o.hasEarlyExitByDate[dateKey] === true;
+        const hasEarlyExit = o.lastExitEarlyByDate[dateKey] === true;
         const lateCovered =
           !hasLate || coveredLateKeys.has(`${deviceUserId}|${dateKey}`);
         const earlyCovered =
@@ -962,17 +1017,7 @@ export function buildEmployeeDayRows(input: {
       continue;
     }
 
-    const entryPunches = punches.filter((_, index) => {
-      const type = types[index];
-      return type === 'entry_on_time' || type === 'entry_late';
-    });
-    const exitPunches = punches.filter((_, index) => {
-      const type = types[index];
-      return type === 'exit' || type === 'early_exit';
-    });
-    const entry = entryPunches[0] ?? null;
-    const exit =
-      exitPunches.length > 0 ? exitPunches[exitPunches.length - 1] : null;
+    const { entry, exit } = pickCountableEntryExit(punches, ctx);
 
     rows.push({
       date: dateKey,
@@ -1137,17 +1182,7 @@ export function buildDailyAttendanceReport(input: {
       continue;
     }
 
-    const entryPunches = punches.filter((_, index) => {
-      const type = types[index];
-      return type === 'entry_on_time' || type === 'entry_late';
-    });
-    const exitPunches = punches.filter((_, index) => {
-      const type = types[index];
-      return type === 'exit' || type === 'early_exit';
-    });
-    const entry = entryPunches[0] ?? null;
-    const exit =
-      exitPunches.length > 0 ? exitPunches[exitPunches.length - 1] : null;
+    const { entry, exit } = pickCountableEntryExit(punches, ctx);
     const entryType = entry ? classifyPunch(entry, ctx) : null;
     const exitType = exit ? classifyPunch(exit, ctx) : null;
     const entryTime = entry ? formatLocalTimestamp(entry.timestamp) : null;

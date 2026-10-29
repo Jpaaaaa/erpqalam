@@ -11,6 +11,11 @@ import {
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import {
+  navigateToEmployeeDetail,
+  navigateToMoreMenu,
+  navigateToMoreStackScreen,
+} from '../navigation/nestedTabNavigation';
 import { setStatusBarStyle } from 'expo-status-bar';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
@@ -206,10 +211,9 @@ export function RecordsScreen({ navigation }: Props) {
   }
 
   function openMoreDaily() {
-    tabNavigation?.navigate('MoreTab', {
-      screen: 'Daily',
-      params: { attentionOnly: true },
-    });
+    if (tabNavigation) {
+      navigateToMoreStackScreen(tabNavigation, 'Daily', { attentionOnly: true });
+    }
   }
 
   const listHeader = (
@@ -223,9 +227,9 @@ export function RecordsScreen({ navigation }: Props) {
       <HomeHeader
         user={user}
         alertCount={0}
-        onAvatarPress={() =>
-          tabNavigation?.navigate('MoreTab', { screen: 'MoreMenu' })
-        }
+        onAvatarPress={() => {
+          if (tabNavigation) navigateToMoreMenu(tabNavigation);
+        }}
         onBellPress={openMoreDaily}
       />
 
@@ -294,9 +298,11 @@ export function RecordsScreen({ navigation }: Props) {
               expanded={!collapsedDates.has(item.date)}
               nameLookup={nameLookup}
               onToggle={() => toggleDate(item.date)}
-              onRowPress={(deviceUserId, name) =>
-                navigation.navigate('EmployeeDetail', { deviceUserId, name })
-              }
+              onRowPress={(deviceUserId, name) => {
+                if (tabNavigation) {
+                  navigateToEmployeeDetail(tabNavigation, { deviceUserId, name });
+                }
+              }}
             />
           )}
         />

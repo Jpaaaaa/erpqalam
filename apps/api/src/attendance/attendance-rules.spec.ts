@@ -1,14 +1,20 @@
 import {
   AttendanceRecordInput,
   AttendanceUserScheduleInput,
+  AttendanceSettingsMap,
   BuildEmployeeReportInput,
+  ClassifyPunchContext,
   DEFAULT_ATTENDANCE_SETTINGS,
+  buildDailyAttendanceReport,
+  buildEmployeeDayRows,
   buildEmployeeReport,
   dateRangeBounds,
   findEarlyExitOccurrences,
   findLateOccurrences,
   enumerateLocalDateKeys,
+  isIgnoredDuplicatePunch,
   isRecordInDateRange,
+  pickCountableEntryExit,
 } from './attendance-rules';
 
 const DAY = '2026-09-15';
@@ -181,6 +187,116 @@ describe('attendance-rules date window', () => {
     );
     expect(punch('101', DAY, '23:59').timestamp <= to!).toBe(true);
     expect(punch('101', DAY_AFTER, '00:00').timestamp <= to!).toBe(false);
+  });
+});
+
+const AFTERNOON_SETTINGS: AttendanceSettingsMap = {
+  ...DEFAULT_ATTENDANCE_SETTINGS,
+  shift_start_time: '08:00',
+  shift_end_time: '14:05',
+  entry_zone_start: '07:45',
+  entry_zone_end: '08:00',
+  late_zone_start_time: '08:00',
+  late_zone_end_time: '08:15',
+  exit_zone_start: '13:45',
+  exit_zone_end: '14:30',
+  early_left_zone_start_time: '13:30',
+  early_left_zone_end_time: '13:45',
+};
+
+describe('punch deduplication (HRAT)', () => {
+  const DAY_DEDUP = '2026-09-16';
+
+  function ctx(settings = AFTERNOON_SETTINGS): ClassifyPunchContext {
+    return {
+      settings,
+      usersById: new Map([['101', { deviceUserId: '101' }]]),
+      earlyExitDates: new Set(),
+      lateEntryDates: new Set(),
+    };
+  }
+
+  it('first entry wins: 07:55, 07:56, 08:10 → on time, no late', () => {
+    const records: AttendanceRecordInput[] = [
+      punch('101', DAY_DEDUP, '07:55'),
+      punch('101', DAY_DEDUP, '07:56'),
+      punch('101', DAY_DEDUP, '08:10'),
+      punch('101', DAY_DEDUP, '14:05'),
+    ];
+    const input = {
+      ...baseInput(records, DAY_DEDUP, DAY_DEDUP),
+      settings: AFTERNOON_SETTINGS,
+    };
+    const snap = reportSnapshot(input);
+    expect(snap.lateOccurrences).toEqual([]);
+    expect(snap.rows.find((r) => r.deviceUserId === '101')?.late_count).toBe(0);
+
+    const dayRows = buildEmployeeDayRows({
+      deviceUserId: '101',
+      records,
+      settings: AFTERNOON_SETTINGS,
+      dayOffDates: [],
+      employeeHolidayDates: [],
+      earlyExitDates: new Set(),
+      lateEntryDates: new Set(),
+      fromDate: DAY_DEDUP,
+      toDate: DAY_DEDUP,
+    });
+    const row = dayRows.find((r) => r.date === DAY_DEDUP);
+    expect(row?.entryType).toBe('entry_on_time');
+    expect(row?.entryTime).toContain('07:55');
+  });
+
+  it('last exit wins: 14:00, 14:02, 14:05 → exit 14:05', () => {
+    const records: AttendanceRecordInput[] = [
+      punch('101', DAY_DEDUP, '07:55'),
+      punch('101', DAY_DEDUP, '14:00'),
+      punch('101', DAY_DEDUP, '14:02'),
+      punch('101', DAY_DEDUP, '14:05'),
+    ];
+    const c = ctx();
+    const dayPunches = records;
+    const { entry, exit } = pickCountableEntryExit(dayPunches, c);
+    expect(entry?.timestamp.getHours()).toBe(7);
+    expect(entry?.timestamp.getMinutes()).toBe(55);
+    expect(exit?.timestamp.getHours()).toBe(14);
+    expect(exit?.timestamp.getMinutes()).toBe(5);
+
+    expect(isIgnoredDuplicatePunch(records[1], dayPunches, c)).toBe(true);
+    expect(isIgnoredDuplicatePunch(records[2], dayPunches, c)).toBe(true);
+
+    const daily = buildDailyAttendanceReport({
+      date: DAY_DEDUP,
+      users: [{ deviceUserId: '101' }],
+      records,
+      settings: AFTERNOON_SETTINGS,
+      orgDayOffDates: new Set(),
+      earlyExitHolidayDates: new Set(),
+      lateEntryHolidayDates: new Set(),
+      employeeHolidayUserIds: new Set(),
+      lateUserIds: new Set(),
+      earlyExitUserIds: new Set(),
+    });
+    expect(daily.rows[0]?.exitTime).toContain('14:05');
+  });
+
+  it('manual_in still classifies; duplicate late entry does not add late occurrence', () => {
+    const manualLate: AttendanceRecordInput = {
+      deviceUserId: '101',
+      timestamp: ts(DAY_DEDUP, '08:20'),
+      verifyType: 'manual_in',
+    };
+    const records: AttendanceRecordInput[] = [
+      punch('101', DAY_DEDUP, '07:55'),
+      manualLate,
+      punch('101', DAY_DEDUP, '14:05'),
+    ];
+    const input = {
+      ...baseInput(records, DAY_DEDUP, DAY_DEDUP),
+      settings: AFTERNOON_SETTINGS,
+    };
+    expect(findLateOccurrences(input)).toEqual([]);
+    expect(isIgnoredDuplicatePunch(manualLate, records, ctx())).toBe(true);
   });
 });
 

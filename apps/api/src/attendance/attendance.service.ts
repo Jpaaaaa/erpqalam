@@ -19,6 +19,8 @@ import {
   buildEmployeeDayRows,
   buildEmployeeReport,
   classifyPunch,
+  getDateKeyFromTimestamp,
+  isIgnoredDuplicatePunch,
   dateRangeBounds,
   DEFAULT_ATTENDANCE_SETTINGS,
   enumerateLocalDateKeys,
@@ -359,15 +361,35 @@ export class AttendanceService {
         .map((h) => formatDateLocal(h.date)),
     );
 
+    const ctx = {
+      settings,
+      usersById: usersMap,
+      earlyExitDates,
+      lateEntryDates,
+    };
+    const inputs = rows.map((row) => ({
+      deviceUserId: row.deviceUserId,
+      timestamp: row.timestamp,
+      verifyType: row.verifyType,
+    }));
+    const byDay = new Map<string, typeof inputs>();
+    for (const input of inputs) {
+      const dayKey = `${input.deviceUserId}|${getDateKeyFromTimestamp(input.timestamp)}`;
+      const list = byDay.get(dayKey) ?? [];
+      list.push(input);
+      byDay.set(dayKey, list);
+    }
+
     return rows.map((row) => {
-      const punchType = classifyPunch(
-        {
-          deviceUserId: row.deviceUserId,
-          timestamp: row.timestamp,
-          verifyType: row.verifyType,
-        },
-        { settings, usersById: usersMap, earlyExitDates, lateEntryDates },
-      );
+      const input = {
+        deviceUserId: row.deviceUserId,
+        timestamp: row.timestamp,
+        verifyType: row.verifyType,
+      };
+      const punchType = classifyPunch(input, ctx);
+      const dayKey = `${row.deviceUserId}|${getDateKeyFromTimestamp(row.timestamp)}`;
+      const dayPunches = byDay.get(dayKey) ?? [input];
+      const ignoredDuplicate = isIgnoredDuplicatePunch(input, dayPunches, ctx);
       return {
         id: row.id,
         deviceUserId: row.deviceUserId,
@@ -376,6 +398,7 @@ export class AttendanceService {
         deviceSerial: row.deviceSerial,
         createdAt: formatLocalTimestamp(row.createdAt),
         punchType,
+        ignoredDuplicate,
       };
     });
   }

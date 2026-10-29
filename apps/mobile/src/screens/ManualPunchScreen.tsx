@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import type { RouteProp } from '@react-navigation/native';
+import type {
+  MoreStackParamList,
+  RecordsStackParamList,
+} from '../navigation/types';
 import {
   ActivityIndicator,
   Pressable,
@@ -27,9 +32,15 @@ import { AppText } from '../ui/AppText';
 import { ltrText } from '../ui/ltr';
 import { mirroredRow } from '../ui/rtlLayout';
 
+type ManualRoute = RouteProp<
+  RecordsStackParamList | MoreStackParamList,
+  'ManualPunch'
+>;
+
 export function ManualPunchScreen() {
   const { t } = useTranslation('attendance');
   const navigation = useNavigation();
+  const route = useRoute<ManualRoute>();
   const canManage = useCanManageAttendance();
   const { fontFamily, mirrorLayout } = useI18n();
 
@@ -71,6 +82,11 @@ export function ManualPunchScreen() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  useEffect(() => {
+    const id = route.params?.deviceUserId?.trim();
+    if (id) setDeviceUserId(id);
+  }, [route.params?.deviceUserId]);
 
   async function handleSave() {
     if (!deviceUserId || !isValidDateKey(date)) {

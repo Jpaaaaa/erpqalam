@@ -16,6 +16,8 @@ export interface AttendanceRecord {
   deviceSerial: string;
   createdAt: string;
   punchType?: PunchType | null;
+  /** Not the counted first IN / last OUT for that day (HRAT dedup). */
+  ignoredDuplicate?: boolean;
 }
 
 export interface AttendanceDevice {

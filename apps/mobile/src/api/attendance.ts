@@ -23,6 +23,21 @@ export async function listAttendanceUsers(): Promise<AttendanceUser[]> {
   return apiRequest<AttendanceUser[]>('/attendance/users');
 }
 
+export async function updateAttendanceUser(
+  deviceUserId: string,
+  payload: Partial<
+    Omit<AttendanceUser, 'id' | 'deviceUserId' | 'linkedUserId'>
+  > & { linkedUserId?: string | null },
+): Promise<AttendanceUser> {
+  return apiRequest<AttendanceUser>(
+    `/attendance/users/${encodeURIComponent(deviceUserId)}`,
+    {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    },
+  );
+}
+
 export async function listAttendanceDevices(): Promise<AttendanceDevice[]> {
   return apiRequest<AttendanceDevice[]>('/attendance/devices');
 }

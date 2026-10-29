@@ -70,17 +70,30 @@
       "holidays": "پشوو",
       "settings": "ڕێکخستن",
       "more": "زیاتر",
-      "daily": "ڕۆژانە"
+      "daily": "ڕۆژانە",
+      "shift": "شەفت"
+    },
+    "shift": {
+      "customSchedules": "کاتی تایبەت",
+      "noCustomSchedules": "هیچ کارمەندێک کاتی تایبەتی نییە."
     },
     "more": {
       "subtitle": "ڕاپۆرتی ڕۆژانە، وردەکاری کارمەند، پشوو، و پەنجەی دەستی.",
+      "sectionAttendance": "ئامادەبوون",
+      "sectionSettings": "ڕێکخستنەکان",
       "daily": "ئامادەبوونی ڕۆژانە",
       "report": "ڕاپۆرتی کارمەند",
       "holidays": "پشوو و مۆڵەت",
+      "employees": "کارمەندان",
       "manual": "پەنجەی دەستی",
       "viewOnly": "تەنها بینین — ناتوانیت پەنجە، پشوو، یان داپۆشینی مۆڵەت زیاد بکەیت.",
       "profile": "چوویتەژوورەوە وەک",
+      "roleManager": "بەڕێوەبەر",
+      "roleEmployee": "کارمەند",
+      "appearance": "ڕووکار",
       "signOut": "چوونەدەرەوە",
+      "signOutConfirmTitle": "چوونەدەرەوە",
+      "signOutConfirmMessage": "دڵنیایت لە چوونەدەرەوە؟",
       "theme": "ڕەنگی سەکۆ",
       "themeLight": "ڕووناک",
       "themeDark": "تاریک",
@@ -118,8 +131,18 @@
       "pdfExporting": "دروستکردن...",
       "pdfError": "دروستکردنی PDFی ڕۆژانە سەرکەوتوو نەبوو.",
       "search": "گەڕان",
-      "searchPlaceholder": "پاڵاوتن بە ناو یان ناسنامە...",
+      "searchPlaceholder": "گەڕان بە ناو یان ژمارە",
       "empty": "هیچ کارمەندێک ناگونجێت.",
+      "offDayBanner": "ڕۆژی پشوو",
+      "summaryFooter": "{{earlyExit}} زوو چووە · {{onLeave}} مۆڵەت · {{holiday}} پشووی فەرمی",
+      "filters": {
+        "all": "هەموو",
+        "present": "ئامادە",
+        "late": "دواکەوتوو",
+        "absent": "نەهاتوو",
+        "earlyExit": "زوو چووە",
+        "onLeave": "مۆڵەت"
+      },
       "entry": "کاتی هاتن",
       "exit": "کاتی چوون",
       "summary": {
@@ -127,8 +150,8 @@
         "late": "دواکەوتوو",
         "earlyExit": "چوونی زوو",
         "absent": "نەهاتوو",
-        "onLeave": "لە پشوودا",
-        "officialHoliday": "پشوی فەرمی",
+        "onLeave": "مۆڵەت",
+        "officialHoliday": "پشووی فەرمی",
         "dayOff": "ڕۆژی پشوو"
       },
       "entryType": "جۆری هاتن",
@@ -136,10 +159,10 @@
       "status": {
         "on_time": "لە کاتی خۆیدا",
         "late": "دواکەوتوو",
-        "early_exit": "چوونی زوو",
+        "early_exit": "زوو چووە",
         "absent": "نەهاتوو",
-        "on_leave": "لە پشوودا",
-        "official_holiday": "پشوی فەرمی",
+        "on_leave": "مۆڵەت",
+        "official_holiday": "پشووی فەرمی",
         "day_off": "ڕۆژی پشوو"
       }
     },
@@ -232,6 +255,7 @@
       "punchKind": "جۆری پەنجە",
       "punchIn": "هاتن",
       "punchOut": "چوون",
+      "duplicateTag": "دووبارە",
       "manualSuccess": "پەنجەی دەستی پاشەکەوت کرا.",
       "manualError": "نەتوانرا پەنجەی دەستی پاشەکەوت بکرێت."
     },
@@ -239,7 +263,7 @@
       "loadError": "نەتوانرا ڕاپۆرتی کارمەند بار بکرێت.",
       "presentDays": "ڕۆژانی ئامادەبوون",
       "expectedDays": "ڕۆژانی چاوەڕوانکراو",
-      "absentDays": "ڕۆژانی غیاب",
+      "absentDays": "ڕۆژانی نەهاتن",
       "lateEvents": "دواکەوتنەکان",
       "earlyEvents": "چوونی زوو",
       "coverLate": "داپۆشینی دواکەوتن",
@@ -253,9 +277,26 @@
       "id": "ئایدی",
       "present": "ئامادە",
       "expected": "چاوەڕوان",
-      "absent": "غیاب",
+      "absent": "نەهاتوو",
       "late": "دواکەوتن",
-      "leaveBalance": "باڵانسی پشوو",
+      "leaveBalance": "باڵانسی مۆڵەت",
+      "leaveShort": "{{days}} مۆڵەت",
+      "leaderboardStats": "{{late}} دواکەوتن · {{absent}} نەهاتن",
+      "sort": {
+        "attendance": "ئامادەبوون",
+        "late": "دواکەوتن",
+        "absent": "نەهاتن"
+      },
+      "summaryTile": {
+        "present": "ئامادەبوون",
+        "late": "دواکەوتن",
+        "absent": "نەهاتن",
+        "early": "زوو چووە"
+      },
+      "summary": {
+        "best": "باشترین",
+        "needsAttention": "پێویستی بە سەرنجە"
+      },
       "empty": "هیچ داتایەکی ڕاپۆرت نییە بۆ ئەم ماوەیە.",
       "emptyDays": "هیچ ڕۆژێکی ئامادەبوون نییە لەم ماوەیەدا.",
       "earlyExitCount": "{count} چوونی زوو لەم ماوەیەدا.",
@@ -282,23 +323,59 @@
         "summary": "پوختەی گشتی"
       }
     },
+    "employeeDetail": {
+      "in": "هاتن",
+      "out": "چوون",
+      "noEntry": "هاتن نییە",
+      "noExit": "چوون نییە",
+      "manualTag": "دەستی",
+      "fullReport": "ڕاپۆرتی تەواو",
+      "manualPunch": "پەنجەی دەستی",
+      "kpi": {
+        "presentDays": "ڕۆژی ئامادەبوون",
+        "late": "دواکەوتن",
+        "earlyExit": "دەرچوونی زوو",
+        "absent": "نەهاتن",
+        "avgEntry": "تێکڕای کاتی هاتن",
+        "leaveBalance": "باڵانسی مۆڵەت"
+      },
+      "trend": {
+        "attendance": "ئامادەبوون بەراورد بە ماوەی پێشوو",
+        "late": "دواکەوتن بەراورد بە ماوەی پێشوو"
+      }
+    },
     "employees": {
       "loadError": "نەتوانرا کارمەندان بار بکرێن.",
       "deviceUserId": "ئایدی بەکارهێنەر لە ئامێر",
       "name": "ناو",
       "addEmployee": "زیادکردنی کارمەند",
       "search": "گەڕان",
-      "searchPlaceholder": "گەڕان بە ناو یان ئایدی...",
+      "searchPlaceholder": "گەڕان بە ناو یان ژمارە",
       "status": "دۆخ",
       "actions": "کردارەکان",
-      "empty": "هیچ کارمەندێک نەدۆزرایەوە.",
+      "empty": "هیچ کارمەندێک نییە",
       "unregistered": "تۆمارنەکراو",
+      "unregisteredLabel": "ناسنامە #{id}",
+      "filters": {
+        "all": "هەموو",
+        "present": "ئامادە",
+        "late": "دواکەوتوو",
+        "absent": "نەهاتوو",
+        "onLeave": "مۆڵەت",
+        "unregistered": "تۆمارنەکراو"
+      },
       "registered": "تۆمارکراو",
       "edit": "دەستکاری",
       "editTitle": "دەستکاری کارمەند",
       "cancel": "هەڵوەشاندنەوە",
       "save": "پاشەکەوت",
       "customSchedule": "خشتەی تایبەت (ئارەزوومەندانە)",
+      "customScheduleTitle": "کاتی تایبەت",
+      "useGlobalSchedule": "بەکارهێنانی کاتی گشتی",
+      "inheritGlobalSchedule": "کاتی گشتیی دامەزراوە بەکاردەهێنرێت.",
+      "saveSchedule": "پاشەکەوتکردنی کات",
+      "scheduleSaved": "کاتی کارمەند پاشەکەوت کرا.",
+      "scheduleNeedsRegistered": "پێش گۆڕینی کات، کارمەند لە لیستدا تۆمار بکە.",
       "shiftStart": "دەستپێکی شەفت",
       "shiftEnd": "کۆتایی شەفت",
       "saved": "کارمەند نوێکرایەوە.",
@@ -324,9 +401,35 @@
       "empty": "هێشتا هیچ ئامێرێک پەیوەندی نەکردووە. دوای یەکەم iclock push لێرە دەردەکەوێت."
     },
     "settings": {
+      "screenTitle": "کاتی دەوام",
       "loadError": "نەتوانرا ڕێکخستنەکانی ئامادەبوون بار بکرێن.",
       "saveError": "نەتوانرا ڕێکخستنەکان پاشەکەوت بکرێن.",
       "saved": "ڕێکخستنەکان پاشەکەوت کران.",
+      "saveConfirmTitle": "پاشەکەوتکردن",
+      "saveConfirmMessage": "ئەم گۆڕانکاریانە کار لە هەموو کارمەندان دەکەن.",
+      "timePickerDone": "ئامادەیە",
+      "timeAm": "AM",
+      "timePm": "PM",
+      "zoneEntry": "ناوچەی هاتن",
+      "zoneLate": "دواکەوتن",
+      "zoneExit": "ناوچەی چوون",
+      "zoneEarly": "چوونی زوو",
+      "timelineEntry": "هاتن",
+      "timelineLate": "دواکەوتن",
+      "timelineEarly": "زوو",
+      "timelineExit": "چوون",
+      "timelineShift": "شەفت",
+      "validation": {
+        "invalidTime": "کاتێکی دروست بنووسە (HH:mm).",
+        "shiftEndAfterStart": "کۆتایی شەفت دوای دەستپێک بێت.",
+        "zoneEndAfterStart": "کۆتایی ناوچە دوای دەستپێکی بێت.",
+        "entryBeforeShiftStart": "ناوچەی هاتن نابێت دوای دەستپێکی شەفت بێت.",
+        "lateAfterShiftStart": "دواکەوتن دەبێت لە دەستپێکی شەفت یان دواتر بێت.",
+        "lateBeforeShiftEnd": "دواکەوتن نابێت دوای کۆتایی شەفت بێت.",
+        "earlyBeforeShiftEnd": "چوونی زوو نابێت دوای کۆتایی شەفت بێت.",
+        "exitAfterShiftStart": "ناوچەی چوون دەبێت لە ناو شەفت بێت.",
+        "workingDaysRequired": "لانیکەم یەک ڕۆژی کار هەڵبژێرە."
+      },
       "shiftSection": "شەفتی بنەڕەتی",
       "shiftStart": "دەستپێکی شەفت",
       "shiftEnd": "کۆتایی شەفت",
@@ -355,6 +458,12 @@
       }
     },
     "holidays": {
+      "screenTitle": "پشوو و مۆڵەت",
+      "emptyOfficial": "هیچ پشوویەک دانەنراوە",
+      "removeConfirmTitle": "سڕینەوەی پشوو",
+      "removeConfirmMessage": "دڵنیایت لە سڕینەوەی ئەم پشووە؟",
+      "daysUsed": "{{count}} ڕۆژ",
+      "coverPill": "داپۆشین",
       "loadError": "نەتوانرا پشوو بار بکرێت.",
       "saveError": "نەتوانرا پاشەکەوت بکرێت.",
       "orgAdded": "پشوی دامەزراوە زیادکرا.",
@@ -401,14 +510,14 @@
       "fullUsed": "ڕۆژی تەواو بەکارهاتوو: {used} / {total}",
       "remaining": "ماوە: {count}",
       "subtabs": {
-        "employee": "پشوی کارمەند",
-        "official": "پشوی فەرمی",
-        "temporary": "پشوی کاتی",
+        "employee": "کارمەند",
+        "official": "فەرمی",
+        "temporary": "کاتی",
         "settings": "ڕێکخستن"
       },
       "dateFrom": "لە بەروار",
       "dateTo": "بۆ بەروار",
-      "dateToOptional": "ئارەزوومەندانە — هەمان بەرواری دەستپێک بۆ یەک ڕۆژ",
+      "dateToOptional": "ڕۆژێک",
       "summaryDayOff": "ڕۆژانی پشوو",
       "summaryEarly": "چوونی زوو",
       "summaryLate": "هاتنی دواکەوتوو"

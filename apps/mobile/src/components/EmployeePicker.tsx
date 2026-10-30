@@ -1,12 +1,10 @@
-import { useMemo, useState } from 'react';
-import { FlatList, Modal, Pressable, StyleSheet, View } from 'react-native';
+import { useState } from 'react';
+import { Pressable, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { displayName } from '../attendance/formatters';
 import type { AttendanceUser } from '../types/attendance';
-import { SearchField } from './SearchField';
+import { EmployeeSelectSheet } from './EmployeeSelectSheet';
 import { AppText } from '../ui/AppText';
-import { useI18n } from '../i18n/I18nProvider';
-import { mirroredRow } from '../ui/rtlLayout';
 
 export function EmployeePicker({
   users,
@@ -18,20 +16,9 @@ export function EmployeePicker({
   onChange: (deviceUserId: string) => void;
 }) {
   const { t } = useTranslation('attendance');
-  const { mirrorLayout } = useI18n();
   const [open, setOpen] = useState(false);
-  const [search, setSearch] = useState('');
 
   const selected = users.find((u) => u.deviceUserId === value);
-  const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    if (!q) return users;
-    return users.filter(
-      (u) =>
-        u.deviceUserId.toLowerCase().includes(q) ||
-        u.name.toLowerCase().includes(q),
-    );
-  }, [users, search]);
 
   return (
     <>
@@ -44,47 +31,13 @@ export function EmployeePicker({
         </AppText>
       </Pressable>
 
-      <Modal visible={open} animationType="slide" onRequestClose={() => setOpen(false)}>
-        <View style={styles.modal}>
-          <View style={[styles.modalHeader, mirroredRow(mirrorLayout)]}>
-            <AppText style={styles.modalTitle} numberOfLines={1}>
-              {t('report.selectEmployee')}
-            </AppText>
-            <Pressable onPress={() => setOpen(false)}>
-              <AppText style={styles.close}>{t('records.cancel')}</AppText>
-            </Pressable>
-          </View>
-          <SearchField
-            value={search}
-            onChangeText={setSearch}
-            placeholder={t('report.searchPlaceholder')}
-          />
-          <FlatList
-            data={filtered}
-            keyExtractor={(item) => item.deviceUserId}
-            renderItem={({ item }) => (
-              <Pressable
-                style={styles.row}
-                onPress={() => {
-                  onChange(item.deviceUserId);
-                  setOpen(false);
-                  setSearch('');
-                }}
-              >
-                <AppText style={styles.rowName} numberOfLines={1}>
-                  {displayName(item.name, item.deviceUserId)}
-                </AppText>
-                <AppText style={styles.rowId} numberOfLines={1}>
-                  {item.deviceUserId}
-                </AppText>
-              </Pressable>
-            )}
-            ListEmptyComponent={
-              <AppText style={styles.empty}>{t('employees.empty')}</AppText>
-            }
-          />
-        </View>
-      </Modal>
+      <EmployeeSelectSheet
+        visible={open}
+        users={users}
+        value={value}
+        onClose={() => setOpen(false)}
+        onSelect={onChange}
+      />
     </>
   );
 }
@@ -100,22 +53,4 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   triggerText: { fontSize: 16, color: '#0f172a' },
-  modal: { flex: 1, padding: 16, paddingTop: 48, backgroundColor: '#fff' },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-    gap: 12,
-  },
-  modalTitle: { fontSize: 18, fontWeight: '600', flex: 1 },
-  close: { color: '#0f766e', fontWeight: '600', fontSize: 16 },
-  row: {
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
-  },
-  rowName: { fontSize: 16, fontWeight: '600', color: '#0f172a' },
-  rowId: { fontSize: 12, color: '#64748b', marginTop: 2 },
-  empty: { textAlign: 'center', color: '#64748b', marginTop: 24 },
 });

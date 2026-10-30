@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import puppeteer, { type Browser } from 'puppeteer-core';
 
 const IDLE_CLOSE_MS = 5 * 60 * 1000;
+const PDF_RENDER_TIMEOUT_MS = 180_000;
 
 @Injectable()
 export class AttendancePdfChromiumService implements OnModuleDestroy {
@@ -18,7 +19,12 @@ export class AttendancePdfChromiumService implements OnModuleDestroy {
     this.scheduleIdleClose();
     const page = await browser.newPage();
     try {
-      await page.setContent(html, { waitUntil: 'load' });
+      page.setDefaultNavigationTimeout(PDF_RENDER_TIMEOUT_MS);
+      page.setDefaultTimeout(PDF_RENDER_TIMEOUT_MS);
+      await page.setContent(html, {
+        waitUntil: 'load',
+        timeout: PDF_RENDER_TIMEOUT_MS,
+      });
       await new Promise((resolve) => setTimeout(resolve, 200));
       const pdf = await page.pdf({
         format: 'A4',

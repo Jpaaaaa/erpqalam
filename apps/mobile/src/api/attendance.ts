@@ -214,6 +214,7 @@ export async function listLeaveBalances(): Promise<LeaveBalance[]> {
 export type EmployeeReportPdfType =
   | 'performance'
   | 'per-employee'
+  | 'per-employee-all'
   | 'summary'
   | 'daily'
   | 'time-shifts';

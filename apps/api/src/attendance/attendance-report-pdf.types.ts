@@ -14,6 +14,20 @@ export type EmployeeReportPdfRow = {
   daysAbsent: number;
   lateCount: number;
   leaveBalance: number;
+  /** Leave days in the selected period (employee holiday rows). */
+  leaveDaysInPeriod?: number;
+};
+
+export type EmployeeReportPdfEmployeeDetail = {
+  deviceUserId: string;
+  name: string;
+  present: number;
+  expected: number;
+  absent: number;
+  leaveBalance: number;
+  leaveDaysInPeriod: number;
+  notComing: number;
+  days: EmployeeDayRow[];
 };
 
 export type EmployeeReportPdfPayload = {
@@ -30,16 +44,8 @@ export type EmployeeReportPdfPayload = {
     totalLate: number;
     avgRate: number;
   };
-  selectedEmployee?: {
-    deviceUserId: string;
-    name: string;
-    present: number;
-    expected: number;
-    absent: number;
-    leaveBalance: number;
-    notComing: number;
-    days: EmployeeDayRow[];
-  };
+  selectedEmployee?: EmployeeReportPdfEmployeeDetail;
+  allEmployees?: EmployeeReportPdfEmployeeDetail[];
   daily?: {
     date: string;
     rows: (DailyAttendanceRow & { name: string })[];

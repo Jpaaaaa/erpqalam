@@ -3,6 +3,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import {
   FlatList,
   Platform,
+  Pressable,
   RefreshControl,
   StatusBar as RNStatusBar,
   StyleSheet,
@@ -43,6 +44,7 @@ import {
 } from '../attendance/employeeDetailStats';
 import { displayName, getQuickRange } from '../attendance/formatters';
 import { buildEmployeeDayRows } from '../attendance/report-days';
+import { isEmployeeReportPdfRangeValid } from '../attendance/reportRange';
 import { buildNameLookup, mergeEmployeesWithPunchIds } from '../attendance/lookups';
 import { GlassBackButton } from '../components/employeeDetail/GlassBackButton';
 import {
@@ -137,6 +139,7 @@ export function EmployeeReportScreen({ route, navigation }: Props) {
   const [employeeReady, setEmployeeReady] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [exportingAllEmployees, setExportingAllEmployees] = useState(false);
   const [coverBusy, setCoverBusy] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [errorIsNetwork, setErrorIsNetwork] = useState(false);
@@ -485,11 +488,21 @@ export function EmployeeReportScreen({ route, navigation }: Props) {
     selectedUser,
   ]);
 
+  function assertPdfRangeOrSetError(): boolean {
+    if (!isEmployeeReportPdfRangeValid(filter.fromDate, filter.toDate)) {
+      setError(t('report.pdfRangeTooLong'));
+      setErrorIsNetwork(false);
+      return false;
+    }
+    return true;
+  }
+
   async function handlePdf() {
     if (tab === 'per-employee' && !selectedId) {
       setError(t('report.selectEmployeeFirst'));
       return;
     }
+    if (!assertPdfRangeOrSetError()) return;
     setExporting(true);
     setError('');
     try {
@@ -506,6 +519,26 @@ export function EmployeeReportScreen({ route, navigation }: Props) {
       setErrorIsNetwork(resolved.isNetwork);
     } finally {
       setExporting(false);
+    }
+  }
+
+  async function handleAllEmployeesPdf() {
+    if (!assertPdfRangeOrSetError()) return;
+    setExportingAllEmployees(true);
+    setError('');
+    try {
+      await shareAttendanceReportPdf({
+        type: 'per-employee-all',
+        fromDate: filter.fromDate,
+        toDate: filter.toDate,
+      });
+    } catch (err) {
+      const resolved = resolveUserFacingError(err, t, 'report.pdfError');
+      if (resolved.sessionExpired) return;
+      setError(resolved.message);
+      setErrorIsNetwork(resolved.isNetwork);
+    } finally {
+      setExportingAllEmployees(false);
     }
   }
 
@@ -677,11 +710,31 @@ export function EmployeeReportScreen({ route, navigation }: Props) {
                 <Text style={styles.hint}>{t('report.selectEmployeeHint')}</Text>
               ) : tab === 'per-employee' ? (
                 <View style={styles.perEmployeeBody}>
-                  <ReportEmployeePickerRow
-                    users={users}
-                    value={selectedId}
-                    onChange={setSelectedId}
-                  />
+                  <View style={styles.perEmployeePickerRow}>
+                    <View style={styles.perEmployeePickerFlex}>
+                      <ReportEmployeePickerRow
+                        users={users}
+                        value={selectedId}
+                        onChange={setSelectedId}
+                      />
+                    </View>
+                    <Pressable
+                      onPress={() => void handleAllEmployeesPdf()}
+                      disabled={exportingAllEmployees || exporting}
+                      style={({ pressed }) => [
+                        styles.allEmployeesPdfBtn,
+                        (pressed || exportingAllEmployees) && styles.allEmployeesPdfBtnPressed,
+                        (exportingAllEmployees || exporting) && styles.allEmployeesPdfBtnDisabled,
+                      ]}
+                      accessibilityRole="button"
+                    >
+                      <Text style={styles.allEmployeesPdfBtnText} numberOfLines={2}>
+                        {exportingAllEmployees
+                          ? t('report.pdfPreparing')
+                          : t('report.allEmployeesPdf')}
+                      </Text>
+                    </Pressable>
+                  </View>
                   {employeeMetrics ? (
                     <EmployeeDetailMetricsCard metrics={employeeMetrics} />
                   ) : null}
@@ -805,5 +858,30 @@ function createStyles(isDark: boolean, typography: AppTypography) {
       fontSize: 15,
     },
     perEmployeeBody: { gap: 16, marginTop: 4 },
+    perEmployeePickerRow: {
+      flexDirection: 'row',
+      alignItems: 'stretch',
+      gap: 10,
+    },
+    perEmployeePickerFlex: { flex: 1, minWidth: 0 },
+    allEmployeesPdfBtn: {
+      alignSelf: 'center',
+      maxWidth: 120,
+      paddingHorizontal: 12,
+      paddingVertical: 14,
+      borderRadius: 14,
+      backgroundColor: isDark ? 'rgba(20, 184, 166, 0.22)' : 'rgba(20, 184, 166, 0.12)',
+      borderWidth: 1,
+      borderColor: isDark ? 'rgba(20, 184, 166, 0.45)' : 'rgba(20, 184, 166, 0.35)',
+    },
+    allEmployeesPdfBtnPressed: { opacity: 0.88 },
+    allEmployeesPdfBtnDisabled: { opacity: 0.55 },
+    allEmployeesPdfBtnText: {
+      fontFamily: typography.noto.bold,
+      fontSize: 12,
+      lineHeight: 17,
+      textAlign: 'center',
+      color: '#0D9488',
+    },
   });
 }

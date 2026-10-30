@@ -543,10 +543,14 @@ export class EmployeeReportQueryDto {
 export const EMPLOYEE_REPORT_PDF_TYPES = [
   'performance',
   'per-employee',
+  'per-employee-all',
   'summary',
   'daily',
   'time-shifts',
 ] as const;
+
+/** Max inclusive days for employee-report PDFs (same value as `DAILY_SUMMARY_MAX_RANGE_DAYS`). */
+export const EMPLOYEE_REPORT_PDF_MAX_RANGE_DAYS = 93;
 
 export type EmployeeReportPdfType = (typeof EMPLOYEE_REPORT_PDF_TYPES)[number];
 

@@ -46,4 +46,8 @@ export const REPORT_SHELL_CSS = `
     .text-blue { color: #0284C7 !important; font-weight: 800; }
     
     .footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid #E2E8F0; display: flex; justify-content: space-between; font-size: 12px; color: #64748b; font-weight: 600; }
+
+    .cover-page { page-break-after: always; }
+    .employee-page { page-break-before: always; break-before: page; }
+    .employee-page-first { page-break-before: auto; break-before: auto; }
 `;

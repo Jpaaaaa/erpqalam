@@ -45,6 +45,7 @@ import {
   getQuickRange,
 } from '@/lib/attendance/formatters';
 import { buildEmployeeDayRows } from '@/lib/attendance/report-days';
+import { isEmployeeReportPdfRangeValid } from '@/lib/attendance/report-range';
 import { AttendanceDateFilterBar } from '@/components/attendance/AttendanceDateFilterBar';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
@@ -88,6 +89,7 @@ export function EmployeeReportPanel() {
   );
   const [employeeLoading, setEmployeeLoading] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [exportingAllEmployees, setExportingAllEmployees] = useState(false);
   const [timeLeaveUsage, setTimeLeaveUsage] = useState<TimeLeaveUsage[]>([]);
   const [lateOccurrences, setLateOccurrences] = useState<
     { deviceUserId: string; date: string }[]
@@ -300,15 +302,24 @@ export function EmployeeReportPanel() {
     );
   }
 
+  function assertPdfRange(fromDate: string, toDate: string): boolean {
+    if (!isEmployeeReportPdfRangeValid(fromDate, toDate)) {
+      setError(t('pdfRangeTooLong'));
+      return false;
+    }
+    return true;
+  }
+
   async function handleExportPdf() {
     if (subtab === 'per-employee' && !selectedEmployeeId) {
       setError(t('selectEmployeeFirst'));
       return;
     }
+    const range = subtab === 'per-employee' ? employeeFilter : filter;
+    if (!assertPdfRange(range.fromDate, range.toDate)) return;
     setExporting(true);
     setError('');
     try {
-      const range = subtab === 'per-employee' ? employeeFilter : filter;
       await downloadEmployeeReportPdf({
         type: subtab,
         fromDate: range.fromDate || undefined,
@@ -320,6 +331,23 @@ export function EmployeeReportPanel() {
       setError(err instanceof ApiClientError ? err.message : t('pdfError'));
     } finally {
       setExporting(false);
+    }
+  }
+
+  async function handleExportAllEmployeesPdf() {
+    if (!assertPdfRange(employeeFilter.fromDate, employeeFilter.toDate)) return;
+    setExportingAllEmployees(true);
+    setError('');
+    try {
+      await downloadEmployeeReportPdf({
+        type: 'per-employee-all',
+        fromDate: employeeFilter.fromDate || undefined,
+        toDate: employeeFilter.toDate || undefined,
+      });
+    } catch (err) {
+      setError(err instanceof ApiClientError ? err.message : t('pdfError'));
+    } finally {
+      setExportingAllEmployees(false);
     }
   }
 
@@ -385,21 +413,34 @@ export function EmployeeReportPanel() {
       {subtab === 'per-employee' ? (
         <div className="space-y-6">
           <div className="space-y-4 rounded-2xl border border-slate-100 bg-white p-5 shadow-card">
-            <label className="block space-y-1.5 text-sm">
-              <span className="font-medium text-slate-700">{t('selectEmployee')}</span>
-              <select
-                value={selectedEmployeeId}
-                onChange={(e) => setSelectedEmployeeId(e.target.value)}
-                className="block w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm"
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+              <label className="block min-w-0 flex-1 space-y-1.5 text-sm">
+                <span className="font-medium text-slate-700">{t('selectEmployee')}</span>
+                <select
+                  value={selectedEmployeeId}
+                  onChange={(e) => setSelectedEmployeeId(e.target.value)}
+                  className="block w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm"
+                >
+                  <option value="">{t('selectEmployeePlaceholder')}</option>
+                  {users.map((user) => (
+                    <option key={user.deviceUserId} value={user.deviceUserId}>
+                      {user.name || user.deviceUserId} ({user.deviceUserId})
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <Button
+                type="button"
+                variant="secondary"
+                className="w-full shrink-0 sm:w-auto"
+                isLoading={exportingAllEmployees}
+                loadingLabel={t('pdfPreparing')}
+                disabled={exportingAllEmployees || exporting}
+                onClick={() => void handleExportAllEmployeesPdf()}
               >
-                <option value="">{t('selectEmployeePlaceholder')}</option>
-                {users.map((user) => (
-                  <option key={user.deviceUserId} value={user.deviceUserId}>
-                    {user.name || user.deviceUserId} ({user.deviceUserId})
-                  </option>
-                ))}
-              </select>
-            </label>
+                {t('allEmployeesPdf')}
+              </Button>
+            </div>
             <AttendanceDateFilterBar
               filter={employeeFilter}
               onChange={setEmployeeFilter}

@@ -276,6 +276,7 @@ export async function getEmployeeReport(params?: {
 export type EmployeeReportPdfType =
   | 'performance'
   | 'per-employee'
+  | 'per-employee-all'
   | 'summary'
   | 'daily'
   | 'time-shifts';

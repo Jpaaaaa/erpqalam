@@ -1,0 +1,35 @@
+/** Matches API `DAILY_SUMMARY_MAX_RANGE_DAYS` / employee PDF cap. */
+export const EMPLOYEE_REPORT_PDF_MAX_DAYS = 93;
+
+export function countInclusiveDateRangeDays(fromDate: string, toDate: string): number {
+  const from = parseLocalDateKey(fromDate);
+  const to = parseLocalDateKey(toDate);
+  if (!from || !to || to < from) return 0;
+  const msPerDay = 24 * 60 * 60 * 1000;
+  return Math.floor((to.getTime() - from.getTime()) / msPerDay) + 1;
+}
+
+function parseLocalDateKey(key: string): Date | null {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(key.trim());
+  if (!m) return null;
+  const y = Number(m[1]);
+  const mo = Number(m[2]) - 1;
+  const d = Number(m[3]);
+  const date = new Date(y, mo, d);
+  if (
+    date.getFullYear() !== y ||
+    date.getMonth() !== mo ||
+    date.getDate() !== d
+  ) {
+    return null;
+  }
+  return date;
+}
+
+export function isEmployeeReportPdfRangeValid(
+  fromDate: string,
+  toDate: string,
+): boolean {
+  const days = countInclusiveDateRangeDays(fromDate, toDate);
+  return days > 0 && days <= EMPLOYEE_REPORT_PDF_MAX_DAYS;
+}

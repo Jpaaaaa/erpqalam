@@ -12,6 +12,7 @@ import {
   formatTimeFromLocalTs,
 } from './format';
 import { REPORT_SHELL_CSS } from './shell-styles';
+import { buildPerEmployeeSectionHtml } from './build-per-employee-section';
 
 const PUNCH_LABELS: Record<PunchType, string> = {
   entry_on_time: 'دخول في الوقت',
@@ -129,98 +130,79 @@ function buildBodyContent(payload: EmployeeReportPdfPayload): string {
   }
 
   if (type === 'per-employee' && payload.selectedEmployee) {
-    const emp = payload.selectedEmployee;
+    return buildPerEmployeeSectionHtml(
+      payload.selectedEmployee,
+      payload.fromDate,
+      payload.toDate,
+    );
+  }
+
+  if (type === 'per-employee-all' && payload.allEmployees) {
     const fromTo = [payload.fromDate, payload.toDate].filter(Boolean).join(' – ');
-    const stats = [
-      { label: 'أيام الحضور', value: String(emp.present), color: 'emerald' },
-      { label: 'أيام متوقعة', value: String(emp.expected), color: 'slate' },
-      { label: 'أيام الغياب', value: String(emp.absent), color: 'amber' },
-      { label: 'رصيد الإجازات', value: String(emp.leaveBalance), color: 'blue' },
+    const coverStats = [
+      { label: 'عدد الموظفين', value: String(payload.totals.empCount), color: 'slate' },
+      {
+        label: 'إجمالي الحضور',
+        value: String(payload.totals.totalPresent),
+        color: 'emerald',
+      },
+      {
+        label: 'إجمالي الغياب',
+        value: String(payload.totals.totalAbsent),
+        color: 'amber',
+      },
+      {
+        label: 'إجمالي التأخير',
+        value: String(payload.totals.totalLate),
+        color: 'red',
+      },
     ];
-    return `
-      <div class="title" dir="rtl">تقرير لكل موظف: ${escapeHtml(emp.name)}</div>
-      ${fromTo ? `<div class="period">الفترة: ${escapeHtml(fromTo)}</div>` : ''}
-      ${statCardsHtml(stats)}
-      <div class="section-heading" dir="rtl">أوقات الدخول والخروج</div>
-      <table>
-        <thead>
-          <tr>
-            <th dir="rtl">التاريخ</th>
-            <th dir="rtl">وقت الدخول</th>
-            <th dir="rtl">نوع الدخول</th>
-            <th dir="rtl">وقت الخروج</th>
-            <th dir="rtl">نوع الخروج</th>
-            <th dir="rtl">إجراء</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${emp.days
-            .map((d) => {
-              const isHoliday = d.isHoliday === true;
-              const isNotComing = d.isNotComing === true;
-              let entryType: string;
-              let exitType: string;
-              let entryTime: string;
-              let exitTime: string;
-              let action: string;
-              if (isHoliday) {
-                entryType = exitType = 'إجازة';
-                entryTime = exitTime = '–';
-                action = 'إجازة';
-              } else if (isNotComing) {
-                entryType = exitType = 'لم يحضر';
-                entryTime = exitTime = '–';
-                action = 'لم يبصم نهائياً';
-              } else {
-                entryType = d.entryType
-                  ? PUNCH_LABELS[d.entryType] || d.entryType
-                  : '–';
-                exitType = d.exitType
-                  ? PUNCH_LABELS[d.exitType] || d.exitType
-                  : '–';
-                entryTime = formatTimeFromLocalTs(d.entryTime);
-                exitTime = formatTimeFromLocalTs(d.exitTime);
-                action = '';
-              }
-              const dateStr = formatDateFromKey(d.date);
-              const rowClass = isHoliday
-                ? 'row-holiday'
-                : isNotComing
-                  ? 'row-absent'
-                  : '';
-              const entryClass =
-                !isHoliday && !isNotComing && d.entryType === 'entry_late'
-                  ? 'text-red'
-                  : !isHoliday && !isNotComing && d.entryType === 'entry_on_time'
-                    ? 'text-emerald'
-                    : isNotComing
-                      ? 'text-red'
-                      : isHoliday
-                        ? 'text-blue'
-                        : '';
-              const exitClass =
-                !isHoliday && !isNotComing && d.exitType === 'early_exit'
-                  ? 'text-amber'
-                  : isNotComing
-                    ? 'text-red'
-                    : isHoliday
-                      ? 'text-blue'
-                      : '';
-              return `
-            <tr class="${rowClass}">
-              <td>${escapeHtml(dateStr)}</td>
-              <td class="${entryClass}">${escapeHtml(entryTime)}</td>
-              <td class="${entryClass}" dir="rtl">${escapeHtml(entryType)}</td>
-              <td class="${exitClass}">${escapeHtml(exitTime)}</td>
-              <td class="${exitClass}" dir="rtl">${escapeHtml(exitType)}</td>
-              <td dir="rtl">${escapeHtml(action)}</td>
+    const cover = `
+      <div class="cover-page">
+        <div class="title" dir="rtl">تقرير جميع الموظفين</div>
+        ${fromTo ? `<div class="period">الفترة: ${escapeHtml(fromTo)}</div>` : ''}
+        ${statCardsHtml(coverStats)}
+        <div class="section-heading" dir="rtl">ملخص الموظفين</div>
+        <table>
+          <thead>
+            <tr>
+              <th dir="rtl">المعرّف</th>
+              <th dir="rtl">الاسم</th>
+              <th dir="rtl">حاضر</th>
+              <th dir="rtl">متأخر</th>
+              <th dir="rtl">غائب</th>
+              <th dir="rtl">إجازة</th>
             </tr>
-          `;
-            })
-            .join('')}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            ${payload.rows
+              .map(
+                (row) => `
+              <tr>
+                <td>${escapeHtml(row.deviceUserId)}</td>
+                <td dir="rtl">${escapeHtml(row.name || row.deviceUserId)}</td>
+                <td>${escapeHtml(row.workingDaysPresent)}</td>
+                <td class="${row.lateCount > 0 ? 'text-red' : ''}">${escapeHtml(row.lateCount)}</td>
+                <td class="${row.daysAbsent > 0 ? 'text-amber' : ''}">${escapeHtml(row.daysAbsent)}</td>
+                <td>${escapeHtml(row.leaveDaysInPeriod ?? 0)}</td>
+              </tr>
+            `,
+              )
+              .join('')}
+          </tbody>
+        </table>
+      </div>
     `;
+    const employeePages = payload.allEmployees
+      .map(
+        (emp, index) => `
+      <div class="employee-page${index === 0 ? ' employee-page-first' : ''}">
+        ${buildPerEmployeeSectionHtml(emp, payload.fromDate, payload.toDate)}
+      </div>
+    `,
+      )
+      .join('');
+    return cover + employeePages;
   }
 
   if (type === 'daily' && payload.daily) {

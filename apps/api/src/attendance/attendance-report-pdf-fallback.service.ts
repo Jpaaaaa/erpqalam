@@ -209,6 +209,52 @@ export class AttendanceReportPdfFallbackService {
           title,
         },
       );
+    } else if (payload.type === 'per-employee-all') {
+      this.drawStatCards(
+        state,
+        [
+          { label: 'عدد الموظفين', value: String(payload.totals.empCount) },
+          { label: 'إجمالي الحضور', value: String(payload.totals.totalPresent) },
+          { label: 'إجمالي الغياب', value: String(payload.totals.totalAbsent) },
+          { label: 'إجمالي التأخير', value: String(payload.totals.totalLate) },
+        ],
+        margin,
+        contentWidth,
+        font,
+      );
+      const remaining = contentWidth - 70 - 90 - 80 - 80 - 80;
+      this.drawTable(
+        state,
+        {
+          title: 'ملخص الموظفين',
+          emptyText: 'لا توجد بيانات حضور لهذه الفترة.',
+          columns: [
+            { key: 'id', label: 'المعرّف', width: 70 },
+            { key: 'name', label: 'الاسم', width: remaining },
+            { key: 'present', label: 'حاضر', width: 90 },
+            { key: 'late', label: 'متأخر', width: 80 },
+            { key: 'absent', label: 'غائب', width: 80 },
+            { key: 'leave', label: 'إجازة', width: 80 },
+          ],
+          rows: payload.rows.map((row) => ({
+            id: row.deviceUserId,
+            name: row.name,
+            present: String(row.workingDaysPresent),
+            late: String(row.lateCount),
+            absent: String(row.daysAbsent),
+            leave: String(row.leaveDaysInPeriod ?? 0),
+          })),
+        },
+        {
+          pdfDoc,
+          pageWidth,
+          pageHeight,
+          margin,
+          contentWidth,
+          font,
+          title,
+        },
+      );
     } else if (
       payload.type === 'performance' ||
       payload.type === 'summary'
@@ -286,12 +332,16 @@ export class AttendanceReportPdfFallbackService {
     if (payload.type === 'time-shifts') {
       return 'attendance-time-shifts.pdf';
     }
+    if (payload.type === 'per-employee-all') {
+      return `attendance-all-employees-${payload.fromDate || 'all'}-${payload.toDate || 'all'}.pdf`;
+    }
     return `attendance-report-${payload.type}-${payload.fromDate || 'all'}-${payload.toDate || 'all'}.pdf`;
   }
 
   private titleFor(type: EmployeeReportPdfType): string {
     if (type === 'daily') return 'تقرير يومي';
     if (type === 'per-employee') return 'تقرير لكل موظف';
+    if (type === 'per-employee-all') return 'تقرير جميع الموظفين';
     if (type === 'summary') return 'ملخص عام لجميع الموظفين';
     if (type === 'time-shifts') return 'تقرير أوقات الدوام';
     return 'مقارنة أداء الموظفين';

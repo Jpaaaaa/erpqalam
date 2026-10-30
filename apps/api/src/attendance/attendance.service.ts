@@ -33,6 +33,7 @@ import {
   parseLocalTimestamp,
 } from './attendance-rules';
 import { AttendanceReportPdfService } from './attendance-report-pdf.service';
+import type { EmployeeReportPdfEmployeeDetail } from './attendance-report-pdf.types';
 import {
   AttendanceDeviceResponseDto,
   AttendanceHolidayResponseDto,
@@ -53,6 +54,7 @@ import {
   DailyReportResponseDto,
   DailySummaryQueryDto,
   DailySummaryResponseDto,
+  EMPLOYEE_REPORT_PDF_MAX_RANGE_DAYS,
   EmployeeReportPdfQueryDto,
   EmployeeReportQueryDto,
   EmployeeReportResponseDto,
@@ -1334,6 +1336,15 @@ export class AttendanceService {
       );
     }
 
+    if (
+      query.type === 'performance' ||
+      query.type === 'summary' ||
+      query.type === 'per-employee' ||
+      query.type === 'per-employee-all'
+    ) {
+      this.assertEmployeeReportPdfRange(fromDate, toDate);
+    }
+
     const branding = await this.loadReportPdfBranding(schoolId);
     const generatedAt = formatLocalTimestamp(new Date())
       .slice(0, 16)
@@ -1405,17 +1416,22 @@ export class AttendanceService {
     }
 
     const report = await this.getEmployeeReport(user, { fromDate, toDate });
+    const needsSchoolRecords =
+      query.type === 'per-employee-all' ||
+      (query.type === 'per-employee' && !!deviceUserId);
     const [users, balances, holidays, employeeHolidays, records, settings] =
       await Promise.all([
         this.prisma.attendanceUser.findMany({ where: { schoolId } }),
         this.prisma.employeeLeaveBalance.findMany({ where: { schoolId } }),
         this.prisma.attendanceHoliday.findMany({ where: { schoolId } }),
         this.prisma.employeeHoliday.findMany({ where: { schoolId } }),
-        query.type === 'per-employee'
+        needsSchoolRecords
           ? this.prisma.attendanceRecord.findMany({
               where: {
                 schoolId,
-                ...(deviceUserId ? { deviceUserId } : {}),
+                ...(query.type === 'per-employee' && deviceUserId
+                  ? { deviceUserId }
+                  : {}),
                 ...this.recordTimestampWhere(query.fromDate, query.toDate),
               },
               orderBy: { timestamp: 'asc' },
@@ -1460,70 +1476,54 @@ export class AttendanceService {
         ? (totals.totalPresent / totals.totalExpected) * 100
         : 0;
 
-    let selectedEmployee:
-      | {
-          deviceUserId: string;
-          name: string;
-          present: number;
-          expected: number;
-          absent: number;
-          leaveBalance: number;
-          notComing: number;
-          days: ReturnType<typeof buildEmployeeDayRows>;
-        }
-      | undefined;
+    let selectedEmployee: EmployeeReportPdfEmployeeDetail | undefined;
+    let allEmployees: EmployeeReportPdfEmployeeDetail[] | undefined;
+    let pdfRows = rows;
 
-    if (query.type === 'per-employee' && deviceUserId) {
-      const userInputs = users.map(toUserScheduleInput);
-      const usersById = new Map(
-        userInputs.map((item) => [item.deviceUserId, item]),
-      );
-      const dayOffDates = holidays
-        .filter((h) => h.type === AttendanceHolidayType.DAY_OFF)
-        .map((h) => ({ date: formatDateLocal(h.date) }));
-      const earlyExitDates = new Set(
-        holidays
-          .filter((h) => h.type === AttendanceHolidayType.EARLY_EXIT)
-          .map((h) => formatDateLocal(h.date)),
-      );
-      const lateEntryDates = new Set(
-        holidays
-          .filter((h) => h.type === AttendanceHolidayType.ENTRY_LATE)
-          .map((h) => formatDateLocal(h.date)),
-      );
-      const employeeHolidayDates = employeeHolidays
-        .filter((h) => h.deviceUserId === deviceUserId)
-        .map((h) => formatDateLocal(h.date));
-      const selectedRow = report.rows.find(
-        (row) => row.deviceUserId === deviceUserId,
-      );
-      const days = buildEmployeeDayRows({
-        deviceUserId,
-        records: records.map((r) => ({
-          deviceUserId: r.deviceUserId,
-          timestamp: r.timestamp,
-          verifyType: r.verifyType,
-        })),
+    if (needsSchoolRecords) {
+      const pdfContext = this.buildEmployeeReportPdfDayContext(
+        users,
+        holidays,
+        employeeHolidays,
+        records,
         settings,
-        user: usersById.get(deviceUserId),
-        usersById,
-        dayOffDates,
-        employeeHolidayDates,
-        earlyExitDates,
-        lateEntryDates,
         fromDate,
         toDate,
-      });
-      selectedEmployee = {
-        deviceUserId,
-        name: nameMap.get(deviceUserId) || deviceUserId,
-        present: selectedRow?.workingDaysPresent ?? 0,
-        expected: selectedRow?.expectedWorkingDays ?? 0,
-        absent: selectedRow?.daysAbsent ?? 0,
-        leaveBalance: balanceMap.get(deviceUserId) ?? 0,
-        notComing: days.filter((day) => day.isNotComing).length,
-        days,
-      };
+      );
+
+      if (query.type === 'per-employee' && deviceUserId) {
+        selectedEmployee = this.buildEmployeeReportPdfDetail(
+          deviceUserId,
+          report.rows,
+          nameMap,
+          balanceMap,
+          pdfContext,
+        );
+      }
+
+      if (query.type === 'per-employee-all') {
+        const sortedUsers = users.slice().sort((a, b) => {
+          const nameA = nameMap.get(a.deviceUserId) || a.deviceUserId;
+          const nameB = nameMap.get(b.deviceUserId) || b.deviceUserId;
+          return nameA.localeCompare(nameB, 'ar');
+        });
+        allEmployees = sortedUsers.map((user) =>
+          this.buildEmployeeReportPdfDetail(
+            user.deviceUserId,
+            report.rows,
+            nameMap,
+            balanceMap,
+            pdfContext,
+          ),
+        );
+        const leaveById = new Map(
+          allEmployees.map((emp) => [emp.deviceUserId, emp.leaveDaysInPeriod]),
+        );
+        pdfRows = rows.map((row) => ({
+          ...row,
+          leaveDaysInPeriod: leaveById.get(row.deviceUserId) ?? 0,
+        }));
+      }
     }
 
     return this.reportPdf.render(
@@ -1532,12 +1532,123 @@ export class AttendanceService {
         fromDate,
         toDate,
         generatedAt,
-        rows,
+        rows: pdfRows,
         totals: { ...totals, avgRate },
         selectedEmployee,
+        allEmployees,
       },
       branding,
     );
+  }
+
+  private assertEmployeeReportPdfRange(fromDate: string, toDate: string): void {
+    const dates = enumerateLocalDateKeys(fromDate, toDate);
+    if (dates.length === 0) {
+      throw new BadRequestException('Invalid date range');
+    }
+    if (dates.length > EMPLOYEE_REPORT_PDF_MAX_RANGE_DAYS) {
+      throw new BadRequestException(
+        `Date range must not exceed ${EMPLOYEE_REPORT_PDF_MAX_RANGE_DAYS} days`,
+      );
+    }
+  }
+
+  private buildEmployeeReportPdfDayContext(
+    users: { deviceUserId: string }[],
+    holidays: { type: AttendanceHolidayType; date: Date }[],
+    employeeHolidays: { deviceUserId: string; date: Date }[],
+    records: {
+      deviceUserId: string;
+      timestamp: Date;
+      verifyType: string;
+    }[],
+    settings: AttendanceSettingsMap,
+    fromDate: string,
+    toDate: string,
+  ) {
+    const userInputs = users.map(toUserScheduleInput);
+    const usersById = new Map(
+      userInputs.map((item) => [item.deviceUserId, item]),
+    );
+    const dayOffDates = holidays
+      .filter((h) => h.type === AttendanceHolidayType.DAY_OFF)
+      .map((h) => ({ date: formatDateLocal(h.date) }));
+    const earlyExitDates = new Set(
+      holidays
+        .filter((h) => h.type === AttendanceHolidayType.EARLY_EXIT)
+        .map((h) => formatDateLocal(h.date)),
+    );
+    const lateEntryDates = new Set(
+      holidays
+        .filter((h) => h.type === AttendanceHolidayType.ENTRY_LATE)
+        .map((h) => formatDateLocal(h.date)),
+    );
+    const employeeHolidayDatesByUser = new Map<string, string[]>();
+    for (const holiday of employeeHolidays) {
+      const key = holiday.deviceUserId;
+      const list = employeeHolidayDatesByUser.get(key) ?? [];
+      list.push(formatDateLocal(holiday.date));
+      employeeHolidayDatesByUser.set(key, list);
+    }
+    const recordsByUser = new Map<string, AttendanceRecordInput[]>();
+    for (const record of records) {
+      const list = recordsByUser.get(record.deviceUserId) ?? [];
+      list.push({
+        deviceUserId: record.deviceUserId,
+        timestamp: record.timestamp,
+        verifyType: record.verifyType,
+      });
+      recordsByUser.set(record.deviceUserId, list);
+    }
+    return {
+      usersById,
+      dayOffDates,
+      earlyExitDates,
+      lateEntryDates,
+      employeeHolidayDatesByUser,
+      recordsByUser,
+      settings,
+      fromDate,
+      toDate,
+    };
+  }
+
+  private buildEmployeeReportPdfDetail(
+    deviceUserId: string,
+    reportRows: EmployeeReportResponseDto['rows'],
+    nameMap: Map<string, string>,
+    balanceMap: Map<string, number>,
+    ctx: ReturnType<AttendanceService['buildEmployeeReportPdfDayContext']>,
+  ): EmployeeReportPdfEmployeeDetail {
+    const employeeHolidayDates =
+      ctx.employeeHolidayDatesByUser.get(deviceUserId) ?? [];
+    const selectedRow = reportRows.find(
+      (row) => row.deviceUserId === deviceUserId,
+    );
+    const days = buildEmployeeDayRows({
+      deviceUserId,
+      records: ctx.recordsByUser.get(deviceUserId) ?? [],
+      settings: ctx.settings,
+      user: ctx.usersById.get(deviceUserId),
+      usersById: ctx.usersById,
+      dayOffDates: ctx.dayOffDates,
+      employeeHolidayDates,
+      earlyExitDates: ctx.earlyExitDates,
+      lateEntryDates: ctx.lateEntryDates,
+      fromDate: ctx.fromDate,
+      toDate: ctx.toDate,
+    });
+    return {
+      deviceUserId,
+      name: nameMap.get(deviceUserId) || deviceUserId,
+      present: selectedRow?.workingDaysPresent ?? 0,
+      expected: selectedRow?.expectedWorkingDays ?? 0,
+      absent: selectedRow?.daysAbsent ?? 0,
+      leaveBalance: balanceMap.get(deviceUserId) ?? 0,
+      leaveDaysInPeriod: days.filter((day) => day.isHoliday).length,
+      notComing: days.filter((day) => day.isNotComing).length,
+      days,
+    };
   }
 
   private async loadReportPdfBranding(schoolId: string) {

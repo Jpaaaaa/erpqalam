@@ -545,6 +545,7 @@ export const EMPLOYEE_REPORT_PDF_TYPES = [
   'per-employee',
   'summary',
   'daily',
+  'time-shifts',
 ] as const;
 
 export type EmployeeReportPdfType = (typeof EMPLOYEE_REPORT_PDF_TYPES)[number];

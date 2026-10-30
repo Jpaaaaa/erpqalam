@@ -95,8 +95,9 @@ export const FLOATING_TAB_BAR_HEIGHT = 64;
 export const FLOATING_TAB_BAR_TOTAL_HEIGHT =
   FLOATING_TAB_BAR_HEIGHT + FLOATING_TAB_BAR_BOTTOM;
 
+/** Tab bar clearance + extra space so the bottom footer CTA clears the floating tab bar. */
 export function overviewScrollPaddingBottom(insetsBottom: number): number {
-  return FLOATING_TAB_BAR_TOTAL_HEIGHT + insetsBottom + 32;
+  return FLOATING_TAB_BAR_TOTAL_HEIGHT + insetsBottom + 48;
 }
 
 export const HOME_SCROLL_BOTTOM_PAD =

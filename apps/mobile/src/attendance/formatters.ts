@@ -19,6 +19,32 @@ export function formatDisplayDate(dateStr: string): string {
   return dateStr;
 }
 
+const LRI = '\u2066';
+const PDI = '\u2069';
+
+/** Compact range for filter chips; wrapped in LTR isolate for RTL UI. */
+export function formatChipRangeSubtitle(fromDate: string, toDate: string): string {
+  if (fromDate === toDate) {
+    return `${LRI}${formatDisplayDate(fromDate)}${PDI}`;
+  }
+  const fromParts = fromDate.trim().split('-');
+  const toParts = toDate.trim().split('-');
+  if (fromParts.length !== 3 || toParts.length !== 3) {
+    return `${LRI}${formatDisplayDate(fromDate)} – ${formatDisplayDate(toDate)}${PDI}`;
+  }
+  const [fy, fm, fd] = fromParts;
+  const [ty, tm, td] = toParts;
+  let inner: string;
+  if (fy === ty && fm === tm) {
+    inner = `${parseInt(fd, 10)} – ${td}/${tm}`;
+  } else if (fy === ty) {
+    inner = `${parseInt(fd, 10)}/${fm} – ${td}/${tm}`;
+  } else {
+    inner = `${formatDisplayDate(fromDate)} – ${formatDisplayDate(toDate)}`;
+  }
+  return `${LRI}${inner}${PDI}`;
+}
+
 export function formatDisplayTime(ts: string): string {
   const match = ts.match(/T(\d{2}):(\d{2})(?::(\d{2}))?/);
   if (match) {

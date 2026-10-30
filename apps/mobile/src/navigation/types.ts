@@ -1,5 +1,6 @@
 import type { NavigatorScreenParams } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import type { DailyStatusFilter } from '../attendance/dailyFilters';
 
 export type RecordsStackParamList = {
   RecordsList: undefined;
@@ -9,7 +10,7 @@ export type RecordsStackParamList = {
 export type MoreStackParamList = {
   MoreMenu: undefined;
   EmployeesList: undefined;
-  Daily: { attentionOnly?: boolean } | undefined;
+  Daily: { attentionOnly?: boolean; initialFilter?: DailyStatusFilter } | undefined;
   EmployeeDetail: { deviceUserId: string; name: string };
   EmployeeReport: { deviceUserId?: string } | undefined;
   Holidays: undefined;

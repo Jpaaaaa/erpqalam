@@ -13,7 +13,8 @@
     "oneActive": "١ نشط",
     "noConnection": "لا يوجد اتصال. تحقق من الشبكة وحاول مرة أخرى.",
     "retry": "إعادة المحاولة",
-    "offlineBanner": "أنت غير متصل"
+    "offlineBanner": "أنت غير متصل",
+    "close": "إغلاق"
   },
   "auth": {
     "signIn": "تسجيل الدخول",
@@ -134,7 +135,7 @@
       "searchPlaceholder": "بحث بالاسم أو الرقم",
       "empty": "لا يوجد موظفون مطابقون.",
       "offDayBanner": "يوم عطلة",
-      "summaryFooter": "{{earlyExit}} خروج مبكر · {{onLeave}} مغادرة · {{holiday}} عطلة رسمية",
+      "summaryFooter": "{earlyExit} خروج مبكر · {onLeave} مغادرة · {holiday} عطلة رسمية",
       "filters": {
         "all": "الكل",
         "present": "حاضر",
@@ -192,6 +193,10 @@
       "pillLate": "متأخر",
       "pillAbsent": "غائب",
       "pillOnLeave": "إجازة",
+      "todayAbsentCta": "غائبون اليوم · {count}",
+      "todayAbsentFooterLabel": "غير حاضرين",
+      "todayAbsentEmptyAllPresent": "جميع الموظفين حاضرون ✓",
+      "todayAbsentEmptyOffDay": "اليوم عطلة",
       "loadError": "تعذر تحميل لوحة الرئيسية.",
       "live": "مباشر",
       "attendance": "الحضور",
@@ -280,8 +285,8 @@
       "absent": "غائب",
       "late": "متأخر",
       "leaveBalance": "رصيد الإجازات",
-      "leaveShort": "{{days}} مغادرة",
-      "leaderboardStats": "{{late}} تأخر · {{absent}} غائب",
+      "leaveShort": "{days} مغادرة",
+      "leaderboardStats": "{late} تأخر · {absent} غائب",
       "sort": {
         "attendance": "الحضور",
         "late": "التأخر",
@@ -462,7 +467,7 @@
       "emptyOfficial": "لم تُحدَّد أي إجازات.",
       "removeConfirmTitle": "حذف الإجازة",
       "removeConfirmMessage": "هل أنت متأكد من حذف هذه الإجازة؟",
-      "daysUsed": "{{count}} يوم",
+      "daysUsed": "{count} يوم",
       "coverPill": "تغطية",
       "loadError": "تعذر تحميل الإجازات.",
       "saveError": "تعذر الحفظ.",

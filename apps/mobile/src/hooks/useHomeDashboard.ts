@@ -147,14 +147,11 @@ export function useHomeDashboard() {
 
   const attentionItems: AttentionItem[] = useMemo(() => {
     const priority: Record<string, number> = {
-      absent: 0,
-      late: 1,
-      early_exit: 2,
+      late: 0,
+      early_exit: 1,
     };
     return rows
-      .filter((r) =>
-        ['late', 'absent', 'early_exit'].includes(r.status),
-      )
+      .filter((r) => r.status === 'late' || r.status === 'early_exit')
       .sort(
         (a, b) =>
           (priority[a.status] ?? 9) - (priority[b.status] ?? 9),
@@ -176,6 +173,7 @@ export function useHomeDashboard() {
     errorIsNetwork,
     load,
     summary,
+    rows,
     attendancePct,
     punctualityPct,
     weeklyAvg,

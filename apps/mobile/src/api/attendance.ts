@@ -215,7 +215,8 @@ export type EmployeeReportPdfType =
   | 'performance'
   | 'per-employee'
   | 'summary'
-  | 'daily';
+  | 'daily'
+  | 'time-shifts';
 
 export async function shareAttendanceReportPdf(params: {
   type: EmployeeReportPdfType;

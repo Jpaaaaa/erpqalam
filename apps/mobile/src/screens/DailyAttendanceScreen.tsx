@@ -53,6 +53,7 @@ type Props = NativeStackScreenProps<MoreStackParamList, 'Daily'>;
 
 export function DailyAttendanceScreen({ route, navigation }: Props) {
   const attentionOnly = route.params?.attentionOnly === true;
+  const initialFilter = route.params?.initialFilter;
   const { t } = useTranslation('attendance');
   const { mirrorLayout, typography } = useI18n();
   const canManage = useCanManageAttendance();
@@ -69,7 +70,9 @@ export function DailyAttendanceScreen({ route, navigation }: Props) {
   const [summary, setSummary] = useState<DailyAttendanceSummary | null>(null);
   const [nameLookup, setNameLookup] = useState<Map<string, string>>(new Map());
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState<DailyStatusFilter>('all');
+  const [statusFilter, setStatusFilter] = useState<DailyStatusFilter>(
+    initialFilter ?? 'all',
+  );
   const [loading, setLoading] = useState(true);
   const [dataReady, setDataReady] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -86,6 +89,13 @@ export function DailyAttendanceScreen({ route, navigation }: Props) {
       setStatusBarStyle(isDark ? 'light' : 'dark');
     }, [isDark]),
   );
+
+  useEffect(() => {
+    if (initialFilter) {
+      setStatusFilter(initialFilter);
+      setDate(todayDateKey());
+    }
+  }, [initialFilter]);
 
   const load = useCallback(async () => {
     setError('');

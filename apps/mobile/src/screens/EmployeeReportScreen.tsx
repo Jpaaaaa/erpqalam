@@ -557,16 +557,22 @@ export function EmployeeReportScreen({ route, navigation }: Props) {
         <Text style={styles.screenTitle} numberOfLines={1}>
           {t('tabs.report')}
         </Text>
-        <GlassCircleIconButton
-          icon="download-outline"
-          onPress={() => void handlePdf()}
-          loading={exporting}
-          disabled={exporting || (tab === 'per-employee' && !selectedId)}
-          accessibilityLabel={t('report.generatePdf')}
-        />
       </View>
 
-      <ReportTabSegment tabs={tabs} value={tab} onChange={setTab} />
+      <ReportTabSegment
+        tabs={tabs}
+        value={tab}
+        onChange={setTab}
+        trailing={
+          <GlassCircleIconButton
+            icon="download-outline"
+            onPress={() => void handlePdf()}
+            loading={exporting}
+            disabled={exporting || (tab === 'per-employee' && !selectedId)}
+            accessibilityLabel={t('report.generatePdf')}
+          />
+        }
+      />
       <ReportRangeChips filter={filter} onChange={setFilter} />
 
       {errorIsNetwork ? (

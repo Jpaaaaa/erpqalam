@@ -9,6 +9,11 @@
         "include": "document-requests/assets/**/*",
         "outDir": "dist/src",
         "watchAssets": true
+      },
+      {
+        "include": "attendance/assets/**/*",
+        "outDir": "dist/src",
+        "watchAssets": true
       }
     ]
   }

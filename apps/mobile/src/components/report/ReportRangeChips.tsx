@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import {
-  formatDisplayDate,
+  formatChipRangeSubtitle,
   getQuickRange,
   isFilterActive,
 } from '../../attendance/formatters';
@@ -42,13 +42,6 @@ function isCustomRange(filter: DateFilter): boolean {
   return !RANGE_KEYS.some((key) => isFilterActive(filter, key));
 }
 
-function rangeSubtitle(filter: DateFilter): string {
-  if (filter.fromDate === filter.toDate) {
-    return formatDisplayDate(filter.fromDate);
-  }
-  return `${formatDisplayDate(filter.fromDate)} – ${formatDisplayDate(filter.toDate)}`;
-}
-
 export function ReportRangeChips({
   filter,
   onChange,
@@ -67,7 +60,7 @@ export function ReportRangeChips({
   const [draftFrom, setDraftFrom] = useState(filter.fromDate);
   const [draftTo, setDraftTo] = useState(filter.toDate);
   const customActive = isCustomRange(filter);
-  const sub = rangeSubtitle(filter);
+  const sub = formatChipRangeSubtitle(filter.fromDate, filter.toDate);
 
   return (
     <>

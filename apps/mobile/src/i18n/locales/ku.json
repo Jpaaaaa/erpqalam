@@ -13,7 +13,8 @@
     "oneActive": "١ چالاک",
     "noConnection": "پەیوەندی نییە. تۆڕەکەت بپشکنە و دووبارە هەوڵ بدەرەوە.",
     "retry": "دووبارە هەوڵبدەرەوە",
-    "offlineBanner": "ئۆفلاینیت"
+    "offlineBanner": "ئۆفلاینیت",
+    "close": "داخستن"
   },
   "auth": {
     "signIn": "چوونەژوورەوە",
@@ -134,7 +135,7 @@
       "searchPlaceholder": "گەڕان بە ناو یان ژمارە",
       "empty": "هیچ کارمەندێک ناگونجێت.",
       "offDayBanner": "ڕۆژی پشوو",
-      "summaryFooter": "{{earlyExit}} زوو چووە · {{onLeave}} مۆڵەت · {{holiday}} پشووی فەرمی",
+      "summaryFooter": "{earlyExit} زوو چووە · {onLeave} مۆڵەت · {holiday} پشووی فەرمی",
       "filters": {
         "all": "هەموو",
         "present": "ئامادە",
@@ -192,6 +193,10 @@
       "pillLate": "دواکەوتوو",
       "pillAbsent": "نەهاتوو",
       "pillOnLeave": "مۆڵەت",
+      "todayAbsentCta": "نەهاتووەکانی ئەمڕۆ · {count}",
+      "todayAbsentFooterLabel": "ئامادە نەبووەکان",
+      "todayAbsentEmptyAllPresent": "هەموو کارمەندان ئامادەن ✓",
+      "todayAbsentEmptyOffDay": "ئەمڕۆ پشووە",
       "loadError": "نەتوانرا داشبۆردی سەکۆ بار بکرێت.",
       "live": "زیندوو",
       "attendance": "ئامادەبوون",
@@ -280,8 +285,8 @@
       "absent": "نەهاتوو",
       "late": "دواکەوتن",
       "leaveBalance": "باڵانسی مۆڵەت",
-      "leaveShort": "{{days}} مۆڵەت",
-      "leaderboardStats": "{{late}} دواکەوتن · {{absent}} نەهاتن",
+      "leaveShort": "{days} مۆڵەت",
+      "leaderboardStats": "{late} دواکەوتن · {absent} نەهاتن",
       "sort": {
         "attendance": "ئامادەبوون",
         "late": "دواکەوتن",
@@ -462,7 +467,7 @@
       "emptyOfficial": "هیچ پشوویەک دانەنراوە",
       "removeConfirmTitle": "سڕینەوەی پشوو",
       "removeConfirmMessage": "دڵنیایت لە سڕینەوەی ئەم پشووە؟",
-      "daysUsed": "{{count}} ڕۆژ",
+      "daysUsed": "{count} ڕۆژ",
       "coverPill": "داپۆشین",
       "loadError": "نەتوانرا پشوو بار بکرێت.",
       "saveError": "نەتوانرا پاشەکەوت بکرێت.",

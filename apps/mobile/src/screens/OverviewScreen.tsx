@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Platform,
@@ -17,7 +17,13 @@ import { useTranslation } from 'react-i18next';
 import { NetworkErrorPanel } from '../components/NetworkErrorPanel';
 import { ViewOnlyBanner } from '../components/ViewOnlyBanner';
 import { HomeHeader } from '../components/home/HomeHeader';
+import {
+  isTodayOffDay,
+  listTodayAbsentEmployees,
+} from '../attendance/todayAbsent';
 import { RingSummaryCard } from '../components/home/RingSummaryCard';
+import { TodayAbsentFooterButton } from '../components/home/TodayAbsentFooterButton';
+import { TodayAbsentSheet } from '../components/home/TodayAbsentSheet';
 import { QuickActionsRow } from '../components/home/QuickActionsRow';
 import { NeedsAttentionSection } from '../components/home/NeedsAttentionSection';
 import { RecentRecordsFeed } from '../components/home/RecentRecordsFeed';
@@ -60,6 +66,7 @@ export function OverviewScreen() {
     errorIsNetwork,
     load,
     summary,
+    rows,
     attendancePct,
     punctualityPct,
     weeklyAvg,
@@ -67,6 +74,14 @@ export function OverviewScreen() {
     recentRecords,
     nameLookup,
   } = useHomeDashboard();
+
+  const [todayAbsentSheetOpen, setTodayAbsentSheetOpen] = useState(false);
+
+  const todayAbsentEmployees = useMemo(
+    () => listTodayAbsentEmployees(rows, nameLookup),
+    [rows, nameLookup],
+  );
+  const todayOffDay = isTodayOffDay(summary);
 
   useFocusEffect(
     useCallback(() => {
@@ -186,7 +201,22 @@ export function OverviewScreen() {
             />
           </>
         ) : null}
+
+        <TodayAbsentFooterButton
+          count={todayAbsentEmployees.length}
+          onPress={() => setTodayAbsentSheetOpen(true)}
+        />
         </ScrollView>
+
+        <TodayAbsentSheet
+          visible={todayAbsentSheetOpen}
+          items={todayAbsentEmployees}
+          isOffDay={todayOffDay}
+          onClose={() => setTodayAbsentSheetOpen(false)}
+          onSelectEmployee={(deviceUserId, name) =>
+            navigateToEmployeeDetail(navigation, { deviceUserId, name })
+          }
+        />
         </SafeAreaView>
       </BlurTargetView>
     </View>

@@ -1334,6 +1334,34 @@ export class AttendanceService {
       );
     }
 
+    const branding = await this.loadReportPdfBranding(schoolId);
+    const generatedAt = formatLocalTimestamp(new Date())
+      .slice(0, 16)
+      .replace('T', ' ');
+
+    if (query.type === 'time-shifts') {
+      const settings = await this.loadSettingsMap(schoolId);
+      return this.reportPdf.render(
+        {
+          type: 'time-shifts',
+          fromDate: '',
+          toDate: '',
+          generatedAt,
+          rows: [],
+          totals: {
+            empCount: 0,
+            totalPresent: 0,
+            totalExpected: 0,
+            totalAbsent: 0,
+            totalLate: 0,
+            avgRate: 0,
+          },
+          settings,
+        },
+        branding,
+      );
+    }
+
     if (query.type === 'daily') {
       const date = fromDate || toDate;
       if (!date) {
@@ -1346,33 +1374,34 @@ export class AttendanceService {
       }
       const ctx = await this.loadDailyReportContext(schoolId, date, date);
       const built = this.buildDailyReportFromContext(ctx, date);
-      return this.reportPdf.render({
-        type: 'daily',
-        fromDate: date,
-        toDate: date,
-        generatedAt: formatLocalTimestamp(new Date())
-          .slice(0, 16)
-          .replace('T', ' '),
-        rows: [],
-        totals: {
-          empCount: 0,
-          totalPresent: 0,
-          totalExpected: 0,
-          totalAbsent: 0,
-          totalLate: 0,
-          avgRate: 0,
+      return this.reportPdf.render(
+        {
+          type: 'daily',
+          fromDate: date,
+          toDate: date,
+          generatedAt,
+          rows: [],
+          totals: {
+            empCount: 0,
+            totalPresent: 0,
+            totalExpected: 0,
+            totalAbsent: 0,
+            totalLate: 0,
+            avgRate: 0,
+          },
+          daily: {
+            date,
+            rows: built.rows.map((row) => ({
+              ...row,
+              name:
+                ctx.nameByDeviceUserId.get(row.deviceUserId) ||
+                row.deviceUserId,
+            })),
+            summary: built.summary,
+          },
         },
-        daily: {
-          date,
-          rows: built.rows.map((row) => ({
-            ...row,
-            name:
-              ctx.nameByDeviceUserId.get(row.deviceUserId) ||
-              row.deviceUserId,
-          })),
-          summary: built.summary,
-        },
-      });
+        branding,
+      );
     }
 
     const report = await this.getEmployeeReport(user, { fromDate, toDate });
@@ -1497,15 +1526,26 @@ export class AttendanceService {
       };
     }
 
-    return this.reportPdf.render({
-      type: query.type,
-      fromDate,
-      toDate,
-      generatedAt: formatLocalTimestamp(new Date()).slice(0, 16).replace('T', ' '),
-      rows,
-      totals: { ...totals, avgRate },
-      selectedEmployee,
+    return this.reportPdf.render(
+      {
+        type: query.type,
+        fromDate,
+        toDate,
+        generatedAt,
+        rows,
+        totals: { ...totals, avgRate },
+        selectedEmployee,
+      },
+      branding,
+    );
+  }
+
+  private async loadReportPdfBranding(schoolId: string) {
+    const school = await this.prisma.school.findUnique({
+      where: { id: schoolId },
+      select: { name: true },
     });
+    return this.reportPdf.resolveBranding(schoolId, school?.name ?? '');
   }
 
   private async ensureAttendanceUser(

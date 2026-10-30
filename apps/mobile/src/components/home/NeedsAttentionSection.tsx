@@ -59,9 +59,7 @@ export function NeedsAttentionSection({
   );
 
   if (items.length === 0) {
-    return (
-      <Text style={styles.allGood}>{t('home.allGood')}</Text>
-    );
+    return null;
   }
 
   const visible = items.slice(0, MAX_ROWS);
@@ -299,15 +297,6 @@ function createStyles(isDark: boolean, typography: AppTypography) {
       lineHeight: 20,
       fontWeight: 'normal',
       color: muted,
-    },
-    allGood: {
-      fontFamily: typography.noto.medium,
-      fontSize: 13,
-      lineHeight: 20,
-      fontWeight: 'normal',
-      color: '#14B8A6',
-      textAlign: 'center',
-      marginVertical: 4,
     },
   });
 }

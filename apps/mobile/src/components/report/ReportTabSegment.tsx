@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useHomeTheme } from '../../theme/HomeThemeProvider';
 import { useI18n } from '../../i18n/I18nProvider';
@@ -20,10 +20,13 @@ export function ReportTabSegment({
   tabs,
   value,
   onChange,
+  trailing,
 }: {
   tabs: TabItem[];
   value: ReportTabKey;
   onChange: (key: ReportTabKey) => void;
+  /** Renders at the logical end of the row (e.g. PDF export). */
+  trailing?: ReactNode;
 }) {
   const { mirrorLayout, typography } = useI18n();
   const { isDark, palette } = useHomeTheme();
@@ -33,26 +36,29 @@ export function ReportTabSegment({
   );
 
   return (
-    <HomeGlassCard padding={6}>
-      <View style={[styles.row, mirroredRow(mirrorLayout)]}>
-        {tabs.map((tab) => {
-          const active = tab.key === value;
-          return (
-            <Pressable
-              key={tab.key}
-              onPress={() => onChange(tab.key)}
-              style={[styles.segment, active && styles.segmentActive]}
-              accessibilityRole="button"
-              accessibilityState={{ selected: active }}
-            >
-              <Text style={[styles.label, active && styles.labelActive]} numberOfLines={2}>
-                {tab.label}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
-    </HomeGlassCard>
+    <View style={[styles.outer, mirroredRow(mirrorLayout)]}>
+      <HomeGlassCard padding={6} style={styles.segmentCard}>
+        <View style={[styles.row, mirroredRow(mirrorLayout)]}>
+          {tabs.map((tab) => {
+            const active = tab.key === value;
+            return (
+              <Pressable
+                key={tab.key}
+                onPress={() => onChange(tab.key)}
+                style={[styles.segment, active && styles.segmentActive]}
+                accessibilityRole="button"
+                accessibilityState={{ selected: active }}
+              >
+                <Text style={[styles.label, active && styles.labelActive]} numberOfLines={2}>
+                  {tab.label}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      </HomeGlassCard>
+      {trailing ? <View style={styles.trailing}>{trailing}</View> : null}
+    </View>
   );
 }
 
@@ -61,6 +67,18 @@ function createStyles(isDark: boolean, typography: AppTypography, teal: string) 
   const muted = isDark ? '#94A3B8' : '#64748B';
 
   return StyleSheet.create({
+    outer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+    },
+    segmentCard: {
+      flex: 1,
+      minWidth: 0,
+    },
+    trailing: {
+      flexShrink: 0,
+    },
     row: {
       flexDirection: 'row',
       gap: 4,

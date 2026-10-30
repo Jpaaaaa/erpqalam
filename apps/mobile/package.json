@@ -10,6 +10,7 @@
     "test:dated-requests": "npx tsx scripts/test-dated-requests.ts",
     "test:rtl-reload": "npx tsx scripts/test-rtl-reload.ts",
     "test:wall-clock-time": "npx tsx scripts/test-wall-clock-time.ts",
+    "check:i18n": "npx tsx scripts/check-i18n.ts",
     "build:apk": "bash scripts/build-apk.sh",
     "build:preview": "eas build -p android --profile preview"
   },

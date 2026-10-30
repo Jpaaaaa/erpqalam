@@ -13,7 +13,8 @@
     "oneActive": "1 active",
     "noConnection": "No connection. Check your network and try again.",
     "retry": "Retry",
-    "offlineBanner": "You are offline"
+    "offlineBanner": "You are offline",
+    "close": "Close"
   },
   "auth": {
     "signIn": "Sign in",
@@ -134,7 +135,7 @@
       "searchPlaceholder": "Search by name or ID",
       "empty": "No employees match your search.",
       "offDayBanner": "Day off",
-      "summaryFooter": "{{earlyExit}} early exit · {{onLeave}} leave · {{holiday}} official holiday",
+      "summaryFooter": "{earlyExit} early exit · {onLeave} leave · {holiday} official holiday",
       "filters": {
         "all": "All",
         "present": "Present",
@@ -192,6 +193,10 @@
       "pillLate": "Late",
       "pillAbsent": "Absent",
       "pillOnLeave": "On leave",
+      "todayAbsentCta": "Today's absent · {count}",
+      "todayAbsentFooterLabel": "Not present",
+      "todayAbsentEmptyAllPresent": "All employees are present ✓",
+      "todayAbsentEmptyOffDay": "Today is a day off",
       "loadError": "Unable to load home dashboard.",
       "live": "Live",
       "attendance": "Attendance",
@@ -280,8 +285,8 @@
       "absent": "Absent",
       "late": "Late",
       "leaveBalance": "Leave balance",
-      "leaveShort": "{{days}} leave",
-      "leaderboardStats": "{{late}} late · {{absent}} absent",
+      "leaveShort": "{days} leave",
+      "leaderboardStats": "{late} late · {absent} absent",
       "sort": {
         "attendance": "Attendance",
         "late": "Late",
@@ -462,7 +467,7 @@
       "emptyOfficial": "No holidays have been set.",
       "removeConfirmTitle": "Delete holiday",
       "removeConfirmMessage": "Are you sure you want to delete this holiday?",
-      "daysUsed": "{{count}} days",
+      "daysUsed": "{count} days",
       "coverPill": "Cover",
       "loadError": "Unable to load holidays.",
       "saveError": "Unable to save.",

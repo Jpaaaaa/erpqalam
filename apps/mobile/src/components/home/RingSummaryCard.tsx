@@ -7,7 +7,6 @@ import {
   Text,
   View,
   type TextStyle,
-  type ViewStyle,
 } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 import { useTranslation } from 'react-i18next';
@@ -98,74 +97,72 @@ export function RingSummaryCard({
   return (
     <HomeGlassCard padding={20}>
       <View style={[styles.cardInner, GLASS_INNER_CONTENT]}>
-      <View style={[styles.topRow, mirroredRow(mirrorLayout), GLASS_INNER_CONTENT]}>
         <Text style={styles.title}>{t('home.heroTitle')}</Text>
-        <LiveBadge label={t('home.live')} styles={styles} />
-      </View>
 
-      <View style={[styles.ringBlock, GLASS_INNER_CONTENT]}>
-        <FitnessTripleRings
-          attendancePct={isEmpty ? 0 : attendancePct}
-          punctualityPct={isEmpty ? 0 : punctualityPct}
-          weeklyAvgPct={isEmpty ? 0 : weeklyAvgPct}
-          animate={!isEmpty}
-        />
-        <View style={styles.ringCenter} pointerEvents="none">
-          {isEmpty ? (
-            <>
-              <Text style={styles.heroEmptyDash}>—</Text>
-              <Text style={styles.emptyCaption}>{t('home.emptyNoEmployees')}</Text>
-            </>
-          ) : (
-            <>
-              <Text
-                style={[
-                  styles.heroPct,
-                  displayAttPct === 0 ? styles.heroPctZero : null,
-                ]}
-              >
-                {displayAttPct}%
-              </Text>
-              <HeroRatio present={summary.present} total={summary.employeeCount} styles={styles} />
-            </>
-          )}
+        <View style={[styles.ringBlock, GLASS_INNER_CONTENT]}>
+          <FitnessTripleRings
+            attendancePct={isEmpty ? 0 : attendancePct}
+            punctualityPct={isEmpty ? 0 : punctualityPct}
+            weeklyAvgPct={isEmpty ? 0 : weeklyAvgPct}
+            animate={!isEmpty}
+          />
+          <View style={styles.ringCenter} pointerEvents="none">
+            {isEmpty ? (
+              <>
+                <Text style={styles.heroEmptyDash}>—</Text>
+                <Text style={styles.emptyCaption}>{t('home.emptyNoEmployees')}</Text>
+              </>
+            ) : (
+              <>
+                <Text
+                  style={[
+                    styles.heroPct,
+                    displayAttPct === 0 ? styles.heroPctZero : null,
+                  ]}
+                >
+                  {displayAttPct}%
+                </Text>
+                <HeroRatio present={summary.present} total={summary.employeeCount} styles={styles} />
+              </>
+            )}
+          </View>
         </View>
-      </View>
 
-      {!isEmpty ? (
-        <View style={[styles.legendRow, GLASS_INNER_CONTENT]}>
-          {legend.map((item) => (
-            <View key={item.key} style={styles.legendItem}>
-              <View style={styles.legendLine}>
-                <View style={[styles.legendDot, { backgroundColor: item.color }]} />
-                <Text style={styles.legendLabel} numberOfLines={1}>
-                  {item.label}
-                </Text>
-                <Text style={[styles.legendPct, { color: item.color }]}>
-                  {item.pct}%
-                </Text>
+        {!isEmpty ? (
+          <View style={[styles.legendRow, GLASS_INNER_CONTENT]}>
+            {legend.map((item) => (
+              <View key={item.key} style={styles.legendItem}>
+                <View style={styles.legendLine}>
+                  <View style={[styles.legendDot, { backgroundColor: item.color }]} />
+                  <Text style={styles.legendLabel} numberOfLines={1}>
+                    {item.label}
+                  </Text>
+                  <Text style={[styles.legendPct, { color: item.color }]}>
+                    {item.pct}%
+                  </Text>
+                </View>
               </View>
-            </View>
-          ))}
-        </View>
-      ) : null}
+            ))}
+          </View>
+        ) : null}
 
-      {!isEmpty ? (
-        <Pressable
-          style={({ pressed }) => [styles.statsLine, pressed && styles.statsLinePressed]}
-          onPress={onOpenDaily}
-          accessibilityRole="button"
-        >
-          <Text style={styles.statsLineText}>
-            <Text style={[styles.statsNum, { color: PILL_COLORS.late }]}>{summary.late}</Text>
-            <Text style={styles.statsLabel}> {t('home.pillLate')} · </Text>
-            <Text style={[styles.statsNum, { color: PILL_COLORS.absent }]}>{summary.absent}</Text>
-            <Text style={styles.statsLabel}> {t('home.pillAbsent')} · </Text>
-            <Text style={[styles.statsNum, { color: PILL_COLORS.leave }]}>{summary.onLeave}</Text>
-            <Text style={styles.statsLabel}> {t('home.pillOnLeave')}</Text>
-          </Text>
-        </Pressable>
-      ) : null}
+        {!isEmpty ? (
+          <Pressable
+            style={({ pressed }) => [styles.statsLine, pressed && styles.statsLinePressed]}
+            onPress={onOpenDaily}
+            accessibilityRole="button"
+          >
+            <Text style={styles.statsLineText}>
+              <Text style={[styles.statsNum, { color: PILL_COLORS.late }]}>{summary.late}</Text>
+              <Text style={styles.statsLabel}> {t('home.pillLate')} · </Text>
+              <Text style={[styles.statsNum, { color: PILL_COLORS.absent }]}>{summary.absent}</Text>
+              <Text style={styles.statsLabel}> {t('home.pillAbsent')} · </Text>
+              <Text style={[styles.statsNum, { color: PILL_COLORS.leave }]}>{summary.onLeave}</Text>
+              <Text style={styles.statsLabel}> {t('home.pillOnLeave')}</Text>
+            </Text>
+          </Pressable>
+        ) : null}
+
       </View>
     </HomeGlassCard>
   );
@@ -182,44 +179,6 @@ function HeroRatio({
 }) {
   const isolated = `\u2066${present} / ${total}\u2069`;
   return <Text style={styles.heroRatio}>{isolated}</Text>;
-}
-
-function LiveBadge({
-  label,
-  styles,
-}: {
-  label: string;
-  styles: ReturnType<typeof createStyles>;
-}) {
-  const pulse = useRef(new Animated.Value(0.35)).current;
-
-  useEffect(() => {
-    const loop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulse, {
-          toValue: 1,
-          duration: 900,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-        Animated.timing(pulse, {
-          toValue: 0.35,
-          duration: 900,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-      ]),
-    );
-    loop.start();
-    return () => loop.stop();
-  }, [pulse]);
-
-  return (
-    <View style={styles.liveBadge}>
-      <Animated.View style={[styles.liveDot, { opacity: pulse }]} />
-      <Text style={styles.liveLabel}>{label}</Text>
-    </View>
-  );
 }
 
 function FitnessTripleRings({
@@ -379,42 +338,13 @@ function createStyles(isDark: boolean, typography: AppTypography) {
     cardInner: {
       backgroundColor: 'transparent',
     },
-    topRow: {
-      backgroundColor: 'transparent',
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      marginBottom: 20,
-    },
     title: {
-      flex: 1,
       fontFamily: typography.noto.bold,
       fontSize: 15,
       lineHeight: 23,
       fontWeight: 'normal',
       color: text,
-    },
-    liveBadge: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 6,
-      paddingHorizontal: 10,
-      paddingVertical: 5,
-      borderRadius: 999,
-      backgroundColor: isDark ? 'rgba(45, 212, 191, 0.12)' : 'rgba(20, 184, 166, 0.1)',
-    },
-    liveDot: {
-      width: 7,
-      height: 7,
-      borderRadius: 4,
-      backgroundColor: '#14B8A6',
-    },
-    liveLabel: {
-      fontFamily: typography.noto.bold,
-      fontSize: 11,
-      lineHeight: 16,
-      fontWeight: 'normal',
-      color: '#14B8A6',
+      marginBottom: 20,
     },
     ringBlock: {
       alignSelf: 'center',

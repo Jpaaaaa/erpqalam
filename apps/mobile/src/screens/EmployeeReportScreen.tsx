@@ -75,6 +75,7 @@ import type {
   AttendanceRecord,
   AttendanceSettings,
   AttendanceUser,
+  MergedAttendanceEmployee,
   DateFilter,
   EmployeeHoliday,
   EmployeeReportRow,
@@ -107,7 +108,6 @@ export function EmployeeReportScreen({ route, navigation }: Props) {
   const [performanceSort, setPerformanceSort] = useState<PerformanceSortKey>('attendance');
   const [performanceRows, setPerformanceRows] = useState<EmployeeReportRow[]>([]);
   const [performanceEarlyTotal, setPerformanceEarlyTotal] = useState(0);
-  const [nameLookup, setNameLookup] = useState<Map<string, string>>(new Map());
   const [filter, setFilter] = useState<DateFilter>(() => {
     const month = getQuickRange('month');
     return { fromDate: month.from, toDate: month.to };
@@ -144,7 +144,26 @@ export function EmployeeReportScreen({ route, navigation }: Props) {
   const [error, setError] = useState('');
   const [errorIsNetwork, setErrorIsNetwork] = useState(false);
 
-  const selectedUser = users.find((u) => u.deviceUserId === selectedId);
+  const pickerUsers = useMemo((): MergedAttendanceEmployee[] => {
+    const punchStubs = performanceRows.map(
+      (row) =>
+        ({
+          deviceUserId: row.deviceUserId,
+        }) as AttendanceRecord,
+    );
+    return mergeEmployeesWithPunchIds(users, punchStubs);
+  }, [users, performanceRows]);
+
+  const nameLookup = useMemo(
+    () => buildNameLookup(pickerUsers),
+    [pickerUsers],
+  );
+
+  const metaLoading = !metaReady || refreshing;
+  const employeeDetailLoading =
+    tab === 'per-employee' && !!selectedId && !employeeReady;
+
+  const selectedUser = pickerUsers.find((u) => u.deviceUserId === selectedId);
 
   useFocusEffect(
     useCallback(() => {
@@ -170,7 +189,6 @@ export function EmployeeReportScreen({ route, navigation }: Props) {
           listTimeLeaveUsage(),
         ]);
       setUsers(userRows);
-      setNameLookup(buildNameLookup(mergeEmployeesWithPunchIds(userRows, [])));
       setSettings(settingsRow);
       setHolidays(holidayRows);
       setEmployeeHolidays(empHolidayRows);
@@ -557,10 +575,7 @@ export function EmployeeReportScreen({ route, navigation }: Props) {
   );
 
   const showContentLoading =
-    !metaReady ||
-    refreshing ||
-    ((tab === 'performance' || tab === 'summary') && !perfReady) ||
-    (tab === 'per-employee' && !!selectedId && !employeeReady);
+    metaLoading || ((tab === 'performance' || tab === 'summary') && !perfReady);
 
   const retryAll = () => {
     void loadMeta();
@@ -576,6 +591,111 @@ export function EmployeeReportScreen({ route, navigation }: Props) {
   function openEmployeeDetail(deviceUserId: string, name: string) {
     navigation.navigate('EmployeeDetail', { deviceUserId, name });
   }
+
+  const perEmployeeTabFooter = (
+    <View style={styles.perEmployeeBody}>
+      <View style={styles.perEmployeePickerRow}>
+        <View style={styles.perEmployeePickerFlex}>
+          {metaLoading ? (
+            <View style={styles.pickerSkeletonBone} />
+          ) : (
+            <ReportEmployeePickerRow
+              users={pickerUsers}
+              value={selectedId}
+              onChange={setSelectedId}
+            />
+          )}
+        </View>
+        <Pressable
+          onPress={() => void handleAllEmployeesPdf()}
+          disabled={metaLoading || exportingAllEmployees || exporting}
+          style={({ pressed }) => [
+            styles.allEmployeesPdfBtn,
+            (pressed || exportingAllEmployees) && styles.allEmployeesPdfBtnPressed,
+            (metaLoading || exportingAllEmployees || exporting) &&
+              styles.allEmployeesPdfBtnDisabled,
+          ]}
+          accessibilityRole="button"
+        >
+          <Text style={styles.allEmployeesPdfBtnText} numberOfLines={2}>
+            {exportingAllEmployees
+              ? t('report.pdfPreparing')
+              : t('report.allEmployeesPdf')}
+          </Text>
+        </Pressable>
+      </View>
+      {!selectedId ? (
+        <Text style={styles.hint}>{t('report.selectEmployeeHint')}</Text>
+      ) : employeeDetailLoading ? (
+        <ReportSkeleton variant="per-employee-detail" />
+      ) : (
+        <>
+          {employeeMetrics ? (
+            <EmployeeDetailMetricsCard metrics={employeeMetrics} />
+          ) : null}
+          {settings &&
+          selectedId &&
+          (lateOccurrences.length > 0 || earlyOccurrences.length > 0) ? (
+            <TimeLeaveCoverList
+              deviceUserId={selectedId}
+              employeeName={displayName(selectedUser?.name, selectedId)}
+              lateOccurrences={lateOccurrences}
+              earlyExitOccurrences={earlyOccurrences}
+              records={records}
+              settings={settings}
+              timeLeaveUsage={timeLeaveUsage}
+              leaveBalances={balances}
+              employeeHolidays={employeeHolidays}
+              canManage={canManage}
+              onCover={async (payload) => {
+                await addTimeLeaveUsage(payload);
+                await refreshAfterCover();
+              }}
+              onRemove={async (id) => {
+                await removeTimeLeaveUsage(id);
+                await refreshAfterCover();
+              }}
+            />
+          ) : null}
+          {dayRows.length === 0 ? (
+            <Text style={styles.empty}>{t('report.emptyDays')}</Text>
+          ) : (
+            dayRows.map((day) => (
+              <ReportDayRowCard
+                key={day.date}
+                day={day}
+                deviceUserId={selectedId}
+                canManage={canManage}
+                canAdd={canAddCover(selectedId)}
+                coverBusy={coverBusy}
+                timeLeaveUsage={timeLeaveUsage}
+                t={t}
+                punchLabel={punchLabel}
+                onCover={async (payload) => {
+                  setCoverBusy(payload.timestamp);
+                  try {
+                    await addTimeLeaveUsage(payload);
+                    await refreshAfterCover();
+                  } finally {
+                    setCoverBusy(null);
+                  }
+                }}
+                onRemove={async (id) => {
+                  setCoverBusy(id);
+                  try {
+                    await removeTimeLeaveUsage(id);
+                    await refreshAfterCover();
+                  } finally {
+                    setCoverBusy(null);
+                  }
+                }}
+              />
+            ))
+          )}
+        </>
+      )}
+    </View>
+  );
 
   const listHeader = (
     <View style={[styles.headerBlock, { paddingTop: insets.top }]}>
@@ -614,7 +734,7 @@ export function EmployeeReportScreen({ route, navigation }: Props) {
         <Text style={styles.error}>{error}</Text>
       ) : null}
 
-      {showContentLoading ? (
+      {showContentLoading && tab !== 'per-employee' ? (
         <ReportSkeleton variant={tab} />
       ) : tab === 'performance' ? (
         <>
@@ -691,7 +811,9 @@ export function EmployeeReportScreen({ route, navigation }: Props) {
             ListHeaderComponent={listHeader}
             refreshControl={refreshControl}
             ListFooterComponent={
-              showContentLoading ? null : tab === 'summary' ? (
+              tab === 'per-employee' ? (
+                perEmployeeTabFooter
+              ) : showContentLoading ? null : tab === 'summary' ? (
                 <ReportSummaryTab
                   rows={performanceRows}
                   nameLookup={nameLookup}
@@ -706,98 +828,6 @@ export function EmployeeReportScreen({ route, navigation }: Props) {
                   }}
                   onPressEmployee={openEmployeeDetail}
                 />
-              ) : tab === 'per-employee' && !selectedId ? (
-                <Text style={styles.hint}>{t('report.selectEmployeeHint')}</Text>
-              ) : tab === 'per-employee' ? (
-                <View style={styles.perEmployeeBody}>
-                  <View style={styles.perEmployeePickerRow}>
-                    <View style={styles.perEmployeePickerFlex}>
-                      <ReportEmployeePickerRow
-                        users={users}
-                        value={selectedId}
-                        onChange={setSelectedId}
-                      />
-                    </View>
-                    <Pressable
-                      onPress={() => void handleAllEmployeesPdf()}
-                      disabled={exportingAllEmployees || exporting}
-                      style={({ pressed }) => [
-                        styles.allEmployeesPdfBtn,
-                        (pressed || exportingAllEmployees) && styles.allEmployeesPdfBtnPressed,
-                        (exportingAllEmployees || exporting) && styles.allEmployeesPdfBtnDisabled,
-                      ]}
-                      accessibilityRole="button"
-                    >
-                      <Text style={styles.allEmployeesPdfBtnText} numberOfLines={2}>
-                        {exportingAllEmployees
-                          ? t('report.pdfPreparing')
-                          : t('report.allEmployeesPdf')}
-                      </Text>
-                    </Pressable>
-                  </View>
-                  {employeeMetrics ? (
-                    <EmployeeDetailMetricsCard metrics={employeeMetrics} />
-                  ) : null}
-                  {settings &&
-                  selectedId &&
-                  (lateOccurrences.length > 0 || earlyOccurrences.length > 0) ? (
-                    <TimeLeaveCoverList
-                      deviceUserId={selectedId}
-                      employeeName={displayName(selectedUser?.name, selectedId)}
-                      lateOccurrences={lateOccurrences}
-                      earlyExitOccurrences={earlyOccurrences}
-                      records={records}
-                      settings={settings}
-                      timeLeaveUsage={timeLeaveUsage}
-                      leaveBalances={balances}
-                      employeeHolidays={employeeHolidays}
-                      canManage={canManage}
-                      onCover={async (payload) => {
-                        await addTimeLeaveUsage(payload);
-                        await refreshAfterCover();
-                      }}
-                      onRemove={async (id) => {
-                        await removeTimeLeaveUsage(id);
-                        await refreshAfterCover();
-                      }}
-                    />
-                  ) : null}
-                  {dayRows.length === 0 ? (
-                    <Text style={styles.empty}>{t('report.emptyDays')}</Text>
-                  ) : (
-                    dayRows.map((day) => (
-                      <ReportDayRowCard
-                        key={day.date}
-                        day={day}
-                        deviceUserId={selectedId}
-                        canManage={canManage}
-                        canAdd={canAddCover(selectedId)}
-                        coverBusy={coverBusy}
-                        timeLeaveUsage={timeLeaveUsage}
-                        t={t}
-                        punchLabel={punchLabel}
-                        onCover={async (payload) => {
-                          setCoverBusy(payload.timestamp);
-                          try {
-                            await addTimeLeaveUsage(payload);
-                            await refreshAfterCover();
-                          } finally {
-                            setCoverBusy(null);
-                          }
-                        }}
-                        onRemove={async (id) => {
-                          setCoverBusy(id);
-                          try {
-                            await removeTimeLeaveUsage(id);
-                            await refreshAfterCover();
-                          } finally {
-                            setCoverBusy(null);
-                          }
-                        }}
-                      />
-                    ))
-                  )}
-                </View>
               ) : null
             }
           />
@@ -864,6 +894,11 @@ function createStyles(isDark: boolean, typography: AppTypography) {
       gap: 10,
     },
     perEmployeePickerFlex: { flex: 1, minWidth: 0 },
+    pickerSkeletonBone: {
+      height: 68,
+      borderRadius: 28,
+      backgroundColor: isDark ? 'rgba(148, 163, 184, 0.16)' : 'rgba(15, 23, 42, 0.08)',
+    },
     allEmployeesPdfBtn: {
       alignSelf: 'center',
       maxWidth: 120,

@@ -298,7 +298,6 @@ export function EmployeeReportPanel() {
       leaveCtx,
       balances,
       timeLeaveUsage,
-      employeeHolidays,
     );
   }
 

@@ -3,7 +3,11 @@ import { Platform, StyleSheet, View } from 'react-native';
 import { useHomeTheme } from '../../theme/HomeThemeProvider';
 import { HomeGlassCard } from '../home/HomeGlassCard';
 
-export function ReportSkeleton({ variant }: { variant: 'performance' | 'per-employee' | 'summary' }) {
+export function ReportSkeleton({
+  variant,
+}: {
+  variant: 'performance' | 'per-employee' | 'per-employee-detail' | 'summary';
+}) {
   const { isDark } = useHomeTheme();
   const styles = useMemo(() => createStyles(isDark), [isDark]);
 
@@ -23,6 +27,16 @@ export function ReportSkeleton({ variant }: { variant: 'performance' | 'per-empl
     return (
       <View style={styles.wrap}>
         <View style={styles.pickerBone} />
+        <View style={styles.ringBone} />
+        <View style={styles.line} />
+        <View style={styles.line} />
+      </View>
+    );
+  }
+
+  if (variant === 'per-employee-detail') {
+    return (
+      <View style={styles.wrap}>
         <View style={styles.ringBone} />
         <View style={styles.line} />
         <View style={styles.line} />

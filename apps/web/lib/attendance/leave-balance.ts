@@ -73,7 +73,6 @@ export function canCoverWithTimeLeave(
   ctx: LeaveBalanceContext,
   leaveBalances: LeaveBalance[],
   timeLeaveUsage: TimeLeaveUsage[],
-  _employeeHolidays: EmployeeHoliday[],
 ): boolean {
   const tempCount = countTimeLeaveForUser(deviceUserId, timeLeaveUsage);
   const tempCountAfter = tempCount + 1;

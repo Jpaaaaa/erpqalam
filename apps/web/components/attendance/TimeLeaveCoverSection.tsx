@@ -132,7 +132,6 @@ export function TimeLeaveCoverSection({
                   ctx,
                   leaveBalances,
                   timeLeaveUsage,
-                  employeeHolidays,
                 );
               return (
                 <li
@@ -198,7 +197,6 @@ export function TimeLeaveCoverSection({
                   ctx,
                   leaveBalances,
                   timeLeaveUsage,
-                  employeeHolidays,
                 );
               return (
                 <li
